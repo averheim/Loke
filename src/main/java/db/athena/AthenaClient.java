@@ -8,7 +8,7 @@ public class AthenaClient extends JdbcManager {
 
     public AthenaClient(String theHost, Integer thePort, String theAwsAccessKey, String theAwsSecretKey, String theStagingDir) {
         try {
-            log.info("Initiate the Athena driver: %s, %s, %s, %s", theHost, thePort, theAwsAccessKey, theStagingDir);
+            log.info("Initiate the Athena driver: {}, {}, {}, {}", theHost, thePort, theAwsAccessKey, theStagingDir);
             // Register athena driver
             Class.forName("com.amazonaws.athena.jdbc.AthenaDriver");
             // Default port is 443
@@ -22,6 +22,7 @@ public class AthenaClient extends JdbcManager {
             setProperty("s3_staging_dir", theStagingDir);
             setProperty("connection_timeout", "60000");
             setProperty("socket_timeout", "" + 2 * 60 * 60 * 1000);
+
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Failed to load DB driver", e);
         }

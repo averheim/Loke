@@ -1,9 +1,14 @@
 package db;
 
 import db.athena.AthenaClient;
+import db.athena.JdbcManager;
+import model.Chart;
+
+import java.util.List;
 
 public class SpendPerUserAndResourceDao implements Service {
     private AthenaClient athenaClient;
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserAndProductLast30Days.sql");
 
     public SpendPerUserAndResourceDao(AthenaClient athenaClient) {
         this.athenaClient = athenaClient;
@@ -11,6 +16,24 @@ public class SpendPerUserAndResourceDao implements Service {
 
     @Override
     public List<Chart> getCharts() {
+        sendRequest();
         return null;
+    }
+
+    private void sendRequest() {
+        JdbcManager.QueryResult<SpendPerUserAndResource> spendPerUserAndResourceQueryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerUserAndResource.class);
+        for (SpendPerUserAndResource spendPerUserAndResource : spendPerUserAndResourceQueryResult.getResultList()) {
+            System.out.println(spendPerUserAndResource.userOwner);
+            System.out.println(spendPerUserAndResource.productName);
+            System.out.println(spendPerUserAndResource.cost);
+            System.out.println(spendPerUserAndResource.startDate);
+        }
+    }
+
+    public static class SpendPerUserAndResource{
+        public String userOwner;
+        public String productName;
+        public double cost;
+        public String startDate;
     }
 }
