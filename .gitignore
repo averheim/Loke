@@ -17,7 +17,6 @@
 *.tar
 *.zip
 *.log
-*.sql
 *.sqlite
 .DS_Store
 .DS_Store?
