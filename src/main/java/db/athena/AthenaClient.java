@@ -26,6 +26,4 @@ public class AthenaClient extends JdbcManager {
             throw new RuntimeException("Failed to load DB driver", e);
         }
     }
-
-
 }
