@@ -15,7 +15,7 @@ import java.util.Properties;
 
 public class JdbcManager {
 
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger log = LogManager.getLogger(JdbcManager.class);
     private String myUrl;
     private Properties myProps = new Properties();
     /**
@@ -38,7 +38,7 @@ public class JdbcManager {
                 Connection aConn = DriverManager.getConnection(myUrl, myProps);
                 Statement aStmt = aConn.createStatement();
         ) {
-            logger.trace("Execute:\n{}", theSql);
+            log.trace("Execute:\n{}", theSql);
             return aStmt.execute(theSql);
         } catch (Exception e) {
             throw new SqlException("Failed to execute sql: " + theSql, e);
@@ -52,7 +52,7 @@ public class JdbcManager {
                 Connection aConn = DriverManager.getConnection(myUrl, myProps);
                 Statement aStmt = aConn.createStatement();
         ) {
-            logger.trace("Execute:\n{}", theSql);
+            log.trace("Execute:\n{}", theSql);
             return aStmt.executeUpdate(theSql);
         } catch (Exception e) {
             throw new SqlException("Failed to execute sql: " + theSql, e);
@@ -66,7 +66,7 @@ public class JdbcManager {
                 Connection aConn = DriverManager.getConnection(myUrl, myProps);
                 Statement aStmt = aConn.createStatement();
         ) {
-            logger.trace("Execute:\n{}", theSql);
+            log.trace("Execute:\n{}", theSql);
             theAction.onData(aStmt.executeQuery(theSql));
         } catch (Exception e) {
             throw new SqlException("Failed to execute sql: " + theSql, e);
