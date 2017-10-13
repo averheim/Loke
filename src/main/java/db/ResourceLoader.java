@@ -19,7 +19,7 @@ public class ResourceLoader {
         try {
             InputStream anIn = ResourceLoader.class.getClassLoader().getResourceAsStream(theResourceName);
             BufferedReader aBufferedReader = new BufferedReader(new InputStreamReader(anIn));
-            StringBuffer aResource = new StringBuffer();
+            StringBuilder aResource = new StringBuilder();
             String aLine = aBufferedReader.readLine();
             while (aLine != null) {
                 aResource.append(aLine);
