@@ -7,7 +7,7 @@ public class Loke {
     private Service spendPerUserAndResourceDao;
 
     public Loke() {
-        this.athenaClient = new AthenaClient("athena-eu-west-1.amazonaws.com",
+        this.athenaClient = new AthenaClient("athena.eu-west-1.amazonaws.com",
                 443,
                 "AKIAJXBQ66SAW4EAR3DQ",
                 "2X5w24XnkbUc+VINz3WJ7549mPHXu22y1WP7aJJn",

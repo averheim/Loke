@@ -31,9 +31,13 @@ public class SpendPerUserAndResourceDao implements Service {
     }
 
     public static class SpendPerUserAndResource{
+        @JdbcManager.Column(value = "user_owner")
         public String userOwner;
+        @JdbcManager.Column(value = "product_name")
         public String productName;
+        @JdbcManager.Column(value = "cost")
         public double cost;
+        @JdbcManager.Column(value = "start_date")
         public String startDate;
     }
 }

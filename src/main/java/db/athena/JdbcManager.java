@@ -97,22 +97,20 @@ public class JdbcManager {
      * The column names can also be annoted if different than field name. E.g.
      *
      * public class Apa {
-     *     @Column(name = “animal_name”)
+     *     @Column(value = “animal_name”)
      *     string name;
      * }
      */
     public <T> QueryResult<T> executeQuery(final String theSql, final Class<T> theResultClass) throws SqlException {
         final QueryResult<T> aResult = new QueryResult<>();
-        executeQuery(theSql, new RsAction() {
-            public void onData(ResultSet theResultSet) throws SqlException {
-                try {
-                    while (theResultSet.next()) {
-                        T aPojo = getResultInstance(theResultSet, theResultClass);
-                        aResult.addRow(aPojo);
-                    }
-                } catch (Exception e) {
-                    throw new SqlException("Failed execute query", e);
+        executeQuery(theSql, theResultSet -> {
+            try {
+                while (theResultSet.next()) {
+                    T aPojo = getResultInstance(theResultSet, theResultClass);
+                    aResult.addRow(aPojo);
                 }
+            } catch (Exception e) {
+                throw new SqlException("Failed execute query", e);
             }
         });
         return aResult;
