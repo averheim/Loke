@@ -1,24 +1,26 @@
 package db;
 
 import com.googlecode.charts4j.*;
+import com.googlecode.charts4j.Color;
 import db.athena.AthenaClient;
 import db.athena.JdbcManager;
 import model.Chart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
-import static com.googlecode.charts4j.Color.RED;
-import static com.googlecode.charts4j.Color.WHITE;
+import static com.googlecode.charts4j.Color.*;
 
 public class SpendPerUserAndResourceDao implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerUserAndResourceDao.class);
+    public final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private AthenaClient athenaClient;
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserAndProductLast30Days.sql");
+
+    private int colorCounter = 0;
 
     public SpendPerUserAndResourceDao(AthenaClient athenaClient) {
         this.athenaClient = athenaClient;
@@ -31,45 +33,127 @@ public class SpendPerUserAndResourceDao implements Service {
     }
 
     private List<Chart> generateCharts(Map<String, User> users) {
-        log.trace("Generating SpendPerUserAndResrouce charts");
         List<Chart> charts = new ArrayList<>();
         for (User user : users.values()) {
-            Map<String, Day> days = user.getDays();
-            List<Double> dailyTotals = new ArrayList<>();
-            List<String> dates = new ArrayList<>();
-            List<Line> lines = new ArrayList<>();
-
-            for (Day day : days.values()) {
-                double dailyTotal = 0;
-                List<Resource> resources = day.getResources();
-                dates.add(day.getDate().substring(5));
-                for (Resource resource : resources) {
-                    dailyTotal += resource.getCost();
-
-
-                }
-                dailyTotals.add(dailyTotal);
-            }
-            lines.add(Plots.newLine(Data.newData(dailyTotals)));
-
-            LineChart chart = GCharts.newLineChart(lines);
-            chart.setTitle("Daily total for " + user.getUserName(), RED, 14);
-            chart.setSize(1000, 300);
-            chart.addYAxisLabels(AxisLabelsFactory.newAxisLabels("0", "1"));
-            chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels(dates));
-
-            // Defining background and chart fills.
-            chart.setBackgroundFill(Fills.newSolidFill(WHITE));
-            final LinearGradientFill fill = Fills.newLinearGradientFill(0, WHITE, 100);
-            fill.addColorAndOffset(WHITE, 0);
-            chart.setAreaFill(fill);
-            System.out.println(chart.toURLString());
-
-
-            charts.add(new Chart(user.getUserName(), "url"));
+            resetColor();
+            Scale scale = checkScale(user);
+            List<String> xAxisLabels = getXAxisLabels(users);
+            List<BarChartPlot> barChartPlots = createPlots(user, scale);
+            BarChart chart = GCharts.newBarChart(barChartPlots);
+            configureChart(xAxisLabels, chart, user, scale);
+            charts.add(new Chart(user.getUserName(), chart.toURLString()));
+            log.info(chart.toURLString());
         }
-        log.trace("Done generating charts");
         return charts;
+    }
+
+    private Scale checkScale(User user) {
+        boolean isOverOneHundred = false;
+        List<Calendar> daysBack = getDaysBack(30);
+        for (Calendar calendar : daysBack) {
+            double dailyCost = 0.0;
+            for (Resource resource : user.getResources().values()) {
+                Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
+                dailyCost += (day == null) ? 0.0 : day.getDailyCost();
+            }
+            if(dailyCost > 100) isOverOneHundred = true;
+        }
+        return isOverOneHundred ? Scale.HUNDRED : Scale.DEFAULT;
+    }
+
+    private List<Calendar> getDaysBack(int amount) {
+        List<Calendar> days = new ArrayList<>();
+
+        for (int i = 0; i < amount; i++) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.DATE, -i);
+            days.add(0, calendar);
+        }
+
+        return days;
+    }
+
+    private List<String> getXAxisLabels(Map<String, User> users) {
+        List<String> labels = new ArrayList<>();
+        List<Calendar> days = new ArrayList<>(getDaysBack(30));
+
+        // add labels
+        for (Calendar day : days) {
+            String date = dateFormat.format(day.getTime());
+            if (!labels.contains(date)) {
+                labels.add(date.substring(8, 10));
+            }
+        }
+        return labels;
+    }
+
+    private void configureChart(List<String> daysXAxisLabels, BarChart chart, User user, Scale scale) {
+        int chartWidth = 800;
+        int chartHeight = 300;
+        chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(Arrays.asList(0,1,2,3,4,5,6,7,8,9,10)));
+        chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels(daysXAxisLabels));
+        chart.setSize(chartWidth, chartHeight);
+        chart.setBarWidth(BarChart.AUTO_RESIZE);
+        chart.setDataStacked(true);
+
+        chart.setTitle("Total spend for " + user.getUserName() + " in " + scale.getName() + ". Total " + Math.round(user.calculateTotalCost()) + " dollars");
+    }
+
+    private List<BarChartPlot> createPlots(User user, Scale scale) {
+        List<BarChartPlot> plots = new ArrayList<>();
+        log.info(user.getUserName());
+        for (Resource resource : user.getResources().values()) {
+            List<Double> data = getData(resource, scale);
+            log.info(user.getUserName());
+            data.forEach(System.out::print);
+            double total = calculateTotal(data);
+            BarChartPlot barChartPlot = Plots.newBarChartPlot(Data.newData(data), getNextColor(), resource.getResourceName() + " " + total);
+            plots.add(0, barChartPlot);
+
+        }
+        return plots;
+    }
+
+    private double calculateTotal(List<Double> data) {
+        double total = 0;
+        for (Double cost : data) {
+            total += cost;
+        }
+        return total;
+    }
+
+
+    private List<Double> getData(Resource resource, Scale scale) {
+        List<Double> data = new ArrayList<>();
+        List<Calendar> calendars = getDaysBack(30);
+
+        for (Calendar calendar : calendars) {
+            Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
+            if (day == null) {
+                data.add(0.0);
+            } else {
+                data.add(resource.getDays().get(dateFormat.format(calendar.getTime())).getDailyCost() / scale.getDivideBy());
+            }
+        }
+        return data;
+    }
+
+    private void resetColor() {
+        this.colorCounter = 0;
+    }
+
+    private Color getNextColor() {
+        List<Color> colors = new ArrayList<>();
+        colors.add(BLUE);
+        colors.add(RED);
+        colors.add(YELLOW);
+        colors.add(GREEN);
+        colors.add(GRAY);
+        colors.add(AQUAMARINE);
+        colors.add(ORANGE);
+        Color color = colors.get(colorCounter);
+        colorCounter++;
+        return color;
     }
 
     private Map<String, User> sendRequest() {
@@ -85,11 +169,11 @@ public class SpendPerUserAndResourceDao implements Service {
                 users.put(userOwner, new User(userOwner));
             }
 
-            if (!users.get(userOwner).getDays().containsKey(startDate)) {
-                users.get(userOwner).getDays().put(startDate, new Day(startDate));
+            if (!users.get(userOwner).getResources().containsKey(productName)) {
+                users.get(userOwner).addResource(new Resource(productName));
             }
 
-            users.get(userOwner).getDays().get(startDate).addResource(new Resource(productName, cost));
+            users.get(userOwner).getResources().get(productName).addDay(new Day(startDate, cost));
         }
         return users;
     }
@@ -103,67 +187,93 @@ public class SpendPerUserAndResourceDao implements Service {
         public double cost;
         @JdbcManager.Column(value = "start_date")
         public String startDate;
+
     }
 
-    private class User {
+    public class User {
         private String userName;
-        private Map<String, Day> days;
+        private HashMap<String, Resource> resources;
+
+        private double totalCost;
 
         public User(String userName) {
             this.userName = userName;
-            this.days = new HashMap<>();
+            this.resources = new HashMap<>();
+            this.totalCost = 0;
         }
 
-        public void addDay(String date, Day day) {
-            this.days.put(date, day);
+        public void addResource(Resource resource) {
+            this.resources.put(resource.getResourceName(), resource);
         }
 
         public String getUserName() {
             return userName;
         }
 
-        public Map<String, Day> getDays() {
+        public HashMap<String, Resource> getResources() {
+            return resources;
+        }
+
+        public Resource getResource(String resourceName) {
+            return this.resources.get(resourceName);
+        }
+
+        private double calculateTotalCost() {
+            for (Resource resource : resources.values()) {
+                for (Day day : resource.getDays().values()) {
+                    this.totalCost += day.getDailyCost();
+                }
+            }
+
+            return this.totalCost;
+        }
+
+    }
+
+    public class Resource {
+        private String resourceName;
+        private HashMap<String, Day> days;
+
+        public Resource(String resourceName) {
+            this.resourceName = resourceName;
+            this.days = new HashMap<>();
+        }
+
+        public void addDay(Day day) {
+            this.days.put(dateFormat.format(day.getDate().getTime()), day);
+        }
+
+        public String getResourceName() {
+            return resourceName;
+        }
+
+        public HashMap<String, Day> getDays() {
             return days;
         }
     }
 
-    private class Day {
-        private String date;
-        private List<Resource> resources;
+    public class Day {
+        private Calendar date = Calendar.getInstance();
+        private double dailyCost;
 
-        public Day(String date) {
-            this.date = date;
-            this.resources = new ArrayList<>();
+        public Day(String date, double dailyCost) {
+            try {
+                this.date.setTime(dateFormat.parse(date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            this.dailyCost = dailyCost;
         }
 
-        public void addResource(Resource resource) {
-            resources.add(resource);
-        }
-
-        public String getDate() {
+        public Calendar getDate() {
             return date;
         }
 
-        public List<Resource> getResources() {
-            return resources;
+        public double getDailyCost() {
+            return dailyCost;
         }
+
     }
 
-    private class Resource {
-        private String productName;
-        private double cost;
-
-        public Resource(String productName, double cost) {
-            this.productName = productName;
-            this.cost = cost;
-        }
-
-        public String getProductName() {
-            return productName;
-        }
-
-        public double getCost() {
-            return cost;
-        }
-    }
 }
+
