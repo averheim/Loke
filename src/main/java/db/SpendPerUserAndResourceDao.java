@@ -8,10 +8,13 @@ import model.Chart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static com.googlecode.charts4j.BarChart.*;
 import static com.googlecode.charts4j.Color.*;
 
 public class SpendPerUserAndResourceDao implements Service {
@@ -93,16 +96,17 @@ public class SpendPerUserAndResourceDao implements Service {
     }
 
     private void configureChart(List<String> daysXAxisLabels, BarChart chart, User user, Scale scale) {
-        int chartWidth = 800;
+        int chartWidth = 1000;
         int chartHeight = 300;
-        System.out.println(scale.name());
         chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels(daysXAxisLabels));
-        chart.setSize(chartWidth, chartHeight);
-        chart.setBarWidth(BarChart.AUTO_RESIZE);
-        chart.setDataStacked(true);
+        chart.addYAxisLabels(AxisLabelsFactory.newAxisLabels("Cost in " + scale.getSuffix(), 50));
 
-        chart.setTitle("Total spend for " + user.getUserName() + " in " + scale.getSuffix() + ". Total " + Math.round(user.calculateTotalCost()) + " dollars");
+        chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
+        chart.setSize(chartWidth, chartHeight);
+        chart.setBarWidth(AUTO_RESIZE);
+        chart.setDataStacked(true);
+        chart.setTitle("Total spend for " + user.getUserName() + " the past 30 days " + decimalFormat(user.calculateTotalCost(),2) + " dollars");
     }
 
     private List<BarChartPlot> createPlots(User user, Scale scale) {
@@ -111,16 +115,26 @@ public class SpendPerUserAndResourceDao implements Service {
         for (Resource resource : user.getResources().values()) {
             List<Double> barSizeValues = getBarSize(resource, scale);
             double total = getResourceTotal(resource);
-            BarChartPlot barChartPlot = Plots.newBarChartPlot(Data.newData(barSizeValues), getNextColor(), resource.getResourceName() + " " + total);
+            BarChartPlot barChartPlot = Plots.newBarChartPlot(Data.newData(barSizeValues), getNextColor(), resource.getResourceName() + " " + decimalFormat(total, 4));
             plots.add(0, barChartPlot);
         }
         return plots;
     }
 
+    private String decimalFormat(double aDouble, int decimals) {
+        StringBuilder pattern = new StringBuilder("#.");
+        for (int i = 0; i < decimals; i++) {
+            pattern.append("#");
+        }
+        DecimalFormat decimalFormat = new DecimalFormat(pattern.toString());
+        decimalFormat.setRoundingMode(RoundingMode.CEILING);
+        return decimalFormat.format(aDouble).replace(',', '.');
+    }
+
     private double getResourceTotal(Resource resource) {
         double total = 0.0;
         for (Double cost : getDailyCosts(resource)) {
-          total += cost;
+            total += cost;
         }
         return total;
     }
