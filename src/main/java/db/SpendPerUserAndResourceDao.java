@@ -37,7 +37,7 @@ public class SpendPerUserAndResourceDao implements Service {
         for (User user : users.values()) {
             resetColor();
             Scale scale = checkScale(user);
-            List<String> xAxisLabels = getXAxisLabels(users);
+            List<String> xAxisLabels = getXAxisLabels();
             List<BarChartPlot> barChartPlots = createPlots(user, scale);
             BarChart chart = GCharts.newBarChart(barChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
@@ -48,17 +48,23 @@ public class SpendPerUserAndResourceDao implements Service {
     }
 
     private Scale checkScale(User user) {
-        boolean isOverOneHundred = false;
         List<Calendar> daysBack = getDaysBack(30);
+        List<Double> dailyCosts = new ArrayList<>();
+
         for (Calendar calendar : daysBack) {
             double dailyCost = 0.0;
             for (Resource resource : user.getResources().values()) {
                 Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
                 dailyCost += (day == null) ? 0.0 : day.getDailyCost();
             }
-            if(dailyCost > 100) isOverOneHundred = true;
+            dailyCosts.add(dailyCost);
         }
-        return isOverOneHundred ? Scale.HUNDRED : Scale.DEFAULT;
+
+        dailyCosts.sort((o1, o2) -> (int) (o1 + o2));
+
+        if (dailyCosts.get(0) > 100) return Scale.OVER_HUNDRED;
+        if (dailyCosts.get(0) < 10) return Scale.UNDER_TEN;
+        return Scale.UNDER_HUNDRED;
     }
 
     private List<Calendar> getDaysBack(int amount) {
@@ -69,11 +75,10 @@ public class SpendPerUserAndResourceDao implements Service {
             calendar.add(Calendar.DATE, -i);
             days.add(0, calendar);
         }
-
         return days;
     }
 
-    private List<String> getXAxisLabels(Map<String, User> users) {
+    private List<String> getXAxisLabels() {
         List<String> labels = new ArrayList<>();
         List<Calendar> days = new ArrayList<>(getDaysBack(30));
 
@@ -90,49 +95,53 @@ public class SpendPerUserAndResourceDao implements Service {
     private void configureChart(List<String> daysXAxisLabels, BarChart chart, User user, Scale scale) {
         int chartWidth = 800;
         int chartHeight = 300;
-        chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(Arrays.asList(0,1,2,3,4,5,6,7,8,9,10)));
+        System.out.println(scale.name());
+        chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels(daysXAxisLabels));
         chart.setSize(chartWidth, chartHeight);
         chart.setBarWidth(BarChart.AUTO_RESIZE);
         chart.setDataStacked(true);
 
-        chart.setTitle("Total spend for " + user.getUserName() + " in " + scale.getName() + ". Total " + Math.round(user.calculateTotalCost()) + " dollars");
+        chart.setTitle("Total spend for " + user.getUserName() + " in " + scale.getSuffix() + ". Total " + Math.round(user.calculateTotalCost()) + " dollars");
     }
 
     private List<BarChartPlot> createPlots(User user, Scale scale) {
         List<BarChartPlot> plots = new ArrayList<>();
         log.info(user.getUserName());
         for (Resource resource : user.getResources().values()) {
-            List<Double> data = getData(resource, scale);
-            log.info(user.getUserName());
-            data.forEach(System.out::print);
-            double total = calculateTotal(data);
-            BarChartPlot barChartPlot = Plots.newBarChartPlot(Data.newData(data), getNextColor(), resource.getResourceName() + " " + total);
+            List<Double> barSizeValues = getBarSize(resource, scale);
+            double total = getResourceTotal(resource);
+            BarChartPlot barChartPlot = Plots.newBarChartPlot(Data.newData(barSizeValues), getNextColor(), resource.getResourceName() + " " + total);
             plots.add(0, barChartPlot);
-
         }
         return plots;
     }
 
-    private double calculateTotal(List<Double> data) {
-        double total = 0;
-        for (Double cost : data) {
-            total += cost;
+    private double getResourceTotal(Resource resource) {
+        double total = 0.0;
+        for (Double cost : getDailyCosts(resource)) {
+          total += cost;
         }
         return total;
     }
 
+    private List<Double> getBarSize(Resource resource, Scale scale) {
+        List<Double> barSizeValues = new ArrayList<>();
+        for (Double cost : getDailyCosts(resource)) {
+            barSizeValues.add(cost / scale.getDivideBy());
+        }
+        return barSizeValues;
+    }
 
-    private List<Double> getData(Resource resource, Scale scale) {
+    private List<Double> getDailyCosts(Resource resource) {
         List<Double> data = new ArrayList<>();
         List<Calendar> calendars = getDaysBack(30);
-
         for (Calendar calendar : calendars) {
             Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
             if (day == null) {
                 data.add(0.0);
             } else {
-                data.add(resource.getDays().get(dateFormat.format(calendar.getTime())).getDailyCost() / scale.getDivideBy());
+                data.add(resource.getDays().get(dateFormat.format(calendar.getTime())).getDailyCost());
             }
         }
         return data;
@@ -168,11 +177,9 @@ public class SpendPerUserAndResourceDao implements Service {
             if (!users.containsKey(userOwner)) {
                 users.put(userOwner, new User(userOwner));
             }
-
             if (!users.get(userOwner).getResources().containsKey(productName)) {
                 users.get(userOwner).addResource(new Resource(productName));
             }
-
             users.get(userOwner).getResources().get(productName).addDay(new Day(startDate, cost));
         }
         return users;
@@ -187,7 +194,6 @@ public class SpendPerUserAndResourceDao implements Service {
         public double cost;
         @JdbcManager.Column(value = "start_date")
         public String startDate;
-
     }
 
     public class User {
@@ -224,10 +230,8 @@ public class SpendPerUserAndResourceDao implements Service {
                     this.totalCost += day.getDailyCost();
                 }
             }
-
             return this.totalCost;
         }
-
     }
 
     public class Resource {

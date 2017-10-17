@@ -1,22 +1,31 @@
 package db;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public enum Scale {
-    HUNDRED("hundred dollars", 10),
-    DEFAULT("dollars", 1);
+    UNDER_TEN("dollars", 0.1, Arrays.asList(0,1,2,3,4,5,6,7,8,9,10)),
+    UNDER_HUNDRED("dollars", 1, new ArrayList<>()),
+    OVER_HUNDRED("hundred dollars", 10, Arrays.asList(0,1,2,3,4,5,6,7,8,9,10));
 
     private final String name;
-    private final int divideBy;
+    private final double divideBy;
+    private final List<Integer> yAxisLabels;
 
-    Scale(String name, int divideBy) {
+    Scale(String name, double divideBy, List<Integer> yAxisLabels) {
         this.name = name;
         this.divideBy = divideBy;
+        this.yAxisLabels = yAxisLabels;
     }
 
-    public String getName() {
+    public String getSuffix() {
         return name;
     }
 
-    public int getDivideBy() {
+    public double getDivideBy() {
         return divideBy;
     }
+
+    public List<Integer> getyAxisLabels() {return yAxisLabels;}
 }
