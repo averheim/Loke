@@ -44,8 +44,10 @@ public class SpendPerUserAndResourceDao implements Service {
             List<BarChartPlot> barChartPlots = createPlots(user, scale);
             BarChart chart = GCharts.newBarChart(barChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
-            charts.add(new Chart(user.getUserName(), chart.toURLString()));
-            log.info(chart.toURLString());
+            Chart c = new Chart(user.getUserName(), chart.toURLString());
+            c.setHtmlTable(createHtmlTable(user));
+            charts.add(c);
+            log.info(c.getHtmlURL() + "\n" + c.getHtmlTable());
         }
         return charts;
     }
@@ -106,7 +108,7 @@ public class SpendPerUserAndResourceDao implements Service {
         chart.setSize(chartWidth, chartHeight);
         chart.setBarWidth(AUTO_RESIZE);
         chart.setDataStacked(true);
-        chart.setTitle("Total spend for " + user.getUserName() + " the past 30 days " + decimalFormat(user.calculateTotalCost(),2) + " dollars");
+        chart.setTitle("Total cost for " + user.getUserName() + " the past 30 days " + decimalFormat(user.calculateTotalCost(), 2) + " dollars");
     }
 
     private List<BarChartPlot> createPlots(User user, Scale scale) {
@@ -197,6 +199,40 @@ public class SpendPerUserAndResourceDao implements Service {
             users.get(userOwner).getResources().get(productName).addDay(new Day(startDate, cost));
         }
         return users;
+    }
+
+    public String createHtmlTable(User user) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<div style=\"overflow: scroll;\">");
+        stringBuilder.append("<table class=\"table table-hover table-bordered table-responsive\">");
+        stringBuilder.append("<thead><th>Service</th>");
+
+        for (Calendar day : getDaysBack(30)) {
+            String date = simpleDateFormat.format(day.getTime());
+            stringBuilder.append("<th>").append(date).append("</th>");
+        }
+
+        stringBuilder.append("<th>Total</th>");
+        stringBuilder.append("</thead><tbody>");
+
+        for (Resource resource : user.getResources().values()) {
+            stringBuilder.append("<tr>");
+            stringBuilder.append("<td>").append(resource.getResourceName()).append("</td>");
+            for (Calendar calendar : getDaysBack(30)) {
+                Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
+                String cost = day != null ? decimalFormat(day.getDailyCost(),2) : "00.00";
+                stringBuilder.append("<td>").append("$").append(cost).append("</td>");
+            }
+            double total = 0;
+            for (Day day : resource.getDays().values()) {
+                total += day.getDailyCost();
+            }
+            stringBuilder.append("<td>").append("$").append(decimalFormat(total, 2)).append("</td>");
+        }
+        stringBuilder.append("</body><</table></div>");
+        System.out.println(stringBuilder.toString());
+        return stringBuilder.toString();
     }
 
     public static class SpendPerUserAndResource {
@@ -293,5 +329,32 @@ public class SpendPerUserAndResourceDao implements Service {
 
     }
 
-}
+    public class ChartDetail {
+        @JdbcManager.Column(value = "product_name")
+        private String productName;
+        @JdbcManager.Column(value = "resource_id")
+        private String resourceId;
+        @JdbcManager.Column(value = "cost")
+        private String cost;
 
+        public ChartDetail(String productName, String resourceId, String cost) {
+            this.productName = productName;
+            this.resourceId = resourceId;
+            this.cost = cost;
+        }
+
+        public String getProductName() {
+            return productName;
+        }
+
+        public String getResourceId() {
+            return resourceId;
+        }
+
+        public String getCost() {
+            return cost;
+        }
+
+
+    }
+}
