@@ -31,13 +31,20 @@ public class HtmlTableCreator {
     }
 
     private void createBody(List<String> body, int rowLength) {
+        List<List<String>> rows = getBodyRowsData(body, rowLength);
+
         sb.append("<tbody>");
-        List<List<String>> rows = getTableBodyRowsData(body, rowLength);
-        appendBodyRows(rows);
+        for (List<String> row : rows) {
+            sb.append("<tr>");
+            for (String data : row) {
+                sb.append("<td>").append(data).append("</td>");
+            }
+            sb.append("</tr>");
+        }
         sb.append("</tbody>");
     }
 
-    private List<List<String>> getTableBodyRowsData(List<String> body, int rowLength) {
+    private List<List<String>> getBodyRowsData(List<String> body, int rowLength) {
         List<List<String>> rows = new ArrayList<>();
         int counter = 0;
         List<String> row = new ArrayList<>();
@@ -51,16 +58,6 @@ public class HtmlTableCreator {
             }
         }
         return rows;
-    }
-
-    private void appendBodyRows(List<List<String>> rows) {
-        for (List<String> row : rows) {
-            sb.append("<tr>");
-            for (String data : row) {
-                sb.append("<td>").append(data).append("</td>");
-            }
-            sb.append("</tr>");
-        }
     }
 
     private void createFoot(String foot, int colspan) {
