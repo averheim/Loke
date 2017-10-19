@@ -2,13 +2,14 @@ package services.spendperuserlast30days;
 
 import com.googlecode.charts4j.*;
 import com.googlecode.charts4j.Color;
-import db.ResourceLoader;
+import utils.ResourceLoader;
 import db.athena.AthenaClient;
 import db.athena.JdbcManager;
 import model.Chart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import services.Service;
+import utils.HtmlTableCreator;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -16,7 +17,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.googlecode.charts4j.BarChart.*;
+import static com.googlecode.charts4j.BarChart.AUTO_RESIZE;
 import static com.googlecode.charts4j.Color.*;
 
 public class SpendPerUserAndResourceDao implements Service {
@@ -47,11 +48,44 @@ public class SpendPerUserAndResourceDao implements Service {
             BarChart chart = GCharts.newBarChart(barChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
             Chart c = new Chart(user.getUserName(), chart.toURLString());
-            c.setHtmlTable(createHtmlTable(user));
+            c.setHtmlTable(generateHTMLTable_1(user));
             charts.add(c);
             log.info(c.getHtmlURL() + "\n" + c.getHtmlTable());
         }
         return charts;
+    }
+
+    public String generateHTMLTable_1(User user) {
+        HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
+        List<Calendar> calendars = getDaysBack(30);
+
+        List<String> head = new ArrayList<>();
+        head.add("Service");
+        for (Calendar calendar : calendars) {
+            String date = simpleDateFormat.format(calendar.getTime());
+            head.add(date);
+        }
+        head.add("Total");
+
+        List<String> body = new ArrayList<>();
+        for (Resource resource : user.getResources().values()) {
+            body.add(resource.getResourceName());
+            double total = 0.0;
+            for (Calendar calendar : calendars) {
+                Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
+                String cost = day != null ? decimalFormat(day.getDailyCost(), 2) : "00.00";
+                total += day != null ? day.getDailyCost() : 0;
+                body.add(cost);
+            }
+            body.add(decimalFormat(total, 2));
+        }
+
+
+
+
+        return htmlTableCreator.createTable(head, body, null);
+
     }
 
     private Scale checkScale(User user) {
@@ -213,8 +247,20 @@ public class SpendPerUserAndResourceDao implements Service {
         return users;
     }
 
+    public static class SpendPerUserAndResource {
+
+        @JdbcManager.Column(value = "user_owner")
+        public String userOwner;
+        @JdbcManager.Column(value = "product_name")
+        public String productName;
+        @JdbcManager.Column(value = "cost")
+        public double cost;
+        @JdbcManager.Column(value = "start_date")
+        public String startDate;
+    }
+/*
     private String createHtmlTable(User user) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<div style=\"overflow-x: scroll;\">");
         stringBuilder.append("<table class=\"table table-hover table-bordered table-responsive\">");
@@ -248,15 +294,5 @@ public class SpendPerUserAndResourceDao implements Service {
         stringBuilder.append("</table></div>");
         return stringBuilder.toString();
     }
-
-    public static class SpendPerUserAndResource {
-        @JdbcManager.Column(value = "user_owner")
-        public String userOwner;
-        @JdbcManager.Column(value = "product_name")
-        public String productName;
-        @JdbcManager.Column(value = "cost")
-        public double cost;
-        @JdbcManager.Column(value = "start_date")
-        public String startDate;
-    }
+    */
 }
