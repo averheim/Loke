@@ -1,6 +1,7 @@
 import org.junit.Before;
 import org.junit.Test;
 import utils.HtmlTableCreator;
+import utils.TestResourceLoader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class HtmlTableCreatorTest {
         body.add("Jane");
         body.add("Doe");
 
-        String expected = loadResource("HtmlTableTest1.html");
+        String expected = TestResourceLoader.loadResource("HtmlTableTest1.html");
         String result = htmlTableCreator.createTable(head, body, null);
 
         assertEquals(expected, result);
@@ -61,17 +62,5 @@ public class HtmlTableCreatorTest {
         body.add("Jane");
 
         htmlTableCreator.createTable(head, body, null);
-    }
-
-    private String loadResource(String resourceName) throws IOException {
-        InputStream inputStream = ClassLoader.getSystemResourceAsStream(resourceName);
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder stringBuilder = new StringBuilder();
-        String line = bufferedReader.readLine();
-        while (line != null) {
-            stringBuilder.append(line.trim());
-            line = bufferedReader.readLine();
-        }
-        return stringBuilder.toString();
     }
 }

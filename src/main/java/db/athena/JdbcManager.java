@@ -180,6 +180,10 @@ public class JdbcManager {
         public List<T> getResultList() {
             return myRows;
         }
+
+        public void setResultList(List<T> myRows) {
+            this.myRows = myRows;
+        }
     }
     /**
      * Annotation interface for class fields to populate. Use this if field name differs from db column name/label.

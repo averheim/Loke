@@ -2,6 +2,7 @@ package services.spendperuserlast30days;
 
 import com.googlecode.charts4j.*;
 import com.googlecode.charts4j.Color;
+import utils.DecimalFormatter;
 import utils.ResourceLoader;
 import db.athena.AthenaClient;
 import db.athena.JdbcManager;
@@ -11,8 +12,6 @@ import org.apache.logging.log4j.Logger;
 import services.Service;
 import utils.HtmlTableCreator;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -50,7 +49,8 @@ public class SpendPerUserLast30DaysDao implements Service {
             List<BarChartPlot> barChartPlots = createPlots(user, scale);
             BarChart chart = GCharts.newBarChart(barChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
-            Chart c = new Chart(user.getUserName(), chart.toURLString());
+            Chart c = new Chart(user.getUserName());
+            c.setHtmlURL(chart.toURLString());
             c.setHtmlTable(generateHTMLTable(user));
             charts.add(c);
             log.info(c.getHtmlURL() + "\n" + c.getHtmlTable());
@@ -77,14 +77,14 @@ public class SpendPerUserLast30DaysDao implements Service {
             double resourceTotal = 0.0;
             for (Calendar calendar : calendars) {
                 Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                String cost = day != null ? decimalFormat(day.getDailyCost(), 2) : "00.00";
+                String cost = day != null ? DecimalFormatter.format(day.getDailyCost(), 2) : "00.00";
                 resourceTotal += day != null ? day.getDailyCost() : 0;
                 body.add(cost);
             }
             total += resourceTotal;
-            body.add(decimalFormat(resourceTotal, 2));
+            body.add(DecimalFormatter.format(resourceTotal, 2));
         }
-        String foot = "Total: $" + decimalFormat(total, 2);
+        String foot = "Total: $" + DecimalFormatter.format(total, 2);
         return htmlTableCreator.createTable(head, body, foot);
 
     }
@@ -146,7 +146,7 @@ public class SpendPerUserLast30DaysDao implements Service {
         chart.setSize(chartWidth, chartHeight);
         chart.setBarWidth(AUTO_RESIZE);
         chart.setDataStacked(true);
-        chart.setTitle("Total cost for " + user.getUserName() + " the past 30 days " + decimalFormat(user.calculateTotalCost(), 2) + " dollars");
+        chart.setTitle("Total cost for " + user.getUserName() + " the past 30 days " + DecimalFormatter.format(user.calculateTotalCost(), 2) + " dollars");
     }
 
     private List<BarChartPlot> createPlots(User user, Scale scale) {
@@ -155,20 +155,10 @@ public class SpendPerUserLast30DaysDao implements Service {
         for (Resource resource : user.getResources().values()) {
             List<Double> barSizeValues = getBarSize(resource, scale);
             double total = getResourceTotal(resource);
-            BarChartPlot barChartPlot = Plots.newBarChartPlot(Data.newData(barSizeValues), getNextColor(), resource.getResourceName() + " " + decimalFormat(total, 4));
+            BarChartPlot barChartPlot = Plots.newBarChartPlot(Data.newData(barSizeValues), getNextColor(), resource.getResourceName() + " " + DecimalFormatter.format(total, 4));
             plots.add(0, barChartPlot);
         }
         return plots;
-    }
-
-    private String decimalFormat(double aDouble, int decimals) {
-        StringBuilder pattern = new StringBuilder("#.");
-        for (int i = 0; i < decimals; i++) {
-            pattern.append("#");
-        }
-        DecimalFormat decimalFormat = new DecimalFormat(pattern.toString());
-        decimalFormat.setRoundingMode(RoundingMode.CEILING);
-        return decimalFormat.format(aDouble).replace(',', '.');
     }
 
     private double getResourceTotal(Resource resource) {
@@ -221,8 +211,8 @@ public class SpendPerUserLast30DaysDao implements Service {
 
     private Map<String, User> sendRequest() {
         Map<String, User> users = new HashMap<>();
-        JdbcManager.QueryResult<SpendPerUser> spendPerUserAndResourceQueryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerUser.class);
-        for (SpendPerUser spendPerUser : spendPerUserAndResourceQueryResult.getResultList()) {
+        JdbcManager.QueryResult<SpendPerUser> queryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerUser.class);
+        for (SpendPerUser spendPerUser : queryResult.getResultList()) {
             String userOwner = spendPerUser.userOwner;
             String startDate = spendPerUser.startDate;
             String productName = spendPerUser.productName;

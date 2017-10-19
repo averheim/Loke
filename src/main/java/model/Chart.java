@@ -7,10 +7,8 @@ public class Chart {
     private String htmlURL;
     private String htmlTable;
 
-    public Chart(String owner, String htmlURL) {
+    public Chart(String owner) {
         this.owner = owner;
-        this.htmlURL = htmlURL;
-        new HashMap<String, HashMap<String, String>>();
     }
 
     public String getOwner() {
@@ -19,6 +17,10 @@ public class Chart {
 
     public String getHtmlURL() {
         return htmlURL;
+    }
+
+    public void setHtmlURL(String htmlURL) {
+        this.htmlURL = htmlURL;
     }
 
     public String getHtmlTable() {
