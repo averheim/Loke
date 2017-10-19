@@ -1,4 +1,6 @@
+import org.junit.Before;
 import org.junit.Test;
+import utils.HtmlTableCreator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +12,12 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class HtmlTableCreatorTest {
+    private HtmlTableCreator htmlTableCreator;
+
+    @Before
+    public void setUp() throws Exception {
+        htmlTableCreator = new HtmlTableCreator();
+    }
 
     @Test
     public void onlyHeadAndBody_returnsNoFoot() throws Exception {
@@ -24,9 +32,35 @@ public class HtmlTableCreatorTest {
         body.add("Doe");
 
         String expected = loadResource("HtmlTableTest1.html");
-        String result = new HtmlTableCreator().createTable(head, body, null);
+        String result = htmlTableCreator.createTable(head, body, null);
 
         assertEquals(expected, result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void headIsBiggerThanBody_TrowsIllegalArgumentException() throws Exception {
+        List<String> head = new ArrayList<>();
+        head.add("First name");
+        head.add("Last name");
+
+        List<String> body = new ArrayList<>();
+        body.add("John");
+
+        htmlTableCreator.createTable(head, body, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void bodyAndHeadIsNotDivisible_ThrowsIllegalArgumentException() throws Exception {
+        List<String> head = new ArrayList<>();
+        head.add("First name");
+        head.add("Last name");
+
+        List<String> body = new ArrayList<>();
+        body.add("John");
+        body.add("Doe");
+        body.add("Jane");
+
+        htmlTableCreator.createTable(head, body, null);
     }
 
     private String loadResource(String resourceName) throws IOException {

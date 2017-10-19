@@ -11,6 +11,9 @@ public class HtmlTableCreator {
     }
 
     public String createTable(List<String> head, List<String> body, String foot) {
+        if(body.size() % head.size() != 0){
+            throw new IllegalArgumentException("The head is not proportionate to the body");
+        }
         sb.append("<div style=\"overflow: scroll;\">");
         sb.append("<table class=\"table table-hover table-bordered table-responsive\">");
         createHead(head);

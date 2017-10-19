@@ -20,16 +20,19 @@ import java.util.*;
 import static com.googlecode.charts4j.BarChart.AUTO_RESIZE;
 import static com.googlecode.charts4j.Color.*;
 
-public class SpendPerUserAndResourceDao implements Service {
-    private static final Logger log = LogManager.getLogger(SpendPerUserAndResourceDao.class);
+public class SpendPerUserLast30DaysDao implements Service {
+    private static final Logger log = LogManager.getLogger(SpendPerUserLast30DaysDao.class);
     private AthenaClient athenaClient;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserAndProductLast30Days.sql");
+    private HtmlTableCreator htmlTableCreator;
+
 
     private int colorCounter = 0;
 
-    public SpendPerUserAndResourceDao(AthenaClient athenaClient) {
+    public SpendPerUserLast30DaysDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator) {
         this.athenaClient = athenaClient;
+        this.htmlTableCreator = htmlTableCreator;
     }
 
     @Override
@@ -48,15 +51,14 @@ public class SpendPerUserAndResourceDao implements Service {
             BarChart chart = GCharts.newBarChart(barChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
             Chart c = new Chart(user.getUserName(), chart.toURLString());
-            c.setHtmlTable(generateHTMLTable_1(user));
+            c.setHtmlTable(generateHTMLTable(user));
             charts.add(c);
             log.info(c.getHtmlURL() + "\n" + c.getHtmlTable());
         }
         return charts;
     }
 
-    public String generateHTMLTable_1(User user) {
-        HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
+    public String generateHTMLTable(User user) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
         List<Calendar> calendars = getDaysBack(30);
 
@@ -69,22 +71,21 @@ public class SpendPerUserAndResourceDao implements Service {
         head.add("Total");
 
         List<String> body = new ArrayList<>();
+        double total = 0.0;
         for (Resource resource : user.getResources().values()) {
             body.add(resource.getResourceName());
-            double total = 0.0;
+            double resourceTotal = 0.0;
             for (Calendar calendar : calendars) {
                 Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
                 String cost = day != null ? decimalFormat(day.getDailyCost(), 2) : "00.00";
-                total += day != null ? day.getDailyCost() : 0;
+                resourceTotal += day != null ? day.getDailyCost() : 0;
                 body.add(cost);
             }
-            body.add(decimalFormat(total, 2));
+            total += resourceTotal;
+            body.add(decimalFormat(resourceTotal, 2));
         }
-
-
-
-
-        return htmlTableCreator.createTable(head, body, null);
+        String foot = "Total: $" + decimalFormat(total, 2);
+        return htmlTableCreator.createTable(head, body, foot);
 
     }
 
@@ -220,12 +221,12 @@ public class SpendPerUserAndResourceDao implements Service {
 
     private Map<String, User> sendRequest() {
         Map<String, User> users = new HashMap<>();
-        JdbcManager.QueryResult<SpendPerUserAndResource> spendPerUserAndResourceQueryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerUserAndResource.class);
-        for (SpendPerUserAndResource spendPerUserAndResource : spendPerUserAndResourceQueryResult.getResultList()) {
-            String userOwner = spendPerUserAndResource.userOwner;
-            String startDate = spendPerUserAndResource.startDate;
-            String productName = spendPerUserAndResource.productName;
-            double cost = spendPerUserAndResource.cost;
+        JdbcManager.QueryResult<SpendPerUser> spendPerUserAndResourceQueryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerUser.class);
+        for (SpendPerUser spendPerUser : spendPerUserAndResourceQueryResult.getResultList()) {
+            String userOwner = spendPerUser.userOwner;
+            String startDate = spendPerUser.startDate;
+            String productName = spendPerUser.productName;
+            double cost = spendPerUser.cost;
 
             if (!users.containsKey(userOwner)) {
                 users.put(userOwner, new User(userOwner));
@@ -233,7 +234,6 @@ public class SpendPerUserAndResourceDao implements Service {
             if (!users.get(userOwner).getResources().containsKey(productName)) {
                 users.get(userOwner).addResource(new Resource(productName));
             }
-
 
             Calendar date = Calendar.getInstance();
             try {
@@ -247,8 +247,7 @@ public class SpendPerUserAndResourceDao implements Service {
         return users;
     }
 
-    public static class SpendPerUserAndResource {
-
+    public static class SpendPerUser {
         @JdbcManager.Column(value = "user_owner")
         public String userOwner;
         @JdbcManager.Column(value = "product_name")
@@ -258,41 +257,4 @@ public class SpendPerUserAndResourceDao implements Service {
         @JdbcManager.Column(value = "start_date")
         public String startDate;
     }
-/*
-    private String createHtmlTable(User user) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<div style=\"overflow-x: scroll;\">");
-        stringBuilder.append("<table class=\"table table-hover table-bordered table-responsive\">");
-        stringBuilder.append("<thead><th>Service</th>");
-
-        for (Calendar day : getDaysBack(30)) {
-            String date = simpleDateFormat.format(day.getTime());
-            stringBuilder.append("<th>").append(date).append("</th>");
-        }
-
-        stringBuilder.append("<th>Total</th>");
-        stringBuilder.append("</thead><tbody>");
-
-        double total = 0;
-        for (Resource resource : user.getResources().values()) {
-            stringBuilder.append("<tr>");
-            stringBuilder.append("<td>").append(resource.getResourceName()).append("</td>");
-            for (Calendar calendar : getDaysBack(30)) {
-                Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                String cost = day != null ? decimalFormat(day.getDailyCost(), 2) : "00.00";
-                stringBuilder.append("<td>").append("$").append(cost).append("</td>");
-            }
-            double resourceTotal = 0;
-            for (Day day : resource.getDays().values()) {
-                resourceTotal += day.getDailyCost();
-                total += day.getDailyCost();
-            }
-            stringBuilder.append("<td>").append("$").append(decimalFormat(resourceTotal, 2)).append("</td>");
-        }
-        stringBuilder.append("</tbody><tfoot><tr><td colspan=\"32\">Total: $").append(decimalFormat(total, 2)).append("</td></tr></tfoot>");
-        stringBuilder.append("</table></div>");
-        return stringBuilder.toString();
-    }
-    */
 }

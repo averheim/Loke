@@ -1,18 +1,19 @@
 import services.Service;
-import services.spendperuserlast30days.SpendPerUserAndResourceDao;
+import services.spendperuserlast30days.SpendPerUserLast30DaysDao;
 import db.athena.AthenaClient;
+import utils.HtmlTableCreator;
 
 public class Loke {
-    private AthenaClient athenaClient;
     private Service spendPerUserAndResourceDao;
 
     public Loke() {
-        this.athenaClient = new AthenaClient("athena.eu-west-1.amazonaws.com",
+        AthenaClient athenaClient = new AthenaClient("athena.eu-west-1.amazonaws.com",
                 443,
                 "AKIAJXBQ66SAW4EAR3DQ",
                 "2X5w24XnkbUc+VINz3WJ7549mPHXu22y1WP7aJJn",
                 "s3://wsbillingreports");
-        this.spendPerUserAndResourceDao = new SpendPerUserAndResourceDao(athenaClient);
+        HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
+        this.spendPerUserAndResourceDao = new SpendPerUserLast30DaysDao(athenaClient, htmlTableCreator);
     }
 
     public void run() {
