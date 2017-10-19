@@ -1,4 +1,4 @@
-package db;
+package services.spendperuserlast30days;
 
 import java.util.ArrayList;
 import java.util.Arrays;

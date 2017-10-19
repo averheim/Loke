@@ -1,5 +1,5 @@
-import db.Service;
-import db.SpendPerUserAndResourceDao;
+import services.Service;
+import services.spendperuserlast30days.SpendPerUserAndResourceDao;
 import db.athena.AthenaClient;
 
 public class Loke {
