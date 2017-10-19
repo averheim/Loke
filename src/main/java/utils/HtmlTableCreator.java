@@ -15,7 +15,11 @@ public class HtmlTableCreator {
         sb.append("<table class=\"table table-hover table-bordered table-responsive\">");
         createHead(head);
         createBody(body, head.size());
-        createFoot(foot, head.size());
+
+        if (foot != null) {
+            createFoot(foot, head.size());
+        }
+
         sb.append("</table>");
         sb.append("</div>");
 
