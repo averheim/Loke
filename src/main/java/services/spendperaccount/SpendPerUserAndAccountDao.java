@@ -3,20 +3,21 @@ package services.spendperaccount;
 import db.athena.AthenaClient;
 import db.athena.JdbcManager;
 import model.Chart;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import services.Service;
 import services.resourcestartedlastweek.ResourceStartedLastWeekDao;
+import utils.DecimalFormatter;
 import utils.HtmlTableCreator;
 import utils.ResourceLoader;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SpendPerUserAndAccountDao implements Service {
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");
+    private static final Logger log = LogManager.getLogger(SpendPerUserAndAccountDao.class);
 
     public SpendPerUserAndAccountDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator) {
         this.athenaClient = athenaClient;
@@ -29,6 +30,33 @@ public class SpendPerUserAndAccountDao implements Service {
         return generateCharts(users);
     }
 
+    private List<Chart> generateCharts(Map<String, User> users) {
+        List<Chart> charts = new ArrayList<>();
+        for (User user : users.values()) {
+            Chart chart = new Chart(user.getUserOwner());
+            chart.setHtmlTable(generateHTMLTable(user));
+            charts.add(chart);
+            log.info(chart.getOwner() + "\n" + chart.getHtmlTable());
+        }
+        return charts;
+    }
+
+    public String generateHTMLTable(User user) {
+        List<String> head = new ArrayList<>();
+        head.addAll(Arrays.asList("Account", "Resource Name", "Cost"));
+
+        double totalCost = 0;
+        List<String> body = new ArrayList<>();
+        for (Resource resource : user.getResources()) {
+            body.add(resource.accountId);
+            body.add(resource.productName);
+            body.add(DecimalFormatter.format(resource.cost,2));
+            totalCost += resource.cost;
+        }
+
+        String foot = "Total: " + DecimalFormatter.format(totalCost, 2);
+        return htmlTableCreator.createTable(head, body, foot);
+    }
 
     private Map<String, User> sendRequest() {
         Map<String, User> users = new HashMap<>();
@@ -48,7 +76,7 @@ public class SpendPerUserAndAccountDao implements Service {
         @JdbcManager.Column(value = "account_id")
         public String accountId;
         @JdbcManager.Column(value = "product_name")
-        public String resourceName;
+        public String productName;
         @JdbcManager.Column(value = "resource_id")
         public String resourceId;
         @JdbcManager.Column(value = "start_date")

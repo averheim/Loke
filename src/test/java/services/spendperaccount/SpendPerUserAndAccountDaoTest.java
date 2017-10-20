@@ -21,30 +21,15 @@ public class SpendPerUserAndAccountDaoTest {
     }
 
 
-    private Resource createDbResponse(String userOwner, String accountId, String resourceName, String resourceId, String startDate, double cost) {
+    private Resource createDbResponse(String userOwner, String accountId, String productName, String resourceId, String startDate, double cost) {
         Resource resource = new Resource();
         resource.userOwner = userOwner;
         resource.accountId = accountId;
-        resource.resourceName = resourceName;
+        resource.productName = productName;
         resource.resourceId = resourceId;
         resource.startDate = startDate;
         resource.cost = cost;
+        return resource;
     }
 
 }
-
-/*
-       @JdbcManager.Column(value = "user_owner")
-        private String userOwner;
-        @JdbcManager.Column(value = "account_id")
-        private String accountId;
-        @JdbcManager.Column(value = "product_name")
-        private String resourceName;
-        @JdbcManager.Column(value = "resource_id")
-        private String resourceId;
-        @JdbcManager.Column(value = "start_date")
-        private String startDate;
-        @JdbcManager.Column(value = "cost")
-        private String cost;
-    }
- */
