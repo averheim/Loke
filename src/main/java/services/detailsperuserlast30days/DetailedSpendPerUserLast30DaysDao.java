@@ -3,6 +3,7 @@ package services.detailsperuserlast30days;
 import db.athena.AthenaClient;
 import db.athena.JdbcManager;
 import model.Chart;
+import org.apache.log4j.Logger;
 import services.Service;
 import services.spendperuserlast30days.Day;
 import services.spendperuserlast30days.Resource;
@@ -20,6 +21,7 @@ public class DetailedSpendPerUserLast30DaysDao implements Service {
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/UserResourceCostDetails.sql");
+    private static final Logger log = Logger.getLogger(DetailedSpendPerUserLast30DaysDao.class);
 
 
     public DetailedSpendPerUserLast30DaysDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator) {
@@ -39,6 +41,7 @@ public class DetailedSpendPerUserLast30DaysDao implements Service {
             Chart chart = new Chart(user.userOwner);
             chart.setHtmlTable(generateHTMLTable(user));
             charts.add(chart);
+            log.info(chart.getOwner() + "\n" + chart.getHtmlTable());
         }
         return charts;
     }
