@@ -1,30 +1,25 @@
-package services.detailsperuserlast30days;
+package services.resourcestartedlastweek;
 
 import db.athena.AthenaClient;
 import db.athena.JdbcManager;
 import model.Chart;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import services.Service;
-import services.spendperuserlast30days.Day;
-import services.spendperuserlast30days.Resource;
-import services.spendperuserlast30days.SpendPerUserLast30DaysDao;
-import services.spendperuserlast30days.User;
 import utils.DecimalFormatter;
 import utils.HtmlTableCreator;
 import utils.ResourceLoader;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class DetailedSpendPerUserLast30DaysDao implements Service {
+public class ResourceStartedLastWeekDao implements Service {
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/UserResourceCostDetails.sql");
-    private static final Logger log = Logger.getLogger(DetailedSpendPerUserLast30DaysDao.class);
+    private static final Logger log = LogManager.getLogger(ResourceStartedLastWeekDao.class);
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
 
 
-    public DetailedSpendPerUserLast30DaysDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator) {
+    public ResourceStartedLastWeekDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
     }
@@ -38,7 +33,7 @@ public class DetailedSpendPerUserLast30DaysDao implements Service {
     private List<Chart> generateCharts(Map<String, User> users) {
         List<Chart> charts = new ArrayList<>();
         for (User user : users.values()) {
-            Chart chart = new Chart(user.userOwner);
+            Chart chart = new Chart(user.getUserOwner());
             chart.setHtmlTable(generateHTMLTable(user));
             charts.add(chart);
             log.info(chart.getOwner() + "\n" + chart.getHtmlTable());
@@ -50,15 +45,15 @@ public class DetailedSpendPerUserLast30DaysDao implements Service {
         List<String> head = new ArrayList<>();
         head.addAll(Arrays.asList("Account", "Resource Name", "Resource Id", "Start Date", "Cost"));
 
-        int totalCost = 0;
+        double totalCost = 0;
         List<String> body = new ArrayList<>();
-        for (DetailedSpendPerUser detailedSpendPerUser : user.getResources()) {
-            body.add(detailedSpendPerUser.account);
-            body.add(detailedSpendPerUser.productName);
-            body.add(detailedSpendPerUser.resourceId);
-            body.add(detailedSpendPerUser.startDate);
-            body.add(DecimalFormatter.format(detailedSpendPerUser.cost, 2));
-            totalCost += detailedSpendPerUser.cost;
+        for (DetailedResource detailedResource : user.getResources()) {
+            body.add(detailedResource.account);
+            body.add(detailedResource.productName);
+            body.add(detailedResource.resourceId);
+            body.add(detailedResource.startDate);
+            body.add(DecimalFormatter.format(detailedResource.cost, 2));
+            totalCost += detailedResource.cost;
         }
 
         String foot = "Total: " + DecimalFormatter.format(totalCost, 2);
@@ -67,18 +62,18 @@ public class DetailedSpendPerUserLast30DaysDao implements Service {
 
     private Map<String, User> sendRequest() {
         Map<String, User> users = new HashMap<>();
-        JdbcManager.QueryResult<DetailedSpendPerUser> queryResult = athenaClient.executeQuery(SQL_QUERY, DetailedSpendPerUser.class);
-        for (DetailedSpendPerUser detailedSpendPerUser : queryResult.getResultList()) {
-            if (!users.containsKey(detailedSpendPerUser.userOwner)) {
-                users.put(detailedSpendPerUser.userOwner, new User(detailedSpendPerUser.userOwner));
+        JdbcManager.QueryResult<DetailedResource> queryResult = athenaClient.executeQuery(SQL_QUERY, DetailedResource.class);
+        for (DetailedResource detailedResource : queryResult.getResultList()) {
+            if (!users.containsKey(detailedResource.userOwner)) {
+                users.put(detailedResource.userOwner, new User(detailedResource.userOwner));
             }
-            users.get(detailedSpendPerUser.userOwner).addResource(detailedSpendPerUser);
+            users.get(detailedResource.userOwner).addResource(detailedResource);
         }
         return users;
     }
 
-    public static class DetailedSpendPerUser {
-        @JdbcManager.Column(value = "linked_account_id")
+    public static class DetailedResource {
+        @JdbcManager.Column(value = "account_id")
         public String account;
         @JdbcManager.Column(value = "user_owner")
         public String userOwner;
@@ -94,7 +89,7 @@ public class DetailedSpendPerUserLast30DaysDao implements Service {
 
     public class User {
         private String userOwner;
-        private List<DetailedSpendPerUser> resources;
+        private List<ResourceStartedLastWeekDao.DetailedResource> resources;
 
         public User(String userOwner) {
             this.userOwner = userOwner;
@@ -105,11 +100,11 @@ public class DetailedSpendPerUserLast30DaysDao implements Service {
             return userOwner;
         }
 
-        public List<DetailedSpendPerUser> getResources() {
+        public List<DetailedResource> getResources() {
             return resources;
         }
 
-        public void addResource(DetailedSpendPerUser resource) {
+        public void addResource(DetailedResource resource) {
             resources.add(resource);
         }
     }

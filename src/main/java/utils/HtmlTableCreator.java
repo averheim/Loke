@@ -14,6 +14,7 @@ public class HtmlTableCreator {
         if(body.size() % head.size() != 0){
             throw new IllegalArgumentException("The head is not proportionate to the body");
         }
+        sb.setLength(0);
         sb.append("<div style=\"overflow: scroll;\">");
         sb.append("<table class=\"table table-hover table-bordered table-responsive\">");
         createHead(head);

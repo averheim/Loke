@@ -1,12 +1,12 @@
 import services.Service;
-import services.detailsperuserlast30days.DetailedSpendPerUserLast30DaysDao;
+import services.resourcestartedlastweek.ResourceStartedLastWeekDao;
 import services.spendperuserlast30days.SpendPerUserLast30DaysDao;
 import db.athena.AthenaClient;
 import utils.HtmlTableCreator;
 
 public class Loke {
     private Service spendPerUserAndResourceDao;
-    private Service detailedSpendPerUserLast30DaysDao;
+    private Service resourceStartedLastWeekDao;
 
     public Loke() {
         AthenaClient athenaClient = new AthenaClient("athena.eu-west-1.amazonaws.com",
@@ -16,11 +16,11 @@ public class Loke {
                 "s3://wsbillingreports");
         HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
         this.spendPerUserAndResourceDao = new SpendPerUserLast30DaysDao(athenaClient, htmlTableCreator);
-        this.detailedSpendPerUserLast30DaysDao = new DetailedSpendPerUserLast30DaysDao(athenaClient, htmlTableCreator);
+        this.resourceStartedLastWeekDao = new ResourceStartedLastWeekDao(athenaClient, htmlTableCreator);
     }
 
     public void run() {
         //spendPerUserAndResourceDao.getCharts();
-        detailedSpendPerUserLast30DaysDao.getCharts();
+        resourceStartedLastWeekDao.getCharts();
     }
 }
