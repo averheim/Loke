@@ -20,7 +20,7 @@ public class Loke {
     }
 
     public void run() {
-        //spendPerUserAndResourceDao.getCharts();
+        spendPerUserAndResourceDao.getCharts();
         resourceStartedLastWeekDao.getCharts();
     }
 }

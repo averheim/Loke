@@ -10,6 +10,9 @@ import utils.DecimalFormatter;
 import utils.HtmlTableCreator;
 import utils.ResourceLoader;
 
+import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class ResourceStartedLastWeekDao implements Service {
@@ -52,7 +55,7 @@ public class ResourceStartedLastWeekDao implements Service {
             body.add(detailedResource.productName);
             body.add(detailedResource.resourceId);
             body.add(detailedResource.startDate);
-            body.add(DecimalFormatter.format(detailedResource.cost, 2));
+            body.add(DecimalFormatter.format(detailedResource.cost,2));
             totalCost += detailedResource.cost;
         }
 
@@ -87,7 +90,7 @@ public class ResourceStartedLastWeekDao implements Service {
         public double cost;
     }
 
-    public class User {
+    private class User {
         private String userOwner;
         private List<ResourceStartedLastWeekDao.DetailedResource> resources;
 

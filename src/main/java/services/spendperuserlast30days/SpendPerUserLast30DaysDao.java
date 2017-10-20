@@ -12,6 +12,9 @@ import org.apache.logging.log4j.Logger;
 import services.Service;
 import utils.HtmlTableCreator;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -216,7 +219,6 @@ public class SpendPerUserLast30DaysDao implements Service {
             String userOwner = spendPerUser.userOwner;
             String startDate = spendPerUser.startDate;
             String productName = spendPerUser.productName;
-            double cost = spendPerUser.cost;
 
             if (!users.containsKey(userOwner)) {
                 users.put(userOwner, new User(userOwner));
@@ -231,7 +233,7 @@ public class SpendPerUserLast30DaysDao implements Service {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            Day day = new Day(date, cost);
+            Day day = new Day(date, spendPerUser.cost);
             users.get(userOwner).getResources().get(productName).addDay(dateFormat.format(day.getDate().getTime()), day);
         }
         return users;
