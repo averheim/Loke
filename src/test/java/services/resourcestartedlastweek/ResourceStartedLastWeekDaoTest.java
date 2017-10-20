@@ -31,8 +31,8 @@ public class ResourceStartedLastWeekDaoTest {
     @Test
     public void name() throws Exception {
         List<DetailedResource> resultList = new ArrayList<>();
-        resultList.add(createUser("QA", "john.doe", "Ec2", "i-01def0a998e06c30e", "2017-09-19", 1000));
-        resultList.add(createUser("Nova", "john.doe", "Ec2", "v-01def02344e06c30e", "2017-09-20", 1000));
+        resultList.add(createDbResponse("QA", "john.doe", "Ec2", "i-01def0a998e06c30e", "2017-09-19", 1000));
+        resultList.add(createDbResponse("Nova", "john.doe", "Ec2", "v-01def02344e06c30e", "2017-09-20", 1000));
 
         JdbcManager.QueryResult queryResult = new JdbcManager.QueryResult();
         queryResult.setResultList(resultList);
@@ -47,7 +47,7 @@ public class ResourceStartedLastWeekDaoTest {
 
 
 
-    public DetailedResource createUser(String account, String userOwner, String productName, String resourceId, String startDate, double cost) {
+    public DetailedResource createDbResponse(String account, String userOwner, String productName, String resourceId, String startDate, double cost) {
         DetailedResource spendPerUser = new DetailedResource();
         spendPerUser.account = account;
         spendPerUser.userOwner = userOwner;

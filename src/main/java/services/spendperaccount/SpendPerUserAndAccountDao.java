@@ -30,7 +30,6 @@ public class SpendPerUserAndAccountDao implements Service {
     }
 
 
-
     private Map<String, User> sendRequest() {
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<Resource> queryResult = athenaClient.executeQuery(SQL_QUERY, Resource.class);
@@ -43,19 +42,19 @@ public class SpendPerUserAndAccountDao implements Service {
         return users;
     }
 
-    public class Resource {
+    public static class Resource {
         @JdbcManager.Column(value = "user_owner")
-        private String userOwner;
+        public String userOwner;
         @JdbcManager.Column(value = "account_id")
-        private String accountId;
+        public String accountId;
         @JdbcManager.Column(value = "product_name")
-        private String resourceName;
+        public String resourceName;
         @JdbcManager.Column(value = "resource_id")
-        private String resourceId;
+        public String resourceId;
         @JdbcManager.Column(value = "start_date")
-        private String startDate;
+        public String startDate;
         @JdbcManager.Column(value = "cost")
-        private String cost;
+        public double cost;
     }
 
     private class User {
