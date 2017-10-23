@@ -1,9 +1,10 @@
-package services.resourcestartedlastweek;
+package services;
 
 import db.athena.AthenaClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import services.ResourceStartedLastWeekDao;
 import utils.HtmlTableCreator;
 import utils.ResourceLoader;
 import utils.TestResourceLoader;
@@ -14,9 +15,9 @@ import java.util.List;
 import static db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
-import static services.resourcestartedlastweek.ResourceStartedLastWeekDao.*;
+import static services.ResourceStartedLastWeekDao.*;
 
-public class SpendPerUserAndAccountStartedLastWeekDaoTest {
+public class ResourceStartedLastWeekDaoTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;

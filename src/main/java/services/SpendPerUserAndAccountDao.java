@@ -1,11 +1,10 @@
-package services.spendperaccount;
+package services;
 
 import db.athena.AthenaClient;
 import db.athena.JdbcManager;
 import model.Chart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import services.Service;
 import utils.CalendarGenerator;
 import utils.HtmlTableCreator;
 import utils.ResourceLoader;
@@ -47,7 +46,6 @@ public class SpendPerUserAndAccountDao implements Service {
         List<String> htmlTables = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
 
-        // head
         List<String> head = new ArrayList<>();
         List<Calendar> calendars = CalendarGenerator.getDaysBack(30);
         head.add("Product Name");
@@ -56,7 +54,6 @@ public class SpendPerUserAndAccountDao implements Service {
         }
         head.add("Total");
 
-        // body
         for (Account account : user.getAccounts().values()) {
             List<String> body = new ArrayList<>();
             double total = 0;
@@ -69,8 +66,6 @@ public class SpendPerUserAndAccountDao implements Service {
                 for (Calendar calendar : calendars) {
                     Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
                     if (day != null) {
-                        System.out.println("DEN TOG SIG HIT");
-                        System.out.println("KOSTAR: " + day.getDailyCost());
                         body.add(String.valueOf(day.getDailyCost()));
                         resourceTotal += day.getDailyCost();
                     } else {
@@ -81,13 +76,12 @@ public class SpendPerUserAndAccountDao implements Service {
                 total += resourceTotal;
             }
             resources.clear();
-            // foot
+
             String foot = "Total: " + total;
             String caption = account.getAccountId();
             htmlTables.add(htmlTableCreator.createTable(head, body, foot, caption));
 
         }
-        // caption
         return htmlTables;
     }
 
@@ -117,7 +111,6 @@ public class SpendPerUserAndAccountDao implements Service {
                 e.printStackTrace();
             }
             Day day = new Day(date, spendPerUserAndAccount.cost);
-            System.out.println("PUT: " + dateFormat.format(day.getDate().getTime()));
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }
         return users;

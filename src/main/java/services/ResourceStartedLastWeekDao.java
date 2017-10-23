@@ -1,11 +1,10 @@
-package services.resourcestartedlastweek;
+package services;
 
 import db.athena.AthenaClient;
 import db.athena.JdbcManager;
 import model.Chart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import services.Service;
 import utils.DecimalFormatter;
 import utils.HtmlTableCreator;
 import utils.ResourceLoader;

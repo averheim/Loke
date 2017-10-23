@@ -1,7 +1,7 @@
 import services.Service;
-import services.resourcestartedlastweek.ResourceStartedLastWeekDao;
-import services.spendperaccount.SpendPerUserAndAccountDao;
-import services.spendperuserlast30days.SpendPerUserLast30DaysDao;
+import services.ResourceStartedLastWeekDao;
+import services.SpendPerUserAndAccountDao;
+import services.SpendPerUserDao;
 import db.athena.AthenaClient;
 import utils.HtmlTableCreator;
 
@@ -17,7 +17,7 @@ public class Loke {
                 "2X5w24XnkbUc+VINz3WJ7549mPHXu22y1WP7aJJn",
                 "s3://wsbillingreports");
         HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
-        this.spendPerUserAndResourceDao = new SpendPerUserLast30DaysDao(athenaClient, htmlTableCreator);
+        this.spendPerUserAndResourceDao = new SpendPerUserDao(athenaClient, htmlTableCreator);
         this.resourceStartedLastWeekDao = new ResourceStartedLastWeekDao(athenaClient, htmlTableCreator);
         this.spendPerUserAndResourceDao = new SpendPerUserAndAccountDao(athenaClient, htmlTableCreator);
     }

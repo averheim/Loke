@@ -1,8 +1,9 @@
-package services.spendperaccount;
+package services;
 
 import db.athena.AthenaClient;
 import org.junit.Before;
 import org.junit.Test;
+import services.SpendPerUserAndAccountDao;
 import utils.CalendarGenerator;
 import utils.HtmlTableCreator;
 import utils.ResourceLoader;
@@ -17,7 +18,7 @@ import static db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static services.spendperaccount.SpendPerUserAndAccountDao.*;
+import static services.SpendPerUserAndAccountDao.*;
 
 public class SpendPerUserAndAccountDaoTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");

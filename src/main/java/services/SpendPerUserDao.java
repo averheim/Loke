@@ -1,4 +1,4 @@
-package services.spendperuserlast30days;
+package services;
 
 import com.googlecode.charts4j.*;
 import com.googlecode.charts4j.Color;
@@ -10,7 +10,6 @@ import db.athena.JdbcManager;
 import model.Chart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import services.Service;
 import utils.HtmlTableCreator;
 
 import java.text.ParseException;
@@ -20,8 +19,8 @@ import java.util.*;
 import static com.googlecode.charts4j.BarChart.AUTO_RESIZE;
 import static com.googlecode.charts4j.Color.*;
 
-public class SpendPerUserLast30DaysDao implements Service {
-    private static final Logger log = LogManager.getLogger(SpendPerUserLast30DaysDao.class);
+public class SpendPerUserDao implements Service {
+    private static final Logger log = LogManager.getLogger(SpendPerUserDao.class);
     private AthenaClient athenaClient;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserAndProductLast30Days.sql");
@@ -30,7 +29,7 @@ public class SpendPerUserLast30DaysDao implements Service {
 
     private int colorCounter = 0;
 
-    public SpendPerUserLast30DaysDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator) {
+    public SpendPerUserDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
     }
@@ -235,5 +234,83 @@ public class SpendPerUserLast30DaysDao implements Service {
         public double cost;
         @JdbcManager.Column(value = "start_date")
         public String startDate;
+    }
+
+    public class User {
+        private String userName;
+        private HashMap<String, Resource> resources;
+
+        private double totalCost;
+
+        public User(String userName) {
+            this.userName = userName;
+            this.resources = new HashMap<>();
+            this.totalCost = 0;
+        }
+
+        public void addResource(Resource resource) {
+            this.resources.put(resource.getResourceName(), resource);
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public HashMap<String, Resource> getResources() {
+            return resources;
+        }
+
+        public Resource getResource(String resourceName) {
+            return this.resources.get(resourceName);
+        }
+
+        public double calculateTotalCost() {
+            for (Resource resource : resources.values()) {
+                for (Day day : resource.getDays().values()) {
+                    this.totalCost += day.getDailyCost();
+                }
+            }
+            return this.totalCost;
+        }
+    }
+
+    public class Resource {
+        private String resourceName;
+        private HashMap<String, Day> days;
+
+        public Resource(String resourceName) {
+            this.resourceName = resourceName;
+            this.days = new HashMap<>();
+        }
+
+        public void addDay(String key, Day day) {
+            this.days.put(key, day);
+        }
+
+        public String getResourceName() {
+            return resourceName;
+        }
+
+        public HashMap<String, Day> getDays() {
+            return days;
+        }
+    }
+
+    public class Day {
+        private Calendar date;
+        private double dailyCost;
+
+        public Day(Calendar date, double dailyCost) {
+            this.date = date;
+            this.dailyCost = dailyCost;
+        }
+
+        public Calendar getDate() {
+            return date;
+        }
+
+        public double getDailyCost() {
+            return dailyCost;
+        }
     }
 }
