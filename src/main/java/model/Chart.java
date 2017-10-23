@@ -1,14 +1,16 @@
 package model;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Chart {
     private String owner;
     private String htmlURL;
-    private String htmlTable;
+    private List<String> htmlTables;
 
     public Chart(String owner) {
         this.owner = owner;
+        this.htmlTables = new ArrayList<>();
     }
 
     public String getOwner() {
@@ -23,11 +25,15 @@ public class Chart {
         this.htmlURL = htmlURL;
     }
 
-    public String getHtmlTable() {
-        return htmlTable;
+    public List<String> getHtmlTables() {
+        return htmlTables;
     }
 
-    public void setHtmlTable(String htmlTable) {
-        this.htmlTable = htmlTable;
+    public void addHtmlTable(String htmlTable) {
+        this.htmlTables.add(htmlTable);
+    }
+
+    public void addHtmlTables(List<String> htmlTables) {
+        this.htmlTables.addAll(htmlTables);
     }
 }

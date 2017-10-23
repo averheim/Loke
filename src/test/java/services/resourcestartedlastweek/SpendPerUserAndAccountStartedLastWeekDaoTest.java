@@ -1,7 +1,6 @@
 package services.resourcestartedlastweek;
 
 import db.athena.AthenaClient;
-import db.athena.JdbcManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -12,11 +11,13 @@ import utils.TestResourceLoader;
 import java.util.ArrayList;
 import java.util.List;
 
+import static db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static services.resourcestartedlastweek.ResourceStartedLastWeekDao.*;
 
-public class ResourceStartedLastWeekDaoTest {
+public class SpendPerUserAndAccountStartedLastWeekDaoTest {
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private ResourceStartedLastWeekDao resourceStartedLastWeekDao;
@@ -29,19 +30,18 @@ public class ResourceStartedLastWeekDaoTest {
     }
 
     @Test
-    public void name() throws Exception {
+    public void test_1() throws Exception {
         List<DetailedResource> resultList = new ArrayList<>();
         resultList.add(createDbResponse("QA", "john.doe", "Ec2", "i-01def0a998e06c30e", "2017-09-19", 1000));
         resultList.add(createDbResponse("Nova", "john.doe", "Ec2", "v-01def02344e06c30e", "2017-09-20", 1000));
 
-        JdbcManager.QueryResult queryResult = new JdbcManager.QueryResult();
+        QueryResult queryResult = new QueryResult();
         queryResult.setResultList(resultList);
 
-        String query = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
-        Mockito.when(athenaClient.executeQuery(query, DetailedResource.class)).thenReturn(queryResult);
+        Mockito.when(athenaClient.executeQuery(SQL_QUERY, DetailedResource.class)).thenReturn(queryResult);
 
-        String result = resourceStartedLastWeekDao.getCharts().get(0).getHtmlTable();
-        String expected = TestResourceLoader.loadResource("DetailedHtmlTableTest1.html");
+        String expected = TestResourceLoader.loadResource("ResourceStartedLastWeekTableTest1.html");
+        String result = resourceStartedLastWeekDao.getCharts().get(0).getHtmlTables().get(0);
         assertEquals(expected, result);
     }
 

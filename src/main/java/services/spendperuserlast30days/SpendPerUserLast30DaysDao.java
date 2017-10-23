@@ -2,6 +2,7 @@ package services.spendperuserlast30days;
 
 import com.googlecode.charts4j.*;
 import com.googlecode.charts4j.Color;
+import utils.CalendarGenerator;
 import utils.DecimalFormatter;
 import utils.ResourceLoader;
 import db.athena.AthenaClient;
@@ -12,9 +13,6 @@ import org.apache.logging.log4j.Logger;
 import services.Service;
 import utils.HtmlTableCreator;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -25,7 +23,7 @@ import static com.googlecode.charts4j.Color.*;
 public class SpendPerUserLast30DaysDao implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerUserLast30DaysDao.class);
     private AthenaClient athenaClient;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserAndProductLast30Days.sql");
     private HtmlTableCreator htmlTableCreator;
 
@@ -54,16 +52,16 @@ public class SpendPerUserLast30DaysDao implements Service {
             configureChart(xAxisLabels, chart, user, scale);
             Chart c = new Chart(user.getUserName());
             c.setHtmlURL(chart.toURLString());
-            c.setHtmlTable(generateHTMLTable(user));
+            c.addHtmlTable(generateHTMLTable(user));
             charts.add(c);
-            log.info(c.getHtmlURL() + "\n" + c.getHtmlTable());
+            log.info(c.getHtmlURL() + "\n" + c.getHtmlTables());
         }
         return charts;
     }
 
     public String generateHTMLTable(User user) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
-        List<Calendar> calendars = getDaysBack(30);
+        List<Calendar> calendars = CalendarGenerator.getDaysBack(30);
 
         List<String> head = new ArrayList<>();
         head.add("Service");
@@ -88,12 +86,12 @@ public class SpendPerUserLast30DaysDao implements Service {
             body.add(DecimalFormatter.format(resourceTotal, 2));
         }
         String foot = "Total: $" + DecimalFormatter.format(total, 2);
-        return htmlTableCreator.createTable(head, body, foot);
+        return htmlTableCreator.createTable(head, body, foot, null);
 
     }
 
     private Scale checkScale(User user) {
-        List<Calendar> daysBack = getDaysBack(30);
+        List<Calendar> daysBack = CalendarGenerator.getDaysBack(30);
         List<Double> dailyCosts = new ArrayList<>();
 
         for (Calendar calendar : daysBack) {
@@ -113,20 +111,9 @@ public class SpendPerUserLast30DaysDao implements Service {
         return Scale.UNDER_HUNDRED;
     }
 
-    private List<Calendar> getDaysBack(int amount) {
-        List<Calendar> days = new ArrayList<>();
-
-        for (int i = 0; i < amount; i++) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.DATE, -i);
-            days.add(0, calendar);
-        }
-        return days;
-    }
-
     private List<String> getXAxisLabels() {
         List<String> labels = new ArrayList<>();
-        List<Calendar> days = new ArrayList<>(getDaysBack(30));
+        List<Calendar> days = new ArrayList<>(CalendarGenerator.getDaysBack(30));
 
         // add labels
         for (Calendar day : days) {
@@ -182,7 +169,7 @@ public class SpendPerUserLast30DaysDao implements Service {
 
     private List<Double> getDailyCosts(Resource resource) {
         List<Double> data = new ArrayList<>();
-        List<Calendar> calendars = getDaysBack(30);
+        List<Calendar> calendars = CalendarGenerator.getDaysBack(30);
         for (Calendar calendar : calendars) {
             Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
             if (day == null) {

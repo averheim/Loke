@@ -10,9 +10,6 @@ import utils.DecimalFormatter;
 import utils.HtmlTableCreator;
 import utils.ResourceLoader;
 
-import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.util.*;
 
 public class ResourceStartedLastWeekDao implements Service {
@@ -37,16 +34,16 @@ public class ResourceStartedLastWeekDao implements Service {
         List<Chart> charts = new ArrayList<>();
         for (User user : users.values()) {
             Chart chart = new Chart(user.getUserOwner());
-            chart.setHtmlTable(generateHTMLTable(user));
+            chart.addHtmlTable(generateHTMLTable(user));
             charts.add(chart);
-            log.info(chart.getOwner() + "\n" + chart.getHtmlTable());
+            log.info(chart.getOwner() + "\n" + chart.getHtmlTables());
         }
         return charts;
     }
 
     public String generateHTMLTable(User user) {
         List<String> head = new ArrayList<>();
-        head.addAll(Arrays.asList("Account", "Resource Name", "Resource Id", "Start Date", "Cost"));
+        head.addAll(Arrays.asList("Account", "Product Name", "Resource Id", "Start Date", "Cost"));
 
         double totalCost = 0;
         List<String> body = new ArrayList<>();
@@ -60,7 +57,7 @@ public class ResourceStartedLastWeekDao implements Service {
         }
 
         String foot = "Total: " + DecimalFormatter.format(totalCost, 2);
-        return htmlTableCreator.createTable(head, body, foot);
+        return htmlTableCreator.createTable(head, body, foot, null);
     }
 
     private Map<String, User> sendRequest() {
