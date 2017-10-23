@@ -119,7 +119,7 @@ public class SpendPerUserAndAccountDao implements Service {
     public static class SpendPerUserAndAccount {
         @JdbcManager.Column(value = "user_owner")
         public String userOwner;
-        @JdbcManager.Column(value = "account_id")
+        @JdbcManager.Column(value = "linked_account_id")
         public String accountId;
         @JdbcManager.Column(value = "product_name")
         public String productName;

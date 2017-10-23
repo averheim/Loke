@@ -1,0 +1,56 @@
+package services;
+
+import db.athena.AthenaClient;
+import model.Chart;
+import model.User;
+import utils.HtmlTableCreator;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ChartGenerator {
+    private List<Service> services;
+
+    public ChartGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator) {
+        services = new ArrayList<>();
+        services.add(new SpendPerUserDao(athena, htmlTableCreator));
+        services.add(new SpendPerUserAndAccountDao(athena, htmlTableCreator));
+        services.add(new ResourceStartedLastWeekDao(athena, htmlTableCreator));
+    }
+
+    public List<User> generateChartsOrderedByUser() {
+        return orderChartsByUser(getCharts());
+    }
+
+    private List<Chart> getCharts() {
+        List<Chart> charts = new ArrayList<>();
+        for (Service service : services) {
+            charts.addAll(service.getCharts());
+        }
+        return charts;
+    }
+
+    private List<User> orderChartsByUser(List<Chart> charts) {
+        List<User> users = new ArrayList<>();
+        for (Chart chart : charts) {
+            if (users.stream().noneMatch(user -> user.getUserName().equals(chart.getOwner()))) {
+                users.add(new User(chart.getOwner()));
+            }
+            User user = findUser(users, chart.getOwner());
+            if (user != null) {
+                user.getCharts().add(chart);
+            }
+        }
+        return users;
+    }
+
+    private User findUser(List<User> users, String owner) {
+        for (User user : users) {
+            if (user.getUserName().equals(owner)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+}
