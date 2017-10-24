@@ -1,6 +1,6 @@
-package services;
+package loke.services;
 
-import model.Chart;
+import loke.model.Chart;
 
 import java.util.List;
 

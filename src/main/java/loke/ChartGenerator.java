@@ -1,9 +1,13 @@
-package services;
+package loke;
 
-import db.athena.AthenaClient;
-import model.Chart;
-import model.User;
-import utils.HtmlTableCreator;
+import loke.db.athena.AthenaClient;
+import loke.model.Chart;
+import loke.model.User;
+import loke.HtmlTableCreator;
+import loke.services.ResourceStartedLastWeekDao;
+import loke.services.Service;
+import loke.services.SpendPerUserAndAccountDao;
+import loke.services.SpendPerUserDao;
 
 import java.util.ArrayList;
 import java.util.List;

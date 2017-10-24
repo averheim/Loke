@@ -1,21 +1,20 @@
-package services;
+package loke.services;
 
-import db.athena.AthenaClient;
+import loke.db.athena.AthenaClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import services.ResourceStartedLastWeekDao;
-import utils.HtmlTableCreator;
-import utils.ResourceLoader;
-import utils.TestResourceLoader;
+import loke.HtmlTableCreator;
+import loke.utils.ResourceLoader;
+import loke.utils.TestResourceLoader;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static db.athena.JdbcManager.*;
+import static loke.db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
-import static services.ResourceStartedLastWeekDao.*;
+import static loke.services.ResourceStartedLastWeekDao.*;
 
 public class ResourceStartedLastWeekDaoTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");

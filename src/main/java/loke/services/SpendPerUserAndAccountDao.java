@@ -1,13 +1,13 @@
-package services;
+package loke.services;
 
-import db.athena.AthenaClient;
-import db.athena.JdbcManager;
-import model.Chart;
+import loke.db.athena.AthenaClient;
+import loke.db.athena.JdbcManager;
+import loke.model.Chart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import utils.CalendarGenerator;
-import utils.HtmlTableCreator;
-import utils.ResourceLoader;
+import loke.utils.CalendarGenerator;
+import loke.HtmlTableCreator;
+import loke.utils.ResourceLoader;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -78,8 +78,8 @@ public class SpendPerUserAndAccountDao implements Service {
             resources.clear();
 
             String foot = "Total: " + total;
-            String caption = account.getAccountId();
-            htmlTables.add(htmlTableCreator.createTable(head, body, foot, caption));
+            String heading = account.getAccountId();
+            htmlTables.add(htmlTableCreator.createTable(head, body, foot, heading));
 
         }
         return htmlTables;

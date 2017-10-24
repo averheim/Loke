@@ -1,13 +1,13 @@
-package services;
+package loke.services;
 
-import db.athena.AthenaClient;
-import db.athena.JdbcManager;
-import model.Chart;
+import loke.db.athena.AthenaClient;
+import loke.db.athena.JdbcManager;
+import loke.model.Chart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import utils.DecimalFormatter;
-import utils.HtmlTableCreator;
-import utils.ResourceLoader;
+import loke.utils.DecimalFormatter;
+import loke.HtmlTableCreator;
+import loke.utils.ResourceLoader;
 
 import java.util.*;
 

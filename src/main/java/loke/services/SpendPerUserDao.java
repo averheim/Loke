@@ -1,16 +1,16 @@
-package services;
+package loke.services;
 
 import com.googlecode.charts4j.*;
 import com.googlecode.charts4j.Color;
-import utils.CalendarGenerator;
-import utils.DecimalFormatter;
-import utils.ResourceLoader;
-import db.athena.AthenaClient;
-import db.athena.JdbcManager;
-import model.Chart;
+import loke.utils.CalendarGenerator;
+import loke.utils.DecimalFormatter;
+import loke.utils.ResourceLoader;
+import loke.db.athena.AthenaClient;
+import loke.db.athena.JdbcManager;
+import loke.model.Chart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import utils.HtmlTableCreator;
+import loke.HtmlTableCreator;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

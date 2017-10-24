@@ -1,7 +1,7 @@
-import model.User;
-import services.*;
-import db.athena.AthenaClient;
-import utils.HtmlTableCreator;
+package loke;
+
+import loke.model.User;
+import loke.db.athena.AthenaClient;
 
 import java.util.List;
 

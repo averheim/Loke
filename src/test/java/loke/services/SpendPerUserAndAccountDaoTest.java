@@ -1,24 +1,23 @@
-package services;
+package loke.services;
 
-import db.athena.AthenaClient;
+import loke.db.athena.AthenaClient;
 import org.junit.Before;
 import org.junit.Test;
-import services.SpendPerUserAndAccountDao;
-import utils.CalendarGenerator;
-import utils.HtmlTableCreator;
-import utils.ResourceLoader;
-import utils.TestResourceLoader;
+import loke.utils.CalendarGenerator;
+import loke.HtmlTableCreator;
+import loke.utils.ResourceLoader;
+import loke.utils.TestResourceLoader;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import static db.athena.JdbcManager.*;
+import static loke.db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static services.SpendPerUserAndAccountDao.*;
+import static loke.services.SpendPerUserAndAccountDao.*;
 
 public class SpendPerUserAndAccountDaoTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");

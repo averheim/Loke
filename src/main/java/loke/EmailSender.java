@@ -1,4 +1,5 @@
-package PACKAGE_NAME;
+package loke;
 
 public class EmailSender {
+
 }

@@ -1,4 +1,4 @@
-package db.athena;
+package loke.db.athena;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -186,7 +186,7 @@ public class JdbcManager {
         }
     }
     /**
-     * Annotation interface for class fields to populate. Use this if field name differs from db column name/label.
+     * Annotation interface for class fields to populate. Use this if field name differs from loke.db column name/label.
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
