@@ -32,7 +32,8 @@ public class SpendPerUserAndAccountDaoTest {
         CalendarGenerator.clock = clock;
         athenaClient = mock(AthenaClient.class);
         htmlTableCreator = new HtmlTableCreator();
-        spendPerUserAndAccountDao = new SpendPerUserAndAccountDao(athenaClient, htmlTableCreator);
+        String userOwnerRegExp = "";
+        spendPerUserAndAccountDao = new SpendPerUserAndAccountDao(athenaClient, htmlTableCreator, userOwnerRegExp);
     }
 
     @Test

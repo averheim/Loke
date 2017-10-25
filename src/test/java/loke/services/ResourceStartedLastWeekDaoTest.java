@@ -26,7 +26,8 @@ public class ResourceStartedLastWeekDaoTest {
     public void setUp() throws Exception {
         athenaClient = mock(AthenaClient.class);
         htmlTableCreator = new HtmlTableCreator();
-        resourceStartedLastWeekDao = new ResourceStartedLastWeekDao(athenaClient, htmlTableCreator);
+        String userOwnerRegExp = "";
+        resourceStartedLastWeekDao = new ResourceStartedLastWeekDao(athenaClient, htmlTableCreator, userOwnerRegExp);
     }
 
     @Test

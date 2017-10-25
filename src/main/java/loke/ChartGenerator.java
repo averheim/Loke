@@ -15,11 +15,11 @@ import java.util.List;
 public class ChartGenerator {
     private List<Service> services;
 
-    public ChartGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator) {
+    public ChartGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
         services = new ArrayList<>();
-        //services.add(new SpendPerUserDao(athena, htmlTableCreator));
-        services.add(new SpendPerUserAndAccountDao(athena, htmlTableCreator));
-        //services.add(new ResourceStartedLastWeekDao(athena, htmlTableCreator));
+        // services.add(new SpendPerUserDao(athena, htmlTableCreator, userOwnerRegExp));
+        services.add(new SpendPerUserAndAccountDao(athena, htmlTableCreator, userOwnerRegExp));
+        // services.add(new ResourceStartedLastWeekDao(athena, htmlTableCreator, userOwnerRegExp));
     }
 
     public List<User> generateChartsOrderedByUser() {

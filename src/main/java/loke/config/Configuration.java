@@ -7,6 +7,7 @@ public class Configuration {
     private String accessKey;
     private String secretAccessKey;
     private String stagingDir;
+    private String userOwnerRegExp;
 
     public Configuration() {
     }
@@ -57,5 +58,13 @@ public class Configuration {
 
     public void setStagingDir(String stagingDir) {
         this.stagingDir = stagingDir;
+    }
+
+    public String getUserOwnerRegExp() {
+        return userOwnerRegExp;
+    }
+
+    public void setUserOwnerRegExp(String userOwnerRegExp) {
+        this.userOwnerRegExp = userOwnerRegExp;
     }
 }

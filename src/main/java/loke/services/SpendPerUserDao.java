@@ -25,13 +25,15 @@ public class SpendPerUserDao implements Service {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserAndProductLast30Days.sql");
     private HtmlTableCreator htmlTableCreator;
+    private String userOwnerRegexp;
 
 
     private int colorCounter = 0;
 
-    public SpendPerUserDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator) {
+    public SpendPerUserDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegexp) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
+        this.userOwnerRegexp = userOwnerRegexp;
     }
 
     @Override
@@ -207,6 +209,10 @@ public class SpendPerUserDao implements Service {
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<SpendPerUser> queryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerUser.class);
         for (SpendPerUser spendPerUser : queryResult.getResultList()) {
+            if(!spendPerUser.userOwner.matches(userOwnerRegexp)) {
+                continue;
+            }
+
             String userOwner = spendPerUser.userOwner;
             String startDate = spendPerUser.startDate;
             String productName = spendPerUser.productName;
