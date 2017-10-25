@@ -10,7 +10,6 @@ FROM wsbillingreports.report_item
 WHERE blended_cost != 'BlendedCost'
       AND usage_start_date != ''
       AND usage_start_date != 'UsageStartDate'
-      AND user_owner LIKE 'osten.forshed'
       AND resource_id NOT IN
           (
             SELECT DISTINCT resource_id
