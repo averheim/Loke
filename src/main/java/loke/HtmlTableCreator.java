@@ -20,9 +20,11 @@ public class HtmlTableCreator {
         this.sb = new StringBuilder();
     }
 
-    public String createTable(List<String> head, List<String> body, String foot, String heading) {
-        if (body.size() % head.size() != 0) {
-            throw new IllegalArgumentException("The head is not proportionate to the body");
+    public String createTable(List<String> head, List<List<String>> bodys, String foot, String heading) {
+        for (List<String> body : bodys) {
+            if (body.size() % head.size() != 0) {
+                throw new IllegalArgumentException("The head is not proportionate to the body. Head size: " + head.size() + " Body size: " + body.size());
+            }
         }
 
         // empty string builder
@@ -38,7 +40,9 @@ public class HtmlTableCreator {
 
 
         createHead(head);
-        createBody(body, head.size());
+        for (List<String> body : bodys) {
+            createBody(body, head.size());
+        }
 
         if (foot != null) {
             createFoot(foot, head.size());
@@ -84,6 +88,7 @@ public class HtmlTableCreator {
         List<List<String>> rows = new ArrayList<>();
         int counter = 0;
         List<String> row = new ArrayList<>();
+
         for (String string : body) {
             row.add(string);
             counter++;
@@ -93,6 +98,7 @@ public class HtmlTableCreator {
                 counter = 0;
             }
         }
+
         return rows;
     }
 

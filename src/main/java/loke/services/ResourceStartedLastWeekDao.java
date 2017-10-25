@@ -42,6 +42,7 @@ public class ResourceStartedLastWeekDao implements Service {
 
     public String generateHTMLTable(User user) {
         List<String> head = new ArrayList<>();
+        List<List<String>> bodys = new ArrayList<>();
         head.addAll(Arrays.asList("Account", "Product Name", "Resource Id", "Start Date", "Cost"));
 
         double totalCost = 0;
@@ -54,9 +55,10 @@ public class ResourceStartedLastWeekDao implements Service {
             body.add(DecimalFormatter.format(detailedResource.cost,2));
             totalCost += detailedResource.cost;
         }
+        bodys.add(body);
 
         String foot = "Total: " + DecimalFormatter.format(totalCost, 2);
-        return htmlTableCreator.createTable(head, body, foot, null);
+        return htmlTableCreator.createTable(head, bodys, foot, null);
     }
 
     private Map<String, User> sendRequest() {
@@ -72,7 +74,7 @@ public class ResourceStartedLastWeekDao implements Service {
     }
 
     public static class DetailedResource {
-        @JdbcManager.Column(value = "account_id")
+        @JdbcManager.Column(value = "account_name")
         public String account;
         @JdbcManager.Column(value = "user_owner")
         public String userOwner;

@@ -63,6 +63,7 @@ public class SpendPerUserDao implements Service {
         List<Calendar> calendars = CalendarGenerator.getDaysBack(30);
 
         List<String> head = new ArrayList<>();
+        List<List<String>> bodys = new ArrayList<>();
         head.add("Service");
         for (Calendar calendar : calendars) {
             String date = simpleDateFormat.format(calendar.getTime());
@@ -77,15 +78,16 @@ public class SpendPerUserDao implements Service {
             double resourceTotal = 0.0;
             for (Calendar calendar : calendars) {
                 Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                String cost = day != null ? DecimalFormatter.format(day.getDailyCost(), 2) : "00.00";
+                String cost = day != null ? DecimalFormatter.format(day.getDailyCost(), 2) : "0.00";
                 resourceTotal += day != null ? day.getDailyCost() : 0;
                 body.add(cost);
             }
             total += resourceTotal;
             body.add(DecimalFormatter.format(resourceTotal, 2));
+            bodys.add(body);
         }
         String foot = "Total: $" + DecimalFormatter.format(total, 2);
-        return htmlTableCreator.createTable(head, body, foot, null);
+        return htmlTableCreator.createTable(head, bodys, foot, null);
 
     }
 
@@ -195,6 +197,9 @@ public class SpendPerUserDao implements Service {
         colors.add(ORANGE);
         Color color = colors.get(colorCounter);
         colorCounter++;
+        if(colorCounter == colors.size()){
+            colorCounter = 0;
+        }
         return color;
     }
 
