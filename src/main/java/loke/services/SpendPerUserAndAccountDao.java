@@ -16,13 +16,15 @@ import java.util.*;
 public class SpendPerUserAndAccountDao implements Service {
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
+    private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");
     private static final Logger log = LogManager.getLogger(SpendPerUserAndAccountDao.class);
 
-    public SpendPerUserAndAccountDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator) {
+    public SpendPerUserAndAccountDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
+        this.userOwnerRegExp = userOwnerRegExp;
     }
 
     @Override
@@ -89,6 +91,10 @@ public class SpendPerUserAndAccountDao implements Service {
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<SpendPerUserAndAccount> queryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerUserAndAccount.class);
         for (SpendPerUserAndAccount spendPerUserAndAccount : queryResult.getResultList()) {
+            if (!spendPerUserAndAccount.userOwner.matches(userOwnerRegExp)) {
+                continue;
+            }
+
             if (!users.containsKey(spendPerUserAndAccount.userOwner)) {
                 users.put(spendPerUserAndAccount.userOwner, new User(spendPerUserAndAccount.userOwner));
             }
@@ -113,6 +119,7 @@ public class SpendPerUserAndAccountDao implements Service {
             Day day = new Day(date, spendPerUserAndAccount.cost);
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }
+
         return users;
     }
 
