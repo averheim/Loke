@@ -8,7 +8,7 @@ SELECT
   sum(cast(blended_cost AS DOUBLE)) AS cost
 FROM wsbillingreports.report_item
   INNER JOIN wsbillingreports.account
-    ON wsbillingreports.report_item.linked_account_id = wsbillingreports.account.id
+          ON wsbillingreports.report_item.linked_account_id = wsbillingreports.account.id
 WHERE blended_cost != 'BlendedCost'
       AND blended_cost != 'blended_cost'
       AND user_owner != ''
