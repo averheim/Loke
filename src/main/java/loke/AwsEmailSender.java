@@ -44,7 +44,6 @@ public class AwsEmailSender implements Presenter {
                             .withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(htmlBody)))
                             .withSubject(new Content().withCharset("UTF-8").withData(subject)))
                     .withSource(from);
-
             client.sendEmail(request);
             log.info("Email sent!");
         } catch (Exception ex) {
