@@ -15,15 +15,16 @@ public class AwsEmailSender implements Presenter {
     private static final Logger log = LogManager.getLogger(AwsEmailSender.class);
     private AmazonSimpleEmailService client;
     private String from;
-    private String to = "christopher.olsson.praktik@widespace.com";
+    private String toEmailDomainName;
     private String subject = "Test";
     private String htmlBody = "<h1>Amazon SES test (AWS SDK for Java)</h1>"
             + "<p>This email was sent with <a href='https://aws.amazon.com/ses/'>"
             + "Amazon SES</a> using the <a href='https://aws.amazon.com/sdk-for-java/'>"
             + "AWS SDK for Java</a>";
 
-    public AwsEmailSender(String from, String accessKey, String secretAccessKey, String region) {
+    public AwsEmailSender(String from, String toEmailDomainName, String accessKey, String secretAccessKey, String region) {
         this.from = from;
+        this.toEmailDomainName = toEmailDomainName;
         setupAwsClient(accessKey, secretAccessKey, region);
     }
 
@@ -39,7 +40,7 @@ public class AwsEmailSender implements Presenter {
     public void present(List<User> users) {
         try {
             SendEmailRequest request = new SendEmailRequest()
-                    .withDestination(new Destination().withToAddresses(to))
+                    .withDestination(new Destination().withToAddresses("christopher.olsson.praktik@" + toEmailDomainName))
                     .withMessage(new Message()
                             .withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(htmlBody)))
                             .withSubject(new Content().withCharset("UTF-8").withData(subject)))

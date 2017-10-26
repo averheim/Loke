@@ -9,7 +9,8 @@ public class Configuration {
     private int port;
     private String stagingDir;
     private String userOwnerRegExp;
-    private String fromEmailAdress;
+    private String fromEmailAddress;
+    private String toEmailDomainName;
 
     public Configuration() {
     }
@@ -78,11 +79,19 @@ public class Configuration {
         this.userOwnerRegExp = userOwnerRegExp;
     }
 
-    public String getFromEmailAdress() {
-        return fromEmailAdress;
+    public String getFromEmailAddress() {
+        return fromEmailAddress;
     }
 
-    public void setFromEmailAdress(String fromEmailAdress) {
-        this.fromEmailAdress = fromEmailAdress;
+    public void setFromEmailAddress(String fromEmailAddress) {
+        this.fromEmailAddress = fromEmailAddress;
+    }
+
+    public String getToEmailDomainName() {
+        return toEmailDomainName;
+    }
+
+    public void setToEmailDomainName(String toEmailDomainName) {
+        this.toEmailDomainName = toEmailDomainName;
     }
 }

@@ -18,7 +18,8 @@ public class Loke {
         HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
         this.chartGenerator = new ChartGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp());
         this.presenter = new AwsEmailSender(
-                configuration.getFromEmailAdress(),
+                configuration.getFromEmailAddress(),
+                configuration.getToEmailDomainName(),
                 configuration.getAccessKey(),
                 configuration.getSecretAccessKey(),
                 configuration.getRegion());
