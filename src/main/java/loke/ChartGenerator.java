@@ -17,9 +17,9 @@ public class ChartGenerator {
 
     public ChartGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
         services = new ArrayList<>();
-        // services.add(new SpendPerUserDao(athena, htmlTableCreator, userOwnerRegExp));
+        //services.add(new SpendPerUserDao(athena, htmlTableCreator, userOwnerRegExp));
         services.add(new SpendPerUserAndAccountDao(athena, htmlTableCreator, userOwnerRegExp));
-        // services.add(new ResourceStartedLastWeekDao(athena, htmlTableCreator, userOwnerRegExp));
+        //services.add(new ResourceStartedLastWeekDao(athena, htmlTableCreator, userOwnerRegExp));
     }
 
     public List<User> generateChartsOrderedByUser() {

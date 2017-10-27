@@ -10,18 +10,17 @@ import loke.utils.CalendarGenerator;
 import loke.HtmlTableCreator;
 import loke.utils.ResourceLoader;
 
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class SpendPerUserAndAccountDao implements Service {
+    private static final Logger log = LogManager.getLogger(SpendPerUserAndAccountDao.class);
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");
-    private static final Logger log = LogManager.getLogger(SpendPerUserAndAccountDao.class);
 
     public SpendPerUserAndAccountDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
         this.athenaClient = athenaClient;
@@ -49,31 +48,34 @@ public class SpendPerUserAndAccountDao implements Service {
     private List<String> generateHTMLTables(User user) {
         List<String> htmlTables = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
+        double total = 0.00;
         List<String> head = new ArrayList<>();
-        List<List<String>> bodys = new ArrayList<>();
-        List<Calendar> calendars = CalendarGenerator.getDaysBack(30);
+        List<List<String>> bodies = new ArrayList<>();
+        List<Calendar> calendarDaysBack = CalendarGenerator.getDaysBack(30);
+        List<String> accountsTotals = new ArrayList<>();
+        accountsTotals.add("Total: ($)");
 
-        head.add("Product Name");
-        for (Calendar calendar : calendars) {
+        // Head
+        head.add("Products by Account");
+        for (Calendar calendar : calendarDaysBack) {
             head.add(simpleDateFormat.format(calendar.getTime()));
         }
-        head.add("Total");
+        head.add("Total ($)");
 
+        // Bodies
         for (Account account : user.getAccounts().values()) {
-            List<String> accountHeader = new ArrayList<>();
-            for (int i = 0; i < 32; i++) {
-                accountHeader.add(account.getAccountId());
-            }
-
             List<String> body = new ArrayList<>();
-            double total = 0;
-            List<Resource> resources = new ArrayList<>();
-            resources.addAll(account.getResources().values());
+            List<String> accountRow = new ArrayList<>();
+            accountRow.add(account.getAccountId() + " Total ($)");
+
+            List<Resource> resources = new ArrayList<>(account.getResources().values());
             Collections.reverse(resources);
+
             for (Resource resource : resources) {
-                body.add(resource.productName);
-                double resourceTotal = 0;
-                for (Calendar calendar : calendars) {
+                body.add(resource.productName + " ($)");
+                double resourceTotal = 0.00;
+
+                for (Calendar calendar : calendarDaysBack) {
                     Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
                     if (day != null) {
                         body.add(DecimalFormatter.format(day.getDailyCost(), 2));
@@ -83,69 +85,37 @@ public class SpendPerUserAndAccountDao implements Service {
                     }
                 }
                 body.add(DecimalFormatter.format(resourceTotal, 2));
-                total += resourceTotal;
             }
 
-            bodys.add(accountHeader);
-            bodys.add(body);
-            resources.clear();
-
-
-            String foot = "Total: " + DecimalFormatter.format(total, 2);
-            String heading = account.getAccountId();
-
-        }
-        htmlTables.add(htmlTableCreator.createTable(head, bodys, null, null));
-        return htmlTables;
-
-        /*
-        head.add("Product Name");
-        for (Calendar calendar : calendars) {
-            head.add(simpleDateFormat.format(calendar.getTime()));
-        }
-        head.add("Total");
-
-        for (Account account : user.getAccounts().values()) {
-            List<String> body = new ArrayList<>();
-
-            accountHeader.add(account.getAccountId());
-
-            List<Resource> resources = new ArrayList<>();
-            resources.addAll(account.getResources().values());
-            Collections.reverse(resources);
-
-            for (Calendar calendar : calendars) {
-                double dailyTotal = 0;
+            double accountsTotal = 0;
+            double accountTotal = 0;
+            for (Calendar calendar : calendarDaysBack) {
+                double dailyTotal = 0.00;
                 for (Resource resource : resources) {
-                    Day day = resource.getDays().get(simpleDateFormat.format(calendar.getTime()));
+                    Day day = resource.days.get(dateFormat.format(calendar.getTime()));
                     if (day != null) {
                         dailyTotal += day.getDailyCost();
                     }
-                    accountHeader.add(DecimalFormatter.format(dailyTotal, 2));
                 }
-            }
-            accountHeader.add("Hej");
-
-            for (Resource resource : resources) {
-                body.add(resource.getProductName());
-                double resourceTotal = 0;
-                for (Calendar calendar : calendars) {
-                    Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                    body.add(day != null ? DecimalFormatter.format(day.getDailyCost(), 2) : "0.00");
-                    resourceTotal += day != null ? day.getDailyCost() : 0.00;
+                if (dailyTotal > 0) {
+                    accountRow.add(DecimalFormatter.format(dailyTotal, 2));
+                } else {
+                    accountRow.add("0.00");
                 }
-                body.add(DecimalFormatter.format(resourceTotal, 2));
+                accountTotal += dailyTotal;
             }
+            accountRow.add(DecimalFormatter.format(accountTotal, 2));
 
-            bodys.add(accountHeader);
-            bodys.add(body);
-
-            accountHeader.clear();
-            body.clear();
+            bodies.add(accountRow);
+            bodies.add(body);
+            resources.clear();
         }
-        htmlTables.add(htmlTableCreator.createTable(head, bodys, null, null));
 
-*/
+        bodies.add(accountsTotals);
+
+        String heading = "Monthly account details";
+        htmlTables.add(htmlTableCreator.createMarkedRowTable(head, bodies, null, heading, "Account"));
+        return htmlTables;
     }
 
     private Map<String, User> sendRequest() {
@@ -180,7 +150,6 @@ public class SpendPerUserAndAccountDao implements Service {
             Day day = new Day(date, spendPerUserAndAccount.cost);
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }
-
         return users;
     }
 
@@ -259,7 +228,7 @@ public class SpendPerUserAndAccountDao implements Service {
         }
     }
 
-    public class Day {
+    private class Day {
         private Calendar date;
         private double dailyCost;
 

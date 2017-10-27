@@ -10,47 +10,70 @@ public class HtmlTableCreator {
             + "border: 1px solid #ddd; ";
     private final static String TABLE_STYLE = " border-collapse: collapse; "
             + "border-spacing: 0; "
-            + "width: 100%; ";
+            + "width: 100%; "
+            + "font-size: small; ";
     private final static String TH_TD_STYLE = " border: 1px solid #ddd; "
-            + "text-align: left; "
             + "padding: 8px; ";
+    private final static String LEFT_ALIGN = " text-align: left; ";
+    private final static String RIGHT_ALIGN = " text-align: right; ";
+    private final static String FIXED_WIDTH = " width: 270px; ";
     private final StringBuilder sb;
 
     public HtmlTableCreator() {
         this.sb = new StringBuilder();
     }
 
-    public String createTable(List<String> head, List<List<String>> bodys, String foot, String heading) {
-        for (List<String> body : bodys) {
-            if (body.size() % head.size() != 0) {
-                throw new IllegalArgumentException("The head is not proportionate to the body. Head size: " + head.size() + " Body size: " + body.size());
-            }
+    public String createTable(List<String> head, List<String> body, String foot, String heading) {
+        if (body.size() % head.size() != 0) {
+            throw new IllegalArgumentException("The head is not proportionate to the body. " +
+                    "Head size: " + head.size() + " Body size: " + body.size());
         }
 
-        // empty string builder
         sb.setLength(0);
         sb.append("<div style=\"").append(OUTER_DIV_STYLE).append("\">");
-
         if (heading != null) {
             createHeading(heading);
         }
-
-        sb.append("<div style=\"").append(INNER_DIV_STYLE).append("\">");
-        sb.append("<table style=\"").append(TABLE_STYLE).append("\">");
-
-
+        sb.append("<div style=\"").append(INNER_DIV_STYLE).append("\">")
+                .append("<table style=\"").append(TABLE_STYLE).append("\">");
         createHead(head);
-        for (List<String> body : bodys) {
-            createBody(body, head.size());
+
+        createBody(body, head.size());
+
+        if (foot != null) {
+            createFoot(foot, head.size());
+        }
+        sb.append("</table>")
+                .append("</div>")
+                .append("</div>");
+
+        return sb.toString();
+    }
+
+    public String createMarkedRowTable(List<String> head, List<List<String>> bodies, String foot, String heading, String rowMarkKeyWord) {
+        for (List<String> body : bodies) {
+            if (body.size() % head.size() != 0) {
+                throw new IllegalArgumentException("The head is not proportionate to the body. " +
+                        "Head size: " + head.size() + " Body size: " + body.size());
+            }
+        }
+        sb.setLength(0);
+        sb.append("<div style=\"").append(OUTER_DIV_STYLE).append("\">");
+        if (heading != null) {
+            createHeading(heading);
+        }
+        sb.append("<div style=\"").append(INNER_DIV_STYLE).append("\">")
+                .append("<table style=\"").append(TABLE_STYLE).append("\">");
+        createHead(head);
+
+        for (List<String> body : bodies) {
+            createMarkedRowBody(body, head.size(), rowMarkKeyWord);
         }
 
         if (foot != null) {
             createFoot(foot, head.size());
         }
-
-        sb.append("</table>");
-        sb.append("</div>");
-        sb.append("</div>");
+        sb.append("</table>").append("</div>").append("</div>");
 
         return sb.toString();
     }
@@ -60,13 +83,45 @@ public class HtmlTableCreator {
     }
 
     private void createHead(List<String> head) {
-        sb.append("<thead>");
-        sb.append("<tr>");
-        for (String string : head) {
-            sb.append("<th nowrap style=\"").append(TH_TD_STYLE).append("\">").append(string).append("</th>");
+        sb.append("<thead>").append("<tr>");
+
+        for (int i = 0; i < head.size(); i++) {
+            if (i == 0) {
+                sb.append("<th nowrap style=\"")
+                        .append(TH_TD_STYLE)
+                        .append(FIXED_WIDTH)
+                        .append("\">").append(head.get(i))
+                        .append("</th>");
+            } else {
+                sb.append("<th nowrap style=\"")
+                        .append(TH_TD_STYLE)
+                        .append("\">").append(head.get(i))
+                        .append("</th>");
+            }
         }
-        sb.append("</tr>");
-        sb.append("</thead>");
+        sb.append("</tr>").append("</thead>");
+    }
+
+    private void createMarkedRowBody(List<String> body, int rowLength, String accountRowKeyWord) {
+        List<List<String>> rows = getBodyRowsData(body, rowLength);
+        sb.append("<tbody>");
+        for (List<String> row : rows) {
+            for (String s : row) {
+                sb.append((s.contains(accountRowKeyWord)) ? "<tr style=\"background-color: #b3ccff;\">" : "<tr>");
+                break;
+            }
+            for (int i = 0; i < row.size(); i++) {
+                if (i == 0) {
+                    sb.append("<td style=\"").append(TH_TD_STYLE).append(LEFT_ALIGN).append(FIXED_WIDTH).append("\">")
+                            .append(row.get(i)).append("</td>");
+                } else {
+                    sb.append("<td style=\"").append(TH_TD_STYLE).append(RIGHT_ALIGN).append("\">")
+                            .append(row.get(i)).append("</td>");
+                }
+            }
+            sb.append("</tr>");
+        }
+        sb.append("</tbody>");
     }
 
     private void createBody(List<String> body, int rowLength) {
@@ -75,8 +130,17 @@ public class HtmlTableCreator {
         sb.append("<tbody>");
         for (List<String> row : rows) {
             sb.append((rowCount % 2 == 0) ? "<tr style=\"background-color: #f2f2f2\">" : "<tr>");
-            for (String data : row) {
-                sb.append("<td style=\"").append(TH_TD_STYLE).append("\">").append(data).append("</td>");
+
+            for (int i = 0; i < row.size(); i++) {
+                if (i == 0) {
+                    sb.append("<td style=\"").append(TH_TD_STYLE).append(LEFT_ALIGN).append(FIXED_WIDTH).append("\">")
+                            .append(row.get(i))
+                            .append("</td>");
+                } else {
+                    sb.append("<td style=\"").append(TH_TD_STYLE).append(RIGHT_ALIGN).append("\">")
+                            .append(row.get(i))
+                            .append("</td>");
+                }
             }
             sb.append("</tr>");
             rowCount++;
@@ -103,10 +167,12 @@ public class HtmlTableCreator {
     }
 
     private void createFoot(String foot, int colspan) {
-        sb.append("<tfoot>");
-        sb.append("<tr>");
-        sb.append("<td style=\"").append(TH_TD_STYLE).append("\" colspan=\"").append(colspan).append("\">").append(foot).append("</td>");
-        sb.append("</tr>");
-        sb.append("</tfoot>");
+        sb.append("<tfoot>")
+                .append("<tr>")
+                .append("<td style=\"").append(TH_TD_STYLE).append("\" colspan=\"").append(colspan).append("\">")
+                .append(foot)
+                .append("</td>")
+                .append("</tr>")
+                .append("</tfoot>");
     }
 }

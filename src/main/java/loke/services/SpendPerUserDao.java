@@ -65,7 +65,6 @@ public class SpendPerUserDao implements Service {
         List<Calendar> calendars = CalendarGenerator.getDaysBack(30);
 
         List<String> head = new ArrayList<>();
-        List<List<String>> bodys = new ArrayList<>();
         head.add("Service");
         for (Calendar calendar : calendars) {
             String date = simpleDateFormat.format(calendar.getTime());
@@ -76,7 +75,7 @@ public class SpendPerUserDao implements Service {
         List<String> body = new ArrayList<>();
         double total = 0.0;
         for (Resource resource : user.getResources().values()) {
-            body.add(resource.getResourceName());
+            body.add(resource.getResourceName() + " ($)");
             double resourceTotal = 0.0;
             for (Calendar calendar : calendars) {
                 Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
@@ -86,11 +85,9 @@ public class SpendPerUserDao implements Service {
             }
             total += resourceTotal;
             body.add(DecimalFormatter.format(resourceTotal, 2));
-            bodys.add(body);
         }
-        String foot = "Total: $" + DecimalFormatter.format(total, 2);
-        return htmlTableCreator.createTable(head, bodys, foot, null);
-
+        String foot = "Total: " + DecimalFormatter.format(total, 2) + " ($)";
+        return htmlTableCreator.createTable(head, body, foot, null);
     }
 
     private Scale checkScale(User user) {
@@ -247,7 +244,7 @@ public class SpendPerUserDao implements Service {
         public String startDate;
     }
 
-    public class User {
+    private class User {
         private String userName;
         private HashMap<String, Resource> resources;
 
@@ -285,7 +282,7 @@ public class SpendPerUserDao implements Service {
         }
     }
 
-    public class Resource {
+    private class Resource {
         private String resourceName;
         private HashMap<String, Day> days;
 
@@ -307,7 +304,7 @@ public class SpendPerUserDao implements Service {
         }
     }
 
-    public class Day {
+    private class Day {
         private Calendar date;
         private double dailyCost;
 
