@@ -1,5 +1,6 @@
 package loke.services;
 
+import com.amazonaws.athena.jdbc.shaded.com.amazonaws.services.datacatalog.model.Decimal;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Chart;
@@ -48,74 +49,96 @@ public class SpendPerUserAndAccountDao implements Service {
     private List<String> generateHTMLTables(User user) {
         List<String> htmlTables = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
-        double total = 0.00;
         List<String> head = new ArrayList<>();
-        List<List<String>> bodies = new ArrayList<>();
         List<Calendar> calendarDaysBack = CalendarGenerator.getDaysBack(30);
-        List<String> accountsTotals = new ArrayList<>();
-        accountsTotals.add("Total: ($)");
 
-        // Head
         head.add("Products by Account");
         for (Calendar calendar : calendarDaysBack) {
             head.add(simpleDateFormat.format(calendar.getTime()));
         }
         head.add("Total ($)");
 
-        // Bodies
+        List<List<String>> bodies = new ArrayList<>();
         for (Account account : user.getAccounts().values()) {
-            List<String> body = new ArrayList<>();
-            List<String> accountRow = new ArrayList<>();
-            accountRow.add(account.getAccountId() + " Total ($)");
-
             List<Resource> resources = new ArrayList<>(account.getResources().values());
             Collections.reverse(resources);
 
-            for (Resource resource : resources) {
-                body.add(resource.productName + " ($)");
-                double resourceTotal = 0.00;
-
-                for (Calendar calendar : calendarDaysBack) {
-                    Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                    if (day != null) {
-                        body.add(DecimalFormatter.format(day.getDailyCost(), 2));
-                        resourceTotal += day.getDailyCost();
-                    } else {
-                        body.add("0.00");
-                    }
-                }
-                body.add(DecimalFormatter.format(resourceTotal, 2));
-            }
-
-            double accountsTotal = 0;
-            double accountTotal = 0;
-            for (Calendar calendar : calendarDaysBack) {
-                double dailyTotal = 0.00;
-                for (Resource resource : resources) {
-                    Day day = resource.days.get(dateFormat.format(calendar.getTime()));
-                    if (day != null) {
-                        dailyTotal += day.getDailyCost();
-                    }
-                }
-                if (dailyTotal > 0) {
-                    accountRow.add(DecimalFormatter.format(dailyTotal, 2));
-                } else {
-                    accountRow.add("0.00");
-                }
-                accountTotal += dailyTotal;
-            }
-            accountRow.add(DecimalFormatter.format(accountTotal, 2));
-
-            bodies.add(accountRow);
-            bodies.add(body);
+            bodies.add(getAccountTotalRows(calendarDaysBack, account, resources));
+            bodies.add(getResourceRows(calendarDaysBack, resources));
             resources.clear();
         }
 
-        bodies.add(accountsTotals);
+        bodies.add(getTotalCostRow(user, calendarDaysBack));
 
         String heading = "Monthly account details";
         htmlTables.add(htmlTableCreator.createMarkedRowTable(head, bodies, null, heading, "Account"));
         return htmlTables;
+    }
+
+    private List<String> getAccountTotalRows(List<Calendar> calendarDaysBack, Account account, List<Resource> resources) {
+        List<String> accountRows = new ArrayList<>();
+        accountRows.add(account.getAccountId() + " Total ($)");
+
+        double accountTotal = 0;
+        for (Calendar calendar : calendarDaysBack) {
+            double dailyTotal = 0.00;
+            for (Resource resource : resources) {
+                Day day = resource.days.get(dateFormat.format(calendar.getTime()));
+                if (day != null) {
+                    dailyTotal += day.getDailyCost();
+                }
+            }
+            if (dailyTotal > 0) {
+                accountRows.add(DecimalFormatter.format(dailyTotal, 2));
+            } else {
+                accountRows.add("0.00");
+            }
+            accountTotal += dailyTotal;
+        }
+        accountRows.add(DecimalFormatter.format(accountTotal, 2));
+        return accountRows;
+    }
+
+    private List<String> getResourceRows(List<Calendar> calendarDaysBack, List<Resource> resources) {
+        List<String> resourceRows = new ArrayList<>();
+        for (Resource resource : resources) {
+            resourceRows.add(resource.productName + " ($)");
+            double resourceTotal = 0.00;
+
+            for (Calendar calendar : calendarDaysBack) {
+                Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
+                if (day != null) {
+                    resourceRows.add(DecimalFormatter.format(day.getDailyCost(), 2));
+                    resourceTotal += day.getDailyCost();
+                } else {
+                    resourceRows.add("0.00");
+                }
+            }
+            resourceRows.add(DecimalFormatter.format(resourceTotal, 2));
+        }
+        return resourceRows;
+    }
+
+    private List<String> getTotalCostRow(User user, List<Calendar> calendarDaysBack) {
+        List<String> totalCostRows = new ArrayList<>();
+        totalCostRows.add("Total ($)");
+
+        double ultimateTotal = 0;
+        for (Calendar calendar : calendarDaysBack) {
+            double dailyTotal = 0;
+            for (Account account : user.getAccounts().values()) {
+                for (Resource resource : account.getResources().values()) {
+                    Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
+                    if (day != null) {
+                        dailyTotal += day.getDailyCost();
+                    }
+                }
+            }
+            ultimateTotal += dailyTotal;
+            totalCostRows.add((dailyTotal != 0) ? DecimalFormatter.format(dailyTotal, 2) : "0.00" );
+        }
+        totalCostRows.add((ultimateTotal != 0) ? DecimalFormatter.format(ultimateTotal, 2) : "0.00" );
+        return totalCostRows;
     }
 
     private Map<String, User> sendRequest() {
