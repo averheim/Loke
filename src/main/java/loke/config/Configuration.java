@@ -2,6 +2,7 @@ package loke.config;
 
 import loke.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Configuration {
@@ -63,6 +64,9 @@ public class Configuration {
     }
 
     public List<User> getAdmins() {
-        return admins;
+        if (this.admins != null) {
+            return admins;
+        }
+        return new ArrayList<>();
     }
 }
