@@ -2,28 +2,28 @@ package loke.services;
 
 import com.googlecode.charts4j.*;
 import com.googlecode.charts4j.Color;
-import loke.utils.CalendarGenerator;
-import loke.utils.DecimalFormatter;
-import loke.utils.ResourceLoader;
+import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Chart;
+import loke.utils.CalendarGenerator;
+import loke.utils.DecimalFormatter;
+import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import loke.HtmlTableCreator;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.googlecode.charts4j.BarChart.AUTO_RESIZE;
 import static com.googlecode.charts4j.Color.*;
 
 public class SpendPerUserDao implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerUserDao.class);
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserAndProductLast30Days.sql");
+    private static final List<Calendar> THIRTY_DAYS_BACK = CalendarGenerator.getDaysBack(60);
     private AthenaClient athenaClient;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserAndProductLast30Days.sql");
     private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegexp;
 
@@ -48,8 +48,8 @@ public class SpendPerUserDao implements Service {
             resetColor();
             Scale scale = checkScale(user);
             List<String> xAxisLabels = getXAxisLabels();
-            List<BarChartPlot> barChartPlots = createPlots(user, scale);
-            BarChart chart = GCharts.newBarChart(barChartPlots);
+            List<Line> lineChartPlots = createPlots(user, scale);
+            LineChart chart = GCharts.newLineChart(lineChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
             Chart c = new Chart(user.getUserName());
             c.setHtmlURL(chart.toURLString());
@@ -62,11 +62,10 @@ public class SpendPerUserDao implements Service {
 
     public String generateHTMLTable(User user) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
-        List<Calendar> calendars = CalendarGenerator.getDaysBack(30);
 
         List<String> head = new ArrayList<>();
         head.add("Service");
-        for (Calendar calendar : calendars) {
+        for (Calendar calendar : THIRTY_DAYS_BACK) {
             String date = simpleDateFormat.format(calendar.getTime());
             head.add(date);
         }
@@ -77,7 +76,7 @@ public class SpendPerUserDao implements Service {
         for (Resource resource : user.getResources().values()) {
             body.add(resource.getResourceName() + " ($)");
             double resourceTotal = 0.0;
-            for (Calendar calendar : calendars) {
+            for (Calendar calendar : THIRTY_DAYS_BACK) {
                 Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
                 String cost = day != null ? DecimalFormatter.format(day.getDailyCost(), 2) : "0.00";
                 resourceTotal += day != null ? day.getDailyCost() : 0;
@@ -91,10 +90,9 @@ public class SpendPerUserDao implements Service {
     }
 
     private Scale checkScale(User user) {
-        List<Calendar> daysBack = CalendarGenerator.getDaysBack(30);
         List<Double> dailyCosts = new ArrayList<>();
 
-        for (Calendar calendar : daysBack) {
+        for (Calendar calendar : THIRTY_DAYS_BACK) {
             double dailyCost = 0.0;
             for (Resource resource : user.getResources().values()) {
 
@@ -113,10 +111,9 @@ public class SpendPerUserDao implements Service {
 
     private List<String> getXAxisLabels() {
         List<String> labels = new ArrayList<>();
-        List<Calendar> days = new ArrayList<>(CalendarGenerator.getDaysBack(30));
 
         // add labels
-        for (Calendar day : days) {
+        for (Calendar day : THIRTY_DAYS_BACK) {
             String date = dateFormat.format(day.getTime());
             if (!labels.contains(date)) {
                 labels.add(date.substring(8, 10));
@@ -125,7 +122,7 @@ public class SpendPerUserDao implements Service {
         return labels;
     }
 
-    private void configureChart(List<String> daysXAxisLabels, BarChart chart, User user, Scale scale) {
+    private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, Scale scale) {
         int chartWidth = 1000;
         int chartHeight = 300;
         chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
@@ -134,19 +131,17 @@ public class SpendPerUserDao implements Service {
 
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
-        chart.setBarWidth(AUTO_RESIZE);
-        chart.setDataStacked(true);
-        chart.setTitle("Total cost for " + user.getUserName() + " the past 30 days " + DecimalFormatter.format(user.calculateTotalCost(), 2) + " dollars");
+        chart.setTitle("Total cost for " + user.getUserName() + " the past 30 days " + DecimalFormatter.format(user.calculateTotalCost(), 2) + " USD");
     }
 
-    private List<BarChartPlot> createPlots(User user, Scale scale) {
-        List<BarChartPlot> plots = new ArrayList<>();
+    private List<Line> createPlots(User user, Scale scale) {
+        List<Line> plots = new ArrayList<>();
         log.info(user.getUserName());
         for (Resource resource : user.getResources().values()) {
-            List<Double> barSizeValues = getBarSize(resource, scale);
+            List<Double> lineSizeValues = getLineSize(resource, scale);
             double total = getResourceTotal(resource);
-            BarChartPlot barChartPlot = Plots.newBarChartPlot(Data.newData(barSizeValues), getNextColor(), resource.getResourceName() + " " + DecimalFormatter.format(total, 4));
-            plots.add(0, barChartPlot);
+            Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), getNextColor(), resource.getResourceName() + " " + DecimalFormatter.format(total, 4));
+            plots.add(0, lineChartPlot);
         }
         return plots;
     }
@@ -159,18 +154,17 @@ public class SpendPerUserDao implements Service {
         return total;
     }
 
-    private List<Double> getBarSize(Resource resource, Scale scale) {
-        List<Double> barSizeValues = new ArrayList<>();
+    private List<Double> getLineSize(Resource resource, Scale scale) {
+        List<Double> lineSizeValues = new ArrayList<>();
         for (Double cost : getDailyCosts(resource)) {
-            barSizeValues.add(cost / scale.getDivideBy());
+            lineSizeValues.add(cost / scale.getDivideBy());
         }
-        return barSizeValues;
+        return lineSizeValues;
     }
 
     private List<Double> getDailyCosts(Resource resource) {
         List<Double> data = new ArrayList<>();
-        List<Calendar> calendars = CalendarGenerator.getDaysBack(30);
-        for (Calendar calendar : calendars) {
+        for (Calendar calendar : THIRTY_DAYS_BACK) {
             Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
             if (day == null) {
                 data.add(0.0);
@@ -196,7 +190,7 @@ public class SpendPerUserDao implements Service {
         colors.add(ORANGE);
         Color color = colors.get(colorCounter);
         colorCounter++;
-        if(colorCounter == colors.size()){
+        if (colorCounter == colors.size()) {
             colorCounter = 0;
         }
         return color;
@@ -206,7 +200,7 @@ public class SpendPerUserDao implements Service {
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<SpendPerUser> queryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerUser.class);
         for (SpendPerUser spendPerUser : queryResult.getResultList()) {
-            if(!spendPerUser.userOwner.matches(userOwnerRegexp)) {
+            if (!spendPerUser.userOwner.matches(userOwnerRegexp)) {
                 continue;
             }
 
