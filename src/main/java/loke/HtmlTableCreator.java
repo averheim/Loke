@@ -23,12 +23,11 @@ public class HtmlTableCreator {
         this.sb = new StringBuilder();
     }
 
-    public String createTable(List<String> head, List<String> body, String foot, String heading) {
+    public String createTable(List<String> head, List<String> body, String foot, String heading, boolean leftAligned) {
         if (body.size() % head.size() != 0) {
             throw new IllegalArgumentException("The head is not proportionate to the body. " +
                     "Head size: " + head.size() + " Body size: " + body.size());
         }
-
         sb.setLength(0);
         sb.append("<div style=\"").append(OUTER_DIV_STYLE).append("\">");
         if (heading != null) {
@@ -38,7 +37,7 @@ public class HtmlTableCreator {
                 .append("<table style=\"").append(TABLE_STYLE).append("\">");
         createHead(head);
 
-        createBody(body, head.size());
+        createBody(body, head.size(), leftAligned);
 
         if (foot != null) {
             createFoot(foot, head.size());
@@ -124,7 +123,7 @@ public class HtmlTableCreator {
         sb.append("</tbody>");
     }
 
-    private void createBody(List<String> body, int rowLength) {
+    private void createBody(List<String> body, int rowLength, boolean leftAligned) {
         List<List<String>> rows = getBodyRowsData(body, rowLength);
         int rowCount = 0;
         sb.append("<tbody>");
@@ -133,11 +132,24 @@ public class HtmlTableCreator {
 
             for (int i = 0; i < row.size(); i++) {
                 if (i == 0) {
-                    sb.append("<td style=\"").append(TH_TD_STYLE).append(LEFT_ALIGN).append(FIXED_WIDTH).append("\">")
+                    sb.append("<td style=\"").append(TH_TD_STYLE)
+                            .append(LEFT_ALIGN)
+                            .append(FIXED_WIDTH)
+                            .append("\">")
+                            .append(row.get(i))
+                            .append("</td>");
+                } else if(i == row.size() -1) {
+                    sb.append("<td style=\"")
+                            .append(TH_TD_STYLE)
+                            .append(RIGHT_ALIGN)
+                            .append("\">")
                             .append(row.get(i))
                             .append("</td>");
                 } else {
-                    sb.append("<td style=\"").append(TH_TD_STYLE).append(RIGHT_ALIGN).append("\">")
+                    sb.append("<td style=\"")
+                            .append(TH_TD_STYLE)
+                            .append((leftAligned) ? LEFT_ALIGN : RIGHT_ALIGN)
+                            .append("\">")
                             .append(row.get(i))
                             .append("</td>");
                 }
@@ -179,11 +191,4 @@ public class HtmlTableCreator {
                 .append("</tr>")
                 .append("</tfoot>");
     }
-
-    public enum TableType {
-        NUMBER_TABLE,
-        TEXT_TABLE,
-        ROW_MARKED_TABLE;
-    }
-
 }

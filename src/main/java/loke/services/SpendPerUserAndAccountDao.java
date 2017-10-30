@@ -49,7 +49,7 @@ public class SpendPerUserAndAccountDao implements Service {
 
     private List<String> generateHTMLTables(User user) {
         List<String> htmlTables = new ArrayList<>();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
         List<String> head = new ArrayList<>();
         List<Calendar> calendarDaysBack = CalendarGenerator.getDaysBack(30);
 
@@ -80,15 +80,12 @@ public class SpendPerUserAndAccountDao implements Service {
         double footerTotal = Double.valueOf(total.get(total.size() - 1));
         String heading = "Monthly account details (Accounts with total cost below $"
                 + DecimalFormatter.format(showAccountThreshold, 2) + " will not be shown)";
-        String footer = "Monthly total: ($) " + footerTotal;
+        String footer = "Monthly total: $" + footerTotal;
 
         if (bodies.size() > 1) {
             htmlTables.add(htmlTableCreator.createMarkedRowTable(head, bodies, footer, heading, "Total"));
         }
 
-        /*if (footerTotal > showTableThreshold) {
-            htmlTables.add(htmlTableCreator.createMarkedRowTable(head, bodies, footer, heading, "Total"));
-        }*/
         return htmlTables;
     }
 

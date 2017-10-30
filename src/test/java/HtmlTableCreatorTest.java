@@ -30,7 +30,7 @@ public class HtmlTableCreatorTest {
 
 
         String expected = TestResourceLoader.loadResource("HtmlTableTest1.html");
-        String result = htmlTableCreator.createTable(head, body, null, null);
+        String result = htmlTableCreator.createTable(head, body, null, null, true);
 
         assertEquals(expected, result);
     }
@@ -45,7 +45,7 @@ public class HtmlTableCreatorTest {
         body.add("John");
 
 
-        htmlTableCreator.createTable(head, body, null, null);
+        htmlTableCreator.createTable(head, body, null, null, true);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -59,6 +59,6 @@ public class HtmlTableCreatorTest {
         body.add("Doe");
         body.add("Jane");
 
-        htmlTableCreator.createTable(head, body, null, null);
+        htmlTableCreator.createTable(head, body, null, null, true);
     }
 }

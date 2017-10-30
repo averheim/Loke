@@ -86,8 +86,8 @@ public class SpendPerUserDao implements Service {
             total += resourceTotal;
             body.add(DecimalFormatter.format(resourceTotal, 2));
         }
-        String foot = "Total: " + DecimalFormatter.format(total, 2) + " ($)";
-        return htmlTableCreator.createTable(head, body, foot, null);
+        String foot = "Total: $" + DecimalFormatter.format(total, 2);
+        return htmlTableCreator.createTable(head, body, foot, null, false);
     }
 
     private Scale checkScale(User user) {

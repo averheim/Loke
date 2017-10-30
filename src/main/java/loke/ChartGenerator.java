@@ -1,10 +1,8 @@
 package loke;
 
-import loke.config.Configuration;
 import loke.db.athena.AthenaClient;
 import loke.model.Chart;
 import loke.model.User;
-import loke.HtmlTableCreator;
 import loke.services.ResourceStartedLastWeekDao;
 import loke.services.Service;
 import loke.services.SpendPerUserAndAccountDao;
