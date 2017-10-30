@@ -6,6 +6,9 @@ import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import loke.config.Configuration;
 import loke.config.YamlReader;
 import loke.db.athena.AthenaClient;
+import loke.email.AwsEmailSender;
+import loke.email.AwsSesHandler;
+import loke.email.Presenter;
 import loke.model.User;
 
 import java.util.ArrayList;

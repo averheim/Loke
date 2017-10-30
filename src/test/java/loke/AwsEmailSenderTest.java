@@ -1,6 +1,7 @@
 package loke;
 
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
+import loke.email.AwsEmailSender;
+import loke.email.AwsSesHandler;
 import loke.model.Chart;
 import loke.model.User;
 import org.junit.Assert;

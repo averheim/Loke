@@ -1,4 +1,4 @@
-package loke;
+package loke.email;
 
 import loke.model.Chart;
 import loke.model.User;
