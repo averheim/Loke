@@ -78,7 +78,7 @@ public class HtmlTableCreator {
     }
 
     private void createHeading(String text) {
-        sb.append("<h3 style=\"text-align: left;\">").append(text).append("</h3>");
+        sb.append("<h4 style=\"text-align: left;\">").append(text).append("</h4>");
     }
 
     private void createHead(List<String> head) {
@@ -182,7 +182,7 @@ public class HtmlTableCreator {
                 .append("<tr>")
                 .append("<td style=\"")
                 .append(TH_TD_STYLE)
-                .append("background-color: #b8ff8c;")
+                .append("background-color: #428aff;")
                 .append("\" colspan=\"")
                 .append(colspan)
                 .append("\">")

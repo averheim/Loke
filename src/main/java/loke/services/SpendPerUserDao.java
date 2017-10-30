@@ -20,7 +20,7 @@ import static com.googlecode.charts4j.Color.*;
 
 public class SpendPerUserDao implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerUserDao.class);
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserAndProductLast30Days.sql");
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerUser.sql");
     private static final List<Calendar> THIRTY_DAYS_BACK = CalendarGenerator.getDaysBack(60);
     private AthenaClient athenaClient;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

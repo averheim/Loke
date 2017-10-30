@@ -14,16 +14,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class SpendPerUserAndAccountDao implements Service {
-    private static final Logger log = LogManager.getLogger(SpendPerUserAndAccountDao.class);
+public class SpendPerUserByAccountDao implements Service {
+    private static final Logger log = LogManager.getLogger(SpendPerUserByAccountDao.class);
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerUserByAccount.sql");
     private double showAccountThreshold;
 
-    public SpendPerUserAndAccountDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
+    public SpendPerUserByAccountDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
         this.userOwnerRegExp = userOwnerRegExp;
@@ -78,7 +78,7 @@ public class SpendPerUserAndAccountDao implements Service {
 
         List<String> total = getTotalCostRow(user, calendarDaysBack);
         double footerTotal = Double.valueOf(total.get(total.size() - 1));
-        String heading = "Monthly account details (Accounts with total cost below $"
+        String heading = "Monthly spend for " + user.getUserOwner() + " (Accounts with total cost below $"
                 + DecimalFormatter.format(showAccountThreshold, 2) + " will not be shown)";
         String footer = "Monthly total: $" + footerTotal;
 

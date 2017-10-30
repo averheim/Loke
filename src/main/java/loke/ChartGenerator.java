@@ -5,7 +5,7 @@ import loke.model.Chart;
 import loke.model.User;
 import loke.services.ResourceStartedLastWeekDao;
 import loke.services.Service;
-import loke.services.SpendPerUserAndAccountDao;
+import loke.services.SpendPerUserByAccountDao;
 import loke.services.SpendPerUserDao;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +21,7 @@ public class ChartGenerator {
     public ChartGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
         services = new ArrayList<>();
         services.add(new SpendPerUserDao(athena, htmlTableCreator, userOwnerRegExp));
-        services.add(new SpendPerUserAndAccountDao(athena, htmlTableCreator, userOwnerRegExp, showAccountThreshold));
+        services.add(new SpendPerUserByAccountDao(athena, htmlTableCreator, userOwnerRegExp, showAccountThreshold));
         services.add(new ResourceStartedLastWeekDao(athena, htmlTableCreator, userOwnerRegExp));
         admins = new ArrayList<>();
     }
@@ -47,7 +47,7 @@ public class ChartGenerator {
     }
 
     private void addChartsToAdmins(Service service, List<Chart> serviceCharts) {
-        if (service instanceof SpendPerUserAndAccountDao) {
+        if (service instanceof SpendPerUserByAccountDao) {
             for (User admin : admins) {
                 admin.getCharts().addAll(serviceCharts);
             }
