@@ -13,15 +13,13 @@ public class AwsEmailSender implements Presenter {
     private String from;
     private String subject = "Test";
     private String toEmailDomainName;
-    private String htmlBody = "<h1>Amazon SES test (AWS SDK for Java)</h1>"
-            + "<p>This email was sent with <a href='https://aws.amazon.com/ses/'>"
-            + "Amazon SES</a> using the <a href='https://aws.amazon.com/sdk-for-java/'>"
-            + "AWS SDK for Java</a>";
+    private boolean dryRun;
 
-    public AwsEmailSender(AwsSesHandler awsSesHandler, String from, String toEmailDomainName) {
+    public AwsEmailSender(AwsSesHandler awsSesHandler, String from, String toEmailDomainName, boolean dryRun) {
         this.awsSesHandler = awsSesHandler;
         this.from = from;
         this.toEmailDomainName = toEmailDomainName;
+        this.dryRun = dryRun;
     }
 
     @Override
@@ -41,8 +39,11 @@ public class AwsEmailSender implements Presenter {
                     htmlBody.append("\n\n");
                 }
             }
-            awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
+            log.info(htmlBody.toString());
+            if (!dryRun) {
+                awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
+            }
         }
-        log.info("Emails sent");
+        log.info((dryRun) ? "DryRun: Emails not sent" : "Emails sent");
     }
 }

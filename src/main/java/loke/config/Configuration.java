@@ -11,6 +11,7 @@ public class Configuration {
     private String userOwnerRegExp;
     private String fromEmailAddress;
     private String toEmailDomainName;
+    private double showAccountThreshold;
 
     public Configuration() {
     }
@@ -93,5 +94,13 @@ public class Configuration {
 
     public void setToEmailDomainName(String toEmailDomainName) {
         this.toEmailDomainName = toEmailDomainName;
+    }
+
+    public void setShowAccountThreshold(double showAccountThreshold) {
+        this.showAccountThreshold = showAccountThreshold;
+    }
+
+    public double getShowAccountThreshold() {
+        return showAccountThreshold;
     }
 }
