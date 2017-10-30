@@ -162,17 +162,28 @@ public class HtmlTableCreator {
                 counter = 0;
             }
         }
-
         return rows;
     }
 
     private void createFoot(String foot, int colspan) {
         sb.append("<tfoot>")
                 .append("<tr>")
-                .append("<td style=\"").append(TH_TD_STYLE).append("\" colspan=\"").append(colspan).append("\">")
+                .append("<td style=\"")
+                .append(TH_TD_STYLE)
+                .append("background-color: #b8ff8c;")
+                .append("\" colspan=\"")
+                .append(colspan)
+                .append("\">")
                 .append(foot)
                 .append("</td>")
                 .append("</tr>")
                 .append("</tfoot>");
     }
+
+    public enum TableType {
+        NUMBER_TABLE,
+        TEXT_TABLE,
+        ROW_MARKED_TABLE;
+    }
+
 }

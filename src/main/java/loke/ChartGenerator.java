@@ -1,5 +1,6 @@
 package loke;
 
+import loke.config.Configuration;
 import loke.db.athena.AthenaClient;
 import loke.model.Chart;
 import loke.model.User;
@@ -15,11 +16,11 @@ import java.util.List;
 public class ChartGenerator {
     private List<Service> services;
 
-    public ChartGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
+    public ChartGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
         services = new ArrayList<>();
-        //services.add(new SpendPerUserDao(athena, htmlTableCreator, userOwnerRegExp));
-        services.add(new SpendPerUserAndAccountDao(athena, htmlTableCreator, userOwnerRegExp));
-        //services.add(new ResourceStartedLastWeekDao(athena, htmlTableCreator, userOwnerRegExp));
+        services.add(new SpendPerUserDao(athena, htmlTableCreator, userOwnerRegExp));
+        services.add(new SpendPerUserAndAccountDao(athena, htmlTableCreator, userOwnerRegExp, showAccountThreshold));
+        services.add(new ResourceStartedLastWeekDao(athena, htmlTableCreator, userOwnerRegExp));
     }
 
     public List<User> generateChartsOrderedByUser() {

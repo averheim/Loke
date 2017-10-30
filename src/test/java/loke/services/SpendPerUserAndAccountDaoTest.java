@@ -23,6 +23,7 @@ public class SpendPerUserAndAccountDaoTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
+    private double showAccountThreshold;
     private SpendPerUserAndAccountDao spendPerUserAndAccountDao;
     private Clock clock;
 
@@ -33,7 +34,7 @@ public class SpendPerUserAndAccountDaoTest {
         athenaClient = mock(AthenaClient.class);
         htmlTableCreator = new HtmlTableCreator();
         String userOwnerRegExp = "";
-        spendPerUserAndAccountDao = new SpendPerUserAndAccountDao(athenaClient, htmlTableCreator, userOwnerRegExp);
+        spendPerUserAndAccountDao = new SpendPerUserAndAccountDao(athenaClient, htmlTableCreator, userOwnerRegExp, showAccountThreshold);
     }
 
     @Test

@@ -11,12 +11,11 @@ import java.util.List;
 public class Loke {
     private ChartGenerator chartGenerator;
     private Presenter presenter;
-
     public Loke() {
         Configuration configuration = new YamlReader().readConfigFile("configuration.yaml");
         AthenaClient athenaClient = new AthenaClient(configuration.getHost(), configuration.getPort(), configuration.getAccessKey(), configuration.getSecretAccessKey(), configuration.getStagingDir());
         HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
-        this.chartGenerator = new ChartGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp());
+        this.chartGenerator = new ChartGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp(), configuration.getShowAccountThreshold());
         this.presenter = new AwsEmailSender(
                 configuration.getFromEmailAddress(),
                 configuration.getToEmailDomainName(),

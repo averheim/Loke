@@ -1,6 +1,5 @@
 package loke.services;
 
-import com.amazonaws.athena.jdbc.shaded.com.amazonaws.services.datacatalog.model.Decimal;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Chart;
@@ -22,11 +21,13 @@ public class SpendPerUserAndAccountDao implements Service {
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");
+    private double showAccountThreshold;
 
-    public SpendPerUserAndAccountDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
+    public SpendPerUserAndAccountDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
         this.userOwnerRegExp = userOwnerRegExp;
+        this.showAccountThreshold = showAccountThreshold;
     }
 
     @Override
@@ -63,15 +64,31 @@ public class SpendPerUserAndAccountDao implements Service {
             List<Resource> resources = new ArrayList<>(account.getResources().values());
             Collections.reverse(resources);
 
-            bodies.add(getAccountTotalRows(calendarDaysBack, account, resources));
-            bodies.add(getResourceRows(calendarDaysBack, resources));
+            // Check if account should be shown
+            List<String> accountTotalRows = getAccountTotalRows(calendarDaysBack, account, resources);
+            double accountTotal = Double.valueOf(accountTotalRows.get(accountTotalRows.size() - 1));
+
+            if (accountTotal > showAccountThreshold) {
+                bodies.add(getAccountTotalRows(calendarDaysBack, account, resources));
+                bodies.add(getResourceRows(calendarDaysBack, resources));
+            }
             resources.clear();
         }
-
         bodies.add(getTotalCostRow(user, calendarDaysBack));
 
-        String heading = "Monthly account details";
-        htmlTables.add(htmlTableCreator.createMarkedRowTable(head, bodies, null, heading, "Account"));
+        List<String> total = getTotalCostRow(user, calendarDaysBack);
+        double footerTotal = Double.valueOf(total.get(total.size() - 1));
+        String heading = "Monthly account details (Accounts with total cost below $"
+                + DecimalFormatter.format(showAccountThreshold, 2) + " will not be shown)";
+        String footer = "Monthly total: ($) " + footerTotal;
+
+        if (bodies.size() > 1) {
+            htmlTables.add(htmlTableCreator.createMarkedRowTable(head, bodies, footer, heading, "Total"));
+        }
+
+        /*if (footerTotal > showTableThreshold) {
+            htmlTables.add(htmlTableCreator.createMarkedRowTable(head, bodies, footer, heading, "Total"));
+        }*/
         return htmlTables;
     }
 
@@ -121,7 +138,7 @@ public class SpendPerUserAndAccountDao implements Service {
 
     private List<String> getTotalCostRow(User user, List<Calendar> calendarDaysBack) {
         List<String> totalCostRows = new ArrayList<>();
-        totalCostRows.add("Total ($)");
+        totalCostRows.add("Total for all accounts ($)");
 
         double ultimateTotal = 0;
         for (Calendar calendar : calendarDaysBack) {
@@ -135,9 +152,9 @@ public class SpendPerUserAndAccountDao implements Service {
                 }
             }
             ultimateTotal += dailyTotal;
-            totalCostRows.add((dailyTotal != 0) ? DecimalFormatter.format(dailyTotal, 2) : "0.00" );
+            totalCostRows.add((dailyTotal != 0) ? DecimalFormatter.format(dailyTotal, 2) : "0.00");
         }
-        totalCostRows.add((ultimateTotal != 0) ? DecimalFormatter.format(ultimateTotal, 2) : "0.00" );
+        totalCostRows.add((ultimateTotal != 0) ? DecimalFormatter.format(ultimateTotal, 2) : "0.00");
         return totalCostRows;
     }
 
