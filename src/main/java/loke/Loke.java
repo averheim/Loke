@@ -11,13 +11,11 @@ import loke.email.AwsSesHandler;
 import loke.email.Presenter;
 import loke.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Loke {
     private ChartGenerator chartGenerator;
     private Presenter presenter;
-
     public Loke() {
         Configuration configuration = new YamlReader().readConfigFile("configuration.yaml");
         AthenaClient athenaClient =
@@ -28,7 +26,7 @@ public class Loke {
                         configuration.getSecretAccessKey(),
                         configuration.getStagingDir());
         HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
-        this.chartGenerator = new ChartGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp());
+        this.chartGenerator = new ChartGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp(), configuration.getShowAccountThreshold());
         AwsSesHandler awsSesHandler = new AwsSesHandler(AmazonSimpleEmailServiceClientBuilder.standard()
                 .withRegion(configuration.getRegion())
                 .withCredentials(
@@ -39,11 +37,12 @@ public class Loke {
         this.presenter = new AwsEmailSender(
                 awsSesHandler,
                 configuration.getFromEmailAddress(),
-                configuration.getToEmailDomainName());
+                configuration.getToEmailDomainName(),
+                configuration.isDryRun());
     }
 
     public void run() {
         List<User> users = chartGenerator.generateChartsOrderedByUser();
-        presenter.present(new ArrayList<>());
+        presenter.present(users);
     }
 }

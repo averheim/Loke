@@ -20,10 +20,9 @@ public class AwsEmailSenderTest {
     @Before
     public void setUp() throws Exception {
         awsSesHandler = Mockito.mock(AwsSesHandler.class);
-        awsEmailSender = Mockito.spy(new AwsEmailSender(awsSesHandler, "john@doe.com", "doe.com"));
+        awsEmailSender = Mockito.spy(new AwsEmailSender(awsSesHandler, "john@doe.com", "doe.com", false));
     }
 
-    /* MethodName_StateUnderTest_ExpectedBehavior  */
     @Test
     public void present_htmlBodyCreation_CreatesExpectedBody() throws Exception {
 

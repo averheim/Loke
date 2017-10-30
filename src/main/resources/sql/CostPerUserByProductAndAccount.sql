@@ -15,6 +15,6 @@ AND usage_start_date != 'UsageStartDate'
 AND usage_start_date != 'usage_start_date'
 AND user_owner != ''
 AND blended_cost != '0.0000000000'
-AND cast(date_parse(usage_start_date, '%Y-%m-%d %T') AS DATE) > (current_date - INTERVAL '30' DAY)
+AND cast(date_parse(usage_start_date, '%Y-%m-%d %T') AS DATE) > (current_date - INTERVAL '60' DAY)
 GROUP BY user_owner, account.name, product_name, cast(date_parse(usage_start_date, '%Y-%m-%d %T') AS DATE)
 ORDER BY user_owner, account.name, start_date ASC;

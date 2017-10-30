@@ -75,11 +75,11 @@ public class SpendPerUserDao implements Service {
         List<String> body = new ArrayList<>();
         double total = 0.0;
         for (Resource resource : user.getResources().values()) {
-            body.add(resource.getResourceName());
+            body.add(resource.getResourceName() + " ($)");
             double resourceTotal = 0.0;
             for (Calendar calendar : calendars) {
                 Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                String cost = day != null ? DecimalFormatter.format(day.getDailyCost(), 2) : "00.00";
+                String cost = day != null ? DecimalFormatter.format(day.getDailyCost(), 2) : "0.00";
                 resourceTotal += day != null ? day.getDailyCost() : 0;
                 body.add(cost);
             }
@@ -87,8 +87,7 @@ public class SpendPerUserDao implements Service {
             body.add(DecimalFormatter.format(resourceTotal, 2));
         }
         String foot = "Total: $" + DecimalFormatter.format(total, 2);
-        return htmlTableCreator.createTable(head, body, foot, null);
-
+        return htmlTableCreator.createTable(head, body, foot, null, false);
     }
 
     private Scale checkScale(User user) {
@@ -197,6 +196,9 @@ public class SpendPerUserDao implements Service {
         colors.add(ORANGE);
         Color color = colors.get(colorCounter);
         colorCounter++;
+        if(colorCounter == colors.size()){
+            colorCounter = 0;
+        }
         return color;
     }
 
@@ -242,7 +244,7 @@ public class SpendPerUserDao implements Service {
         public String startDate;
     }
 
-    public class User {
+    private class User {
         private String userName;
         private HashMap<String, Resource> resources;
 
@@ -280,7 +282,7 @@ public class SpendPerUserDao implements Service {
         }
     }
 
-    public class Resource {
+    private class Resource {
         private String resourceName;
         private HashMap<String, Day> days;
 
@@ -302,7 +304,7 @@ public class SpendPerUserDao implements Service {
         }
     }
 
-    public class Day {
+    private class Day {
         private Calendar date;
         private double dailyCost;
 

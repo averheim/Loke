@@ -9,14 +9,18 @@ import loke.utils.DecimalFormatter;
 import loke.HtmlTableCreator;
 import loke.utils.ResourceLoader;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ResourceStartedLastWeekDao implements Service {
+    private static final Logger log = LogManager.getLogger(ResourceStartedLastWeekDao.class);
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
-    private static final Logger log = LogManager.getLogger(ResourceStartedLastWeekDao.class);
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
 
 
     public ResourceStartedLastWeekDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
@@ -44,7 +48,8 @@ public class ResourceStartedLastWeekDao implements Service {
 
     public String generateHTMLTable(User user) {
         List<String> head = new ArrayList<>();
-        head.addAll(Arrays.asList("Account", "Product Name", "Resource Id", "Start Date", "Cost"));
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
+        head.addAll(Arrays.asList("Account", "Product Name", "Resource Id", "Start Date", "Cost ($)"));
 
         double totalCost = 0;
         List<String> body = new ArrayList<>();
@@ -52,13 +57,18 @@ public class ResourceStartedLastWeekDao implements Service {
             body.add(detailedResource.account);
             body.add(detailedResource.productName);
             body.add(detailedResource.resourceId);
-            body.add(detailedResource.startDate);
+            Calendar day = Calendar.getInstance();
+            try {
+                day.setTime(dateFormat.parse(detailedResource.startDate));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            body.add(simpleDateFormat.format(day.getTime()));
             body.add(DecimalFormatter.format(detailedResource.cost, 2));
             totalCost += detailedResource.cost;
         }
-
-        String foot = "Total: " + DecimalFormatter.format(totalCost, 2);
-        return htmlTableCreator.createTable(head, body, foot, null);
+        String foot = "Total: $" + DecimalFormatter.format(totalCost, 2);
+        return htmlTableCreator.createTable(head, body, foot, null, true);
     }
 
     private Map<String, User> sendRequest() {
@@ -79,7 +89,7 @@ public class ResourceStartedLastWeekDao implements Service {
     }
 
     public static class DetailedResource {
-        @JdbcManager.Column(value = "account_id")
+        @JdbcManager.Column(value = "account_name")
         public String account;
         @JdbcManager.Column(value = "user_owner")
         public String userOwner;
