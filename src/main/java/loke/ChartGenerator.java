@@ -48,10 +48,6 @@ public class ChartGenerator {
 
     private void addChartsToAdmins(Service service, List<Chart> serviceCharts) {
         if (service instanceof SpendPerUserAndAccountDao) {
-            log.info(serviceCharts.size());
-            for (Chart serviceChart : serviceCharts) {
-                log.info(serviceChart.getHtmlTables().size());
-            }
             for (User admin : admins) {
                 admin.getCharts().addAll(serviceCharts);
             }
@@ -79,6 +75,5 @@ public class ChartGenerator {
             }
         }
         return null;
-        //test
     }
 }

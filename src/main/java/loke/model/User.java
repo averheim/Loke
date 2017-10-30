@@ -19,4 +19,5 @@ public class User {
     public List<Chart> getCharts() {
         return charts;
     }
+
 }
