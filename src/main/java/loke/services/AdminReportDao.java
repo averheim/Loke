@@ -4,29 +4,30 @@ import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Chart;
+import loke.utils.CalendarGenerator;
+import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AdminReportDao implements Service {
     private static final Logger log = LogManager.getLogger(AdminReportDao.class);
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");
+    private double showAccountThreshold;
 
-    public AdminReportDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
+    public AdminReportDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
         this.userOwnerRegExp = userOwnerRegExp;
+        this.showAccountThreshold = showAccountThreshold;
     }
 
     @Override
@@ -36,7 +37,122 @@ public class AdminReportDao implements Service {
     }
 
     private List<Chart> generateCharts(Map<String, User> users) {
-        return null;
+        List<Chart> charts = new ArrayList<>();
+        for (User user : users.values()) {
+            Chart chart = new Chart(user.getUserOwner());
+            chart.addHtmlTables(generateHTMLTables(user));
+            charts.add(chart);
+            log.info(chart.getOwner() + "\n" + chart.getHtmlTables());
+        }
+        return charts;
+    }
+
+    private List<String> generateHTMLTables(User user) {
+        List<String> htmlTables = new ArrayList<>();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
+        List<String> head = new ArrayList<>();
+        List<Calendar> calendarDaysBack = CalendarGenerator.getDaysBack(30);
+
+        head.add("Products by Account");
+        for (Calendar calendar : calendarDaysBack) {
+            head.add(simpleDateFormat.format(calendar.getTime()));
+        }
+        head.add("Total ($)");
+
+        List<List<String>> bodies = new ArrayList<>();
+        for (Account account : user.getAccounts().values()) {
+            List<Resource> resources = new ArrayList<>(account.getResources().values());
+            Collections.reverse(resources);
+
+            // Check if account should be shown
+            List<String> accountTotalRows = getAccountTotalRows(calendarDaysBack, account, resources);
+            double accountTotal = Double.valueOf(accountTotalRows.get(accountTotalRows.size() - 1));
+
+            if (accountTotal > showAccountThreshold) {
+                bodies.add(getAccountTotalRows(calendarDaysBack, account, resources));
+                bodies.add(getResourceRows(calendarDaysBack, resources));
+            }
+            resources.clear();
+        }
+        bodies.add(getTotalCostRow(user, calendarDaysBack));
+
+        List<String> total = getTotalCostRow(user, calendarDaysBack);
+        double footerTotal = Double.valueOf(total.get(total.size() - 1));
+        String heading = "Monthly account details (Accounts with total cost below $"
+                + DecimalFormatter.format(showAccountThreshold, 2) + " will not be shown)";
+        String footer = "Monthly total: $" + footerTotal;
+
+        if (bodies.size() > 1) {
+            htmlTables.add(htmlTableCreator.createMarkedRowTable(head, bodies, footer, heading, "Total"));
+        }
+
+        return htmlTables;
+    }
+
+    private List<String> getAccountTotalRows(List<Calendar> calendarDaysBack, Account account, List<Resource> resources) {
+        List<String> accountRows = new ArrayList<>();
+        accountRows.add(account.getAccountId() + " Total ($)");
+
+        double accountTotal = 0;
+        for (Calendar calendar : calendarDaysBack) {
+            double dailyTotal = 0.00;
+            for (Resource resource : resources) {
+                Day day = resource.days.get(dateFormat.format(calendar.getTime()));
+                if (day != null) {
+                    dailyTotal += day.getDailyCost();
+                }
+            }
+            if (dailyTotal > 0) {
+                accountRows.add(DecimalFormatter.format(dailyTotal, 2));
+            } else {
+                accountRows.add("0.00");
+            }
+            accountTotal += dailyTotal;
+        }
+        accountRows.add(DecimalFormatter.format(accountTotal, 2));
+        return accountRows;
+    }
+
+    private List<String> getResourceRows(List<Calendar> calendarDaysBack, List<Resource> resources) {
+        List<String> resourceRows = new ArrayList<>();
+        for (Resource resource : resources) {
+            resourceRows.add(resource.productName + " ($)");
+            double resourceTotal = 0.00;
+
+            for (Calendar calendar : calendarDaysBack) {
+                Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
+                if (day != null) {
+                    resourceRows.add(DecimalFormatter.format(day.getDailyCost(), 2));
+                    resourceTotal += day.getDailyCost();
+                } else {
+                    resourceRows.add("0.00");
+                }
+            }
+            resourceRows.add(DecimalFormatter.format(resourceTotal, 2));
+        }
+        return resourceRows;
+    }
+
+    private List<String> getTotalCostRow(User user, List<Calendar> calendarDaysBack) {
+        List<String> totalCostRows = new ArrayList<>();
+        totalCostRows.add("Total for all accounts ($)");
+
+        double ultimateTotal = 0;
+        for (Calendar calendar : calendarDaysBack) {
+            double dailyTotal = 0;
+            for (Account account : user.getAccounts().values()) {
+                for (Resource resource : account.getResources().values()) {
+                    Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
+                    if (day != null) {
+                        dailyTotal += day.getDailyCost();
+                    }
+                }
+            }
+            ultimateTotal += dailyTotal;
+            totalCostRows.add((dailyTotal != 0) ? DecimalFormatter.format(dailyTotal, 2) : "0.00");
+        }
+        totalCostRows.add((ultimateTotal != 0) ? DecimalFormatter.format(ultimateTotal, 2) : "0.00");
+        return totalCostRows;
     }
 
     private Map<String, User> sendRequest() {

@@ -9,13 +9,16 @@ import loke.db.athena.AthenaClient;
 import loke.email.AwsEmailSender;
 import loke.email.AwsSesHandler;
 import loke.email.Presenter;
+import loke.model.Chart;
 import loke.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Loke {
     private ChartGenerator chartGenerator;
     private Presenter presenter;
+
     public Loke() {
         Configuration configuration = new YamlReader().readConfigFile("configuration.yaml");
         AthenaClient athenaClient =
@@ -42,7 +45,20 @@ public class Loke {
     }
 
     public void run() {
+        List<User> admins = new ArrayList<>();
+        admins.add(new User("christopher.olsson.praktik"));
+        chartGenerator.addAdmins(admins);
         List<User> users = chartGenerator.generateChartsOrderedByUser();
-        presenter.present(users);
+        for (User user : users) {
+            if (user.getUserName().equals("christopher.olsson.praktik")) {
+                System.out.println("ADMIN");
+                System.out.println(user.getCharts().size());
+                for (Chart chart : user.getCharts()) {
+                    System.out.println(chart.getHtmlURL());
+                    System.out.println(chart.getHtmlTables());
+                }
+            }
+        }
     }
+    // presenter.present(users);
 }
