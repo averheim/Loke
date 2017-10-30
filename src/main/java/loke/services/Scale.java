@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum Scale {
-    UNDER_TEN("dollars", 0.1, Arrays.asList(0,1,2,3,4,5,6,7,8,9,10)),
-    UNDER_HUNDRED("dollars", 1, new ArrayList<>()),
-    OVER_HUNDRED("hundred dollars", 10, Arrays.asList(0,1,2,3,4,5,6,7,8,9,10));
+    UNDER_TEN("USD", 0.1, Arrays.asList(0,1,2,3,4,5,6,7,8,9,10)),
+    UNDER_HUNDRED("USD", 1, new ArrayList<>()),
+    OVER_HUNDRED("hundred USD", 10, Arrays.asList(0,1,2,3,4,5,6,7,8,9,10));
 
     private final String name;
     private final double divideBy;
