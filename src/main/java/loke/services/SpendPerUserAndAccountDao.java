@@ -68,7 +68,7 @@ public class SpendPerUserAndAccountDao implements Service {
             List<String> accountTotalRows = getAccountTotalRows(calendarDaysBack, account, resources);
             double accountTotal = Double.valueOf(accountTotalRows.get(accountTotalRows.size() - 1));
 
-            if (accountTotal > showAccountThreshold) {
+            if (accountTotal >= showAccountThreshold) {
                 bodies.add(getAccountTotalRows(calendarDaysBack, account, resources));
                 bodies.add(getResourceRows(calendarDaysBack, resources));
             }
