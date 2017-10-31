@@ -1,4 +1,4 @@
-package loke.services;
+package loke.service;
 
 import loke.db.athena.AthenaClient;
 import org.junit.Before;
@@ -17,7 +17,7 @@ import static loke.db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static loke.services.SpendPerUserAndAccountDao.*;
+import static loke.service.SpendPerUserAndAccountDao.*;
 
 public class SpendPerUserAndAccountDaoTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserByProductAndAccount.sql");
@@ -52,8 +52,8 @@ public class SpendPerUserAndAccountDaoTest {
         when(athenaClient.executeQuery(SQL_QUERY, SpendPerUserAndAccount.class)).thenReturn(queryResult);
 
         String expected = TestResourceLoader.loadResource("SpendPerUserAndAccountTableTest1.html");
-        String result = spendPerUserAndAccountDao.getCharts().get(0).getHtmlTables().get(0);
-        System.out.println(spendPerUserAndAccountDao.getCharts().get(0).getHtmlTables().get(1));
+        String result = spendPerUserAndAccountDao.getReports().get(0).getHtmlTables().get(0);
+        System.out.println(spendPerUserAndAccountDao.getReports().get(0).getHtmlTables().get(1));
         assertEquals(expected, result);
     }
 

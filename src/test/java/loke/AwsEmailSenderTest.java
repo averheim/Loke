@@ -2,7 +2,7 @@ package loke;
 
 import loke.email.AwsEmailSender;
 import loke.email.AwsSesHandler;
-import loke.model.Chart;
+import loke.model.Report;
 import loke.model.User;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,10 +28,10 @@ public class AwsEmailSenderTest {
 
         List<User> users = new ArrayList<>();
         User user = new User("john.doe");
-        Chart chart = new Chart("john.doe");
-        chart.addHtmlTable("<table>Table 1</table>");
-        chart.addHtmlTable("<table>Table 2</table>");
-        user.getCharts().add(chart);
+        Report report = new Report("john.doe");
+        report.addHtmlTable("<table>Table 1</table>");
+        report.addHtmlTable("<table>Table 2</table>");
+        user.getReports().add(report);
         users.add(user);
 
 

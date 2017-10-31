@@ -3,12 +3,12 @@ package loke.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Chart {
+public class Report {
     private String owner;
-    private String htmlURL;
+    private String chartUrl;
     private List<String> htmlTables;
 
-    public Chart(String owner) {
+    public Report(String owner) {
         this.owner = owner;
         this.htmlTables = new ArrayList<>();
     }
@@ -17,12 +17,12 @@ public class Chart {
         return owner;
     }
 
-    public String getHtmlURL() {
-        return htmlURL;
+    public String getChartUrl() {
+        return chartUrl;
     }
 
-    public void setHtmlURL(String htmlURL) {
-        this.htmlURL = htmlURL;
+    public void setChartUrl(String chartUrl) {
+        this.chartUrl = chartUrl;
     }
 
     public List<String> getHtmlTables() {

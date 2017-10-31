@@ -1,8 +1,8 @@
-package loke.services;
+package loke.service;
 
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
-import loke.model.Chart;
+import loke.model.Report;
 import loke.utils.DecimalFormatter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,20 +31,20 @@ public class SpendPerUserAndAccountDao implements Service {
     }
 
     @Override
-    public List<Chart> getCharts() {
+    public List<Report> getReports() {
         Map<String, User> users = sendRequest();
-        return generateCharts(users);
+        return generateReports(users);
     }
 
-    private List<Chart> generateCharts(Map<String, User> users) {
-        List<Chart> charts = new ArrayList<>();
+    private List<Report> generateReports(Map<String, User> users) {
+        List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
-            Chart chart = new Chart(user.getUserOwner());
-            chart.addHtmlTables(generateHTMLTables(user));
-            charts.add(chart);
-            log.info(chart.getOwner() + "\n" + chart.getHtmlTables());
+            Report report = new Report(user.getUserOwner());
+            report.addHtmlTables(generateHTMLTables(user));
+            reports.add(report);
+            log.info(report.getOwner() + "\n" + report.getHtmlTables());
         }
-        return charts;
+        return reports;
     }
 
     private List<String> generateHTMLTables(User user) {
