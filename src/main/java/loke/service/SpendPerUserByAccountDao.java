@@ -62,6 +62,7 @@ public class SpendPerUserByAccountDao implements Service {
         List<String> htmlURLs = new ArrayList<>();
         log.info("USER: " + user.getUserOwner());
         for (Account account : user.getAccounts().values()) {
+            resetColor();
             Scale scale = checkScale(account);
             log.info("SCALE: " + scale);
             List<String> xAxisLabels = getXAxisLabels();
@@ -158,6 +159,10 @@ public class SpendPerUserByAccountDao implements Service {
         if (dailyCosts.get(0) > 100) return Scale.OVER_HUNDRED;
         if (dailyCosts.get(0) < 10) return Scale.UNDER_TEN;
         return Scale.UNDER_HUNDRED;
+    }
+
+    private void resetColor() {
+        this.colorCounter = 0;
     }
 
     private Color getNextColor() {
