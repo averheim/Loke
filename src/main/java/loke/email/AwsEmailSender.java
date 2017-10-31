@@ -31,8 +31,10 @@ public class AwsEmailSender implements Presenter {
             StringBuilder htmlBody = new StringBuilder();
 
             for (Chart chart : user.getCharts()) {
-                if (chart.getHtmlURL() != null) {
-                    htmlBody.append("<img src=\"").append(chart.getHtmlURL()).append("\"/img>");
+                for (String htmlURL : chart.getHtmlURLs()) {
+                    if (chart.getHtmlURLs() != null) {
+                        htmlBody.append("<img src=\"").append(htmlURL).append("\"/img>");
+                    }
                 }
                 for (String table : chart.getHtmlTables()) {
                     htmlBody.append(table);

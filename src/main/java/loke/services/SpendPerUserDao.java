@@ -52,10 +52,10 @@ public class SpendPerUserDao implements Service {
             LineChart chart = GCharts.newLineChart(lineChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
             Chart c = new Chart(user.getUserName());
-            c.setHtmlURL(chart.toURLString());
+            c.addHtmlURL(chart.toURLString());
             c.addHtmlTable(generateHTMLTable(user));
             charts.add(c);
-            log.info(c.getHtmlURL() + "\n" + c.getHtmlTables());
+            log.info(c.getHtmlURLs() + "\n" + c.getHtmlTables());
         }
         return charts;
     }

@@ -111,10 +111,10 @@ public class HtmlTableCreator {
             }
             for (int i = 0; i < row.size(); i++) {
                 if (i == 0) {
-                    sb.append("<td style=\"").append(TH_TD_STYLE).append(LEFT_ALIGN).append(FIXED_WIDTH).append("\">")
+                    sb.append("<td nowrap style=\"").append(TH_TD_STYLE).append(LEFT_ALIGN).append(FIXED_WIDTH).append("\">")
                             .append(row.get(i)).append("</td>");
                 } else {
-                    sb.append("<td style=\"").append(TH_TD_STYLE).append(RIGHT_ALIGN).append("\">")
+                    sb.append("<td nowrap style=\"").append(TH_TD_STYLE).append(RIGHT_ALIGN).append("\">")
                             .append(row.get(i)).append("</td>");
                 }
             }
@@ -132,21 +132,21 @@ public class HtmlTableCreator {
 
             for (int i = 0; i < row.size(); i++) {
                 if (i == 0) {
-                    sb.append("<td style=\"").append(TH_TD_STYLE)
+                    sb.append("<td nowrap style=\"").append(TH_TD_STYLE)
                             .append(LEFT_ALIGN)
                             .append(FIXED_WIDTH)
                             .append("\">")
                             .append(row.get(i))
                             .append("</td>");
                 } else if(i == row.size() -1) {
-                    sb.append("<td style=\"")
+                    sb.append("<td nowrap style=\"")
                             .append(TH_TD_STYLE)
                             .append(RIGHT_ALIGN)
                             .append("\">")
                             .append(row.get(i))
                             .append("</td>");
                 } else {
-                    sb.append("<td style=\"")
+                    sb.append("<td nowrap style=\"")
                             .append(TH_TD_STYLE)
                             .append((leftAligned) ? LEFT_ALIGN : RIGHT_ALIGN)
                             .append("\">")
