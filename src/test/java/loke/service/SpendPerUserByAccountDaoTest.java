@@ -1,6 +1,7 @@
-package loke.services;
+package loke.service;
 
 import loke.db.athena.AthenaClient;
+import loke.service.SpendPerUserByAccountDao;
 import org.junit.Before;
 import org.junit.Test;
 import loke.utils.CalendarGenerator;
@@ -17,13 +18,12 @@ import static loke.db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static loke.services.SpendPerUserByAccountDao.*;
+import static loke.service.SpendPerUserByAccountDao.*;
 
 public class SpendPerUserByAccountDaoTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerUserByAccount.sql");
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
-    private double showAccountThreshold;
     private SpendPerUserByAccountDao spendPerUserByAccountDao;
     private Clock clock;
 
@@ -34,7 +34,7 @@ public class SpendPerUserByAccountDaoTest {
         athenaClient = mock(AthenaClient.class);
         htmlTableCreator = new HtmlTableCreator();
         String userOwnerRegExp = "";
-        spendPerUserByAccountDao = new SpendPerUserByAccountDao(athenaClient, htmlTableCreator, userOwnerRegExp, showAccountThreshold);
+        spendPerUserByAccountDao = new SpendPerUserByAccountDao(athenaClient, htmlTableCreator, userOwnerRegExp, 0);
     }
 
     @Test
@@ -52,8 +52,8 @@ public class SpendPerUserByAccountDaoTest {
         when(athenaClient.executeQuery(SQL_QUERY, SpendPerUserAndAccount.class)).thenReturn(queryResult);
 
         String expected = TestResourceLoader.loadResource("SpendPerUserAndAccountTableTest1.html");
-        String result = spendPerUserByAccountDao.getCharts().get(0).getHtmlTables().get(0);
-        System.out.println(spendPerUserByAccountDao.getCharts().get(0).getHtmlTables().get(1));
+        String result = spendPerUserByAccountDao.getReports().get(0).getHtmlTables().get(0);
+        System.out.println(spendPerUserByAccountDao.getReports().get(0).getHtmlTables().get(1));
         assertEquals(expected, result);
     }
 

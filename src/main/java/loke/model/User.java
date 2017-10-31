@@ -5,19 +5,23 @@ import java.util.List;
 
 public class User {
     private String userName;
-    private List<Chart> charts;
+    private List<Report> reports;
 
     public User(String userName) {
         this.userName = userName;
-        this.charts = new ArrayList<>();
+        this.reports = new ArrayList<>();
     }
 
     public String getUserName() {
         return userName;
     }
 
-    public List<Chart> getCharts() {
-        return charts;
+    public List<Report> getReports() {
+        return reports;
+    }
+
+    public void addReports(List<Report> reports) {
+        this.reports.addAll(reports);
     }
 
 }

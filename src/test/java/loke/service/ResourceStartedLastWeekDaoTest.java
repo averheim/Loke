@@ -1,4 +1,4 @@
-package loke.services;
+package loke.service;
 
 import loke.db.athena.AthenaClient;
 import org.junit.Before;
@@ -14,7 +14,7 @@ import java.util.List;
 import static loke.db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
-import static loke.services.ResourceStartedLastWeekDao.*;
+import static loke.service.ResourceStartedLastWeekDao.*;
 
 public class ResourceStartedLastWeekDaoTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
@@ -42,7 +42,7 @@ public class ResourceStartedLastWeekDaoTest {
         Mockito.when(athenaClient.executeQuery(SQL_QUERY, DetailedResource.class)).thenReturn(queryResult);
 
         String expected = TestResourceLoader.loadResource("ResourceStartedLastWeekTableTest1.html");
-        String result = resourceStartedLastWeekDao.getCharts().get(0).getHtmlTables().get(0);
+        String result = resourceStartedLastWeekDao.getReports().get(0).getHtmlTables().get(0);
         assertEquals(expected, result);
     }
 

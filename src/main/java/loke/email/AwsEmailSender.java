@@ -1,6 +1,6 @@
 package loke.email;
 
-import loke.model.Chart;
+import loke.model.Report;
 import loke.model.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,13 +30,14 @@ public class AwsEmailSender implements Presenter {
             String to = user.getUserName() + toEmailDomainName;
             StringBuilder htmlBody = new StringBuilder();
 
-            for (Chart chart : user.getCharts()) {
-                for (String htmlURL : chart.getHtmlURLs()) {
-                    if (chart.getHtmlURLs() != null) {
+
+            for (Report report : user.getReports()) {
+                for (String htmlURL : report.getHtmlURLs()) {
+                    if (report.getHtmlURLs() != null) {
                         htmlBody.append("<img src=\"").append(htmlURL).append("\"/img>");
                     }
                 }
-                for (String table : chart.getHtmlTables()) {
+                for (String table : report.getHtmlTables()) {
                     htmlBody.append(table);
                     htmlBody.append("\n\n");
                 }

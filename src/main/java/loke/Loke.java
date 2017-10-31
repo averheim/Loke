@@ -15,7 +15,7 @@ import java.util.List;
 
 public class Loke {
     private Configuration configuration;
-    private ChartGenerator chartGenerator;
+    private CostReportGenerator costReportGenerator;
     private Presenter presenter;
 
     public Loke() {
@@ -28,7 +28,7 @@ public class Loke {
                         configuration.getSecretAccessKey(),
                         configuration.getStagingDir());
         HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
-        this.chartGenerator = new ChartGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp(), configuration.getShowAccountThreshold());
+        this.costReportGenerator = new CostReportGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp(), configuration.getShowAccountThreshold());
         AwsSesHandler awsSesHandler = new AwsSesHandler(AmazonSimpleEmailServiceClientBuilder.standard()
                 .withRegion(configuration.getRegion())
                 .withCredentials(
@@ -44,8 +44,8 @@ public class Loke {
     }
 
     public void run() {
-        chartGenerator.addAdmins(configuration.getAdmins());
-        List<User> users = chartGenerator.generateChartsOrderedByUser();
+        costReportGenerator.addAdmins(configuration.getAdmins());
+        List<User> users = costReportGenerator.generateChartsOrderedByUser();
         presenter.present(users);
     }
 }

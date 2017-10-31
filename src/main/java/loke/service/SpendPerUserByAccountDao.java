@@ -1,15 +1,15 @@
-package loke.services;
+package loke.service;
 
 import com.googlecode.charts4j.*;
+import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
-import loke.model.Chart;
+import loke.model.Report;
+import loke.utils.CalendarGenerator;
 import loke.utils.DecimalFormatter;
+import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import loke.utils.CalendarGenerator;
-import loke.HtmlTableCreator;
-import loke.utils.ResourceLoader;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -38,22 +38,22 @@ public class SpendPerUserByAccountDao implements Service {
     }
 
     @Override
-    public List<Chart> getCharts() {
+    public List<Report> getReports() {
         Map<String, User> users = sendRequest();
-        return generateCharts(users);
+        return generateReports(users);
     }
 
-    private List<Chart> generateCharts(Map<String, User> users) {
-        List<Chart> charts = new ArrayList<>();
+    private List<Report> generateReports(Map<String, User> users) {
+        List<Report> charts = new ArrayList<>();
         for (User user : users.values()) {
-            Chart chart = new Chart(user.getUserOwner());
-            chart.addHtmlURLs(generateHtmlURLs(user));
-            chart.addHtmlTables(generateHTMLTables(user));
+            Report report = new Report(user.getUserOwner());
+            report.addHtmlURLs(generateHtmlURLs(user));
+            report.addHtmlTables(generateHTMLTables(user));
             for (String s : generateHtmlURLs(user)) {
                 log.info("URL FOR " + user.getUserOwner() + ": " + s);
             }
-            charts.add(chart);
-            log.info(chart.getOwner() + "\n" + chart.getHtmlTables());
+            charts.add(report);
+            log.info(report.getOwner() + "\n" + report.getHtmlTables());
         }
         return charts;
     }
