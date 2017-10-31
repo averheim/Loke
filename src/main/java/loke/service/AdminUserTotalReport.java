@@ -9,10 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.googlecode.charts4j.Color.*;
 
@@ -44,8 +41,9 @@ public class AdminUserTotalReport implements Service {
             LineChart chart = GCharts.newLineChart(lineChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
             Report report = new Report(user.getUserName());
-            report.addHtmlURL(chart.toURLForHTML());
+            report.addHtmlURL(chart.toURLString());
             reports.add(report);
+            log.info(report.getHtmlURLs() + "\n" + report.getHtmlTables());
         }
         return reports;
     }
@@ -63,8 +61,7 @@ public class AdminUserTotalReport implements Service {
             dailyCosts.add(dailyCost);
         }
 
-        dailyCosts.sort((o1, o2) -> (int) (o1 + o2));
-
+        dailyCosts.sort((o1, o2) -> Double.compare(o2, o1));
         if (dailyCosts.get(0) > 100) return Scale.OVER_HUNDRED;
         if (dailyCosts.get(0) < 10) return Scale.UNDER_TEN;
         return Scale.UNDER_HUNDRED;

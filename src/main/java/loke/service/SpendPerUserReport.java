@@ -49,6 +49,7 @@ public class SpendPerUserReport implements Service {
             report.addHtmlURL(chart.toURLString());
             report.addHtmlTable(generateHTMLTable(user));
             reports.add(report);
+            log.info(report.getHtmlURLs() + "\n" + report.getHtmlTables());
         }
         return reports;
     }

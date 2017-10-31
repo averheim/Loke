@@ -60,18 +60,20 @@ public class SpendPerUserByAccountDao implements Service {
 
     private List<String> generateHtmlURLs(User user) {
         List<String> htmlURLs = new ArrayList<>();
+        log.info("USER: " + user.getUserOwner());
         for (Account account : user.getAccounts().values()) {
             Scale scale = checkScale(account);
+            log.info("SCALE: " + scale);
             List<String> xAxisLabels = getXAxisLabels();
             List<Line> lineChartPlots = createPlots(account, scale);
             LineChart chart = GCharts.newLineChart(lineChartPlots);
-            configureChart(xAxisLabels, chart, account, scale);
+            configureChart(xAxisLabels, chart, account, scale, user.getUserOwner());
             htmlURLs.add(chart.toURLString());
         }
         return htmlURLs;
     }
 
-    private void configureChart(List<String> daysXAxisLabels, LineChart chart, Account account, Scale scale) {
+    private void configureChart(List<String> daysXAxisLabels, LineChart chart, Account account, Scale scale, String userName) {
         int chartWidth = 1000;
         int chartHeight = 300;
         chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
@@ -81,7 +83,7 @@ public class SpendPerUserByAccountDao implements Service {
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
         String total = DecimalFormatter.format(calculateAccountTotal(account), 2);
-        chart.setTitle("Total cost for " + account.getAccountId() + " the past 30 days. " + total + " UDS total.");
+        chart.setTitle("Total cost for " + userName + " in " + account.getAccountId() + " the past 30 days. " + total + " UDS total.");
     }
 
     private double calculateAccountTotal(Account account) {
@@ -147,8 +149,12 @@ public class SpendPerUserByAccountDao implements Service {
             dailyCosts.add(dailyCost);
         }
 
-        dailyCosts.sort((o1, o2) -> (int) (o1 + o2));
+        dailyCosts.sort((o1, o2) -> Double.compare(o2, o1));
+        for (Double dailyCost : dailyCosts) {
+            log.info("DAILY COST: " + dailyCost);
+        }
 
+        log.info("THE FIRST ONE: " + dailyCosts.get(0));
         if (dailyCosts.get(0) > 100) return Scale.OVER_HUNDRED;
         if (dailyCosts.get(0) < 10) return Scale.UNDER_TEN;
         return Scale.UNDER_HUNDRED;
