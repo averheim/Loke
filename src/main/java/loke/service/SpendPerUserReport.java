@@ -46,10 +46,9 @@ public class SpendPerUserReport implements Service {
             LineChart chart = GCharts.newLineChart(lineChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
             Report report = new Report(user.getUserName());
-            report.setChartUrl(chart.toURLString());
+            report.addHtmlURL(chart.toURLString());
             report.addHtmlTable(generateHTMLTable(user));
             reports.add(report);
-            log.info(report.getChartUrl() + "\n" + report.getHtmlTables());
         }
         return reports;
     }

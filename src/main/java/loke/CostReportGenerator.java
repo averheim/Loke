@@ -18,7 +18,6 @@ public class CostReportGenerator {
 
     public CostReportGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
         SpendPerUserDao spendPerUserDao = new SpendPerUserDao(athena, userOwnerRegExp);
-
         services = new ArrayList<>();
         services.add(new AdminUserTotalReport(spendPerUserDao));
         services.add(new SpendPerUserReport(htmlTableCreator, spendPerUserDao));
@@ -50,7 +49,7 @@ public class CostReportGenerator {
     private void addChartsToAdmins(Service service, List<Report> reports) {
         if (service instanceof SpendPerUserByAccountDao || service instanceof AdminUserTotalReport) {
             for (User admin : admins) {
-                admin.getReports().addAll(reports);
+                admin.addReports(reports);
             }
         }
     }

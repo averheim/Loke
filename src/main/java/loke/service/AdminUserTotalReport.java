@@ -44,9 +44,8 @@ public class AdminUserTotalReport implements Service {
             LineChart chart = GCharts.newLineChart(lineChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
             Report report = new Report(user.getUserName());
-            report.setChartUrl(chart.toURLString());
+            report.addHtmlURL(chart.toURLForHTML());
             reports.add(report);
-            log.info(report.getChartUrl() + "\n" + report.getHtmlTables());
         }
         return reports;
     }
@@ -117,7 +116,6 @@ public class AdminUserTotalReport implements Service {
             }
             lineSizeValues.add(total);
         }
-        log.info("LINE CHART SIZE: " + lineSizeValues.size());
         return lineSizeValues;
     }
 

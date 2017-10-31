@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SpendPerUserDao {
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/CostPerUserAndProductLast30Days.sql");
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerUser.sql");
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private AthenaClient athenaClient;
     private String userOwnerRegexp;
