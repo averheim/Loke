@@ -78,7 +78,7 @@ public class HtmlTableCreator {
     }
 
     private void createHeading(String text) {
-        sb.append("<h3 style=\"text-align: left;\">").append(text).append("</h3>");
+        sb.append("<h4 style=\"text-align: left;\">").append(text).append("</h4>");
     }
 
     private void createHead(List<String> head) {
@@ -111,10 +111,10 @@ public class HtmlTableCreator {
             }
             for (int i = 0; i < row.size(); i++) {
                 if (i == 0) {
-                    sb.append("<td style=\"").append(TH_TD_STYLE).append(LEFT_ALIGN).append(FIXED_WIDTH).append("\">")
+                    sb.append("<td nowrap style=\"").append(TH_TD_STYLE).append(LEFT_ALIGN).append(FIXED_WIDTH).append("\">")
                             .append(row.get(i)).append("</td>");
                 } else {
-                    sb.append("<td style=\"").append(TH_TD_STYLE).append(RIGHT_ALIGN).append("\">")
+                    sb.append("<td nowrap style=\"").append(TH_TD_STYLE).append(RIGHT_ALIGN).append("\">")
                             .append(row.get(i)).append("</td>");
                 }
             }
@@ -132,21 +132,21 @@ public class HtmlTableCreator {
 
             for (int i = 0; i < row.size(); i++) {
                 if (i == 0) {
-                    sb.append("<td style=\"").append(TH_TD_STYLE)
+                    sb.append("<td nowrap style=\"").append(TH_TD_STYLE)
                             .append(LEFT_ALIGN)
                             .append(FIXED_WIDTH)
                             .append("\">")
                             .append(row.get(i))
                             .append("</td>");
                 } else if(i == row.size() -1) {
-                    sb.append("<td style=\"")
+                    sb.append("<td nowrap style=\"")
                             .append(TH_TD_STYLE)
                             .append(RIGHT_ALIGN)
                             .append("\">")
                             .append(row.get(i))
                             .append("</td>");
                 } else {
-                    sb.append("<td style=\"")
+                    sb.append("<td nowrap style=\"")
                             .append(TH_TD_STYLE)
                             .append((leftAligned) ? LEFT_ALIGN : RIGHT_ALIGN)
                             .append("\">")
@@ -182,7 +182,7 @@ public class HtmlTableCreator {
                 .append("<tr>")
                 .append("<td style=\"")
                 .append(TH_TD_STYLE)
-                .append("background-color: #b8ff8c;")
+                .append("background-color: #428aff;")
                 .append("\" colspan=\"")
                 .append(colspan)
                 .append("\">")

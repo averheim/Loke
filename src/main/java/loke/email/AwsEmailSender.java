@@ -30,9 +30,12 @@ public class AwsEmailSender implements Presenter {
             String to = user.getUserName() + toEmailDomainName;
             StringBuilder htmlBody = new StringBuilder();
 
+
             for (Report report : user.getReports()) {
-                if (report.getChartUrl() != null) {
-                    htmlBody.append("<img src=\"").append(report.getChartUrl()).append("\"/img>");
+                for (String htmlURL : report.getHtmlURLs()) {
+                    if (report.getHtmlURLs() != null) {
+                        htmlBody.append("<img src=\"").append(htmlURL).append("\"/img>");
+                    }
                 }
                 for (String table : report.getHtmlTables()) {
                     htmlBody.append(table);

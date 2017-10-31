@@ -5,24 +5,29 @@ import java.util.List;
 
 public class Report {
     private String owner;
-    private String chartUrl;
+    private List<String> htmlURLs;
     private List<String> htmlTables;
 
     public Report(String owner) {
         this.owner = owner;
         this.htmlTables = new ArrayList<>();
+        this.htmlURLs = new ArrayList<>();
     }
 
     public String getOwner() {
         return owner;
     }
 
-    public String getChartUrl() {
-        return chartUrl;
+    public void addHtmlURL(String htmlUrl) {
+        this.htmlURLs.add(htmlUrl);
     }
 
-    public void setChartUrl(String chartUrl) {
-        this.chartUrl = chartUrl;
+    public void addHtmlURLs(List<String> htmlURLs) {
+        this.htmlURLs.addAll(htmlURLs);
+    }
+
+    public List<String> getHtmlURLs() {
+        return htmlURLs;
     }
 
     public List<String> getHtmlTables() {
