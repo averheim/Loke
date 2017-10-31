@@ -60,8 +60,10 @@ public class SpendPerUserByAccountDao implements Service {
 
     private List<String> generateHtmlURLs(User user) {
         List<String> htmlURLs = new ArrayList<>();
+        log.info("USER: " + user.getUserOwner());
         for (Account account : user.getAccounts().values()) {
             Scale scale = checkScale(account);
+            log.info("SCALE: " + scale);
             List<String> xAxisLabels = getXAxisLabels();
             List<Line> lineChartPlots = createPlots(account, scale);
             LineChart chart = GCharts.newLineChart(lineChartPlots);
@@ -147,8 +149,12 @@ public class SpendPerUserByAccountDao implements Service {
             dailyCosts.add(dailyCost);
         }
 
-        dailyCosts.sort((o1, o2) -> (int) (o1 + o2));
+        dailyCosts.sort((o1, o2) -> Double.compare(o2, o1));
+        for (Double dailyCost : dailyCosts) {
+            log.info("DAILY COST: " + dailyCost);
+        }
 
+        log.info("THE FIRST ONE: " + dailyCosts.get(0));
         if (dailyCosts.get(0) > 100) return Scale.OVER_HUNDRED;
         if (dailyCosts.get(0) < 10) return Scale.UNDER_TEN;
         return Scale.UNDER_HUNDRED;
