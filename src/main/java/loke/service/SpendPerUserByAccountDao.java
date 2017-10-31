@@ -67,13 +67,13 @@ public class SpendPerUserByAccountDao implements Service {
             List<String> xAxisLabels = getXAxisLabels();
             List<Line> lineChartPlots = createPlots(account, scale);
             LineChart chart = GCharts.newLineChart(lineChartPlots);
-            configureChart(xAxisLabels, chart, account, scale);
+            configureChart(xAxisLabels, chart, account, scale, user.getUserOwner());
             htmlURLs.add(chart.toURLString());
         }
         return htmlURLs;
     }
 
-    private void configureChart(List<String> daysXAxisLabels, LineChart chart, Account account, Scale scale) {
+    private void configureChart(List<String> daysXAxisLabels, LineChart chart, Account account, Scale scale, String userName) {
         int chartWidth = 1000;
         int chartHeight = 300;
         chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
@@ -83,7 +83,7 @@ public class SpendPerUserByAccountDao implements Service {
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
         String total = DecimalFormatter.format(calculateAccountTotal(account), 2);
-        chart.setTitle("Total cost for " + account.getAccountId() + " the past 30 days. " + total + " UDS total.");
+        chart.setTitle("Total cost for " + userName + " in " + account.getAccountId() + " the past 30 days. " + total + " UDS total.");
     }
 
     private double calculateAccountTotal(Account account) {

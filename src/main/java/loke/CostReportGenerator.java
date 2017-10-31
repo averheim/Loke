@@ -22,7 +22,7 @@ public class CostReportGenerator {
         services = new ArrayList<>();
         services.add(new AdminUserTotalReport(spendPerUserDao));
         services.add(new SpendPerUserReport(htmlTableCreator, spendPerUserDao));
-        services.add(new SpendPerUserAndAccountDao(athena, htmlTableCreator, userOwnerRegExp, showAccountThreshold));
+        services.add(new SpendPerUserByAccountDao(athena, htmlTableCreator, userOwnerRegExp, showAccountThreshold));
         services.add(new ResourceStartedLastWeekDao(athena, htmlTableCreator, userOwnerRegExp));
         admins = new ArrayList<>();
     }
@@ -48,10 +48,10 @@ public class CostReportGenerator {
     }
 
     private void addChartsToAdmins(Service service, List<Report> reports) {
-        if (service instanceof SpendPerUserAndAccountDao || service instanceof AdminUserTotalReport) {
+        if (service instanceof SpendPerUserByAccountDao || service instanceof AdminUserTotalReport) {
             for (Report report : reports) {
                 log.info(report.getOwner());
-                log.info(report.getChartUrl());
+                log.info(report.getHtmlURLs());
             }
             for (User admin : admins) {
                 admin.getReports().addAll(reports);
