@@ -17,15 +17,15 @@ import java.util.Map;
 
 import static com.googlecode.charts4j.Color.*;
 
-public class SpendPerUserReport implements Service {
-    private static final Logger log = LogManager.getLogger(SpendPerUserReport.class);
+public class SpendPerUserByResourceReport implements Service {
+    private static final Logger log = LogManager.getLogger(SpendPerUserByResourceReport.class);
     private static final List<Calendar> THIRTY_DAYS_BACK = CalendarGenerator.getDaysBack(60);
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private HtmlTableCreator htmlTableCreator;
     private SpendPerUserDao spendPerUserDao;
     private int colorCounter = 0;
 
-    public SpendPerUserReport(HtmlTableCreator htmlTableCreator, SpendPerUserDao spendPerUserDao) {
+    public SpendPerUserByResourceReport(HtmlTableCreator htmlTableCreator, SpendPerUserDao spendPerUserDao) {
         this.htmlTableCreator = htmlTableCreator;
         this.spendPerUserDao = spendPerUserDao;
     }

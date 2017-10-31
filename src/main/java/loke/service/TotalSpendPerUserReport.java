@@ -13,14 +13,14 @@ import java.util.*;
 
 import static com.googlecode.charts4j.Color.*;
 
-public class AdminUserTotalReport implements Service {
-    private static final Logger log = LogManager.getLogger(AdminUserTotalReport.class);
+public class TotalSpendPerUserReport implements Service {
+    private static final Logger log = LogManager.getLogger(TotalSpendPerUserReport.class);
     private static final List<Calendar> THIRTY_DAYS_BACK = CalendarGenerator.getDaysBack(60);
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private SpendPerUserDao spendPerUserDao;
     private int colorCounter = 0;
 
-    public AdminUserTotalReport(SpendPerUserDao spendPerUserDao) {
+    public TotalSpendPerUserReport(SpendPerUserDao spendPerUserDao) {
         this.spendPerUserDao = spendPerUserDao;
     }
 
