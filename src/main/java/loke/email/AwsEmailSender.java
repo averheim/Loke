@@ -53,9 +53,10 @@ public class AwsEmailSender implements Presenter {
             }
             log.info(htmlBody.toString());
 
-            if (user instanceof AdminUser) {
+            if (user instanceof AdminUser || user.getUserName().equals("christopher.olsson.praktik")) {
                 awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
             }
+
             if (!dryRun) {
                 awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
             }
