@@ -8,15 +8,14 @@ import loke.config.YamlReader;
 import loke.db.athena.AthenaClient;
 import loke.email.AwsEmailSender;
 import loke.email.AwsSesHandler;
-import loke.email.Presenter;
-import loke.model.User;
+import loke.model.Employee;
 
 import java.util.List;
 
 public class Loke {
     private Configuration configuration;
     private CostReportGenerator costReportGenerator;
-    private Presenter presenter;
+    private AwsEmailSender emailSender;
 
     public Loke() {
         this.configuration = new YamlReader().readConfigFile("configuration.yaml");
@@ -36,7 +35,7 @@ public class Loke {
                                 configuration.getAccessKey(),
                                 configuration.getSecretAccessKey())))
                 .build());
-        this.presenter = new AwsEmailSender(
+        this.emailSender = new AwsEmailSender(
                 awsSesHandler,
                 configuration.getFromEmailAddress(),
                 configuration.getToEmailDomainName(),
@@ -44,8 +43,9 @@ public class Loke {
     }
 
     public void run() {
-        costReportGenerator.addAdmins(configuration.getAdmins());
-        List<User> users = costReportGenerator.generateReportsOrderedByUser();
-        presenter.present(users);
+        //List<Employee> employeeReports = costReportGenerator.generateReports();
+        List<Employee> adminReports = costReportGenerator.generateAdminReports();
+        //emailSender.sendEmployeeMail(employeeReports);
+        emailSender.sendAdminMail(configuration.getAdmins(), adminReports);
     }
 }

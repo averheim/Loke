@@ -2,8 +2,8 @@ package loke;
 
 import loke.email.AwsEmailSender;
 import loke.email.AwsSesHandler;
+import loke.model.Employee;
 import loke.model.Report;
-import loke.model.User;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,16 +26,16 @@ public class AwsEmailSenderTest {
     @Test
     public void present_htmlBodyCreation_CreatesExpectedBody() throws Exception {
 
-        List<User> users = new ArrayList<>();
-        User user = new User("john.doe");
+        List<Employee> employees = new ArrayList<>();
+        Employee employee = new Employee("john.doe");
         Report report = new Report("john.doe");
         report.addHtmlTable("<table>Table 1</table>");
         report.addHtmlTable("<table>Table 2</table>");
-        user.getReports().add(report);
-        users.add(user);
+        employee.getReports().add(report);
+        employees.add(employee);
 
 
-        awsEmailSender.present(users);
+        awsEmailSender.sendEmployeeMail(employees);
 
         String expected = "<table>Table 1</table>\n\n" + "<table>Table 2</table>";
 

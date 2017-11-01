@@ -3,11 +3,11 @@ package loke.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class User {
+public class Employee {
     private String userName;
     private List<Report> reports;
 
-    public User(String userName) {
+    public Employee(String userName) {
         this.userName = userName;
         this.reports = new ArrayList<>();
     }
@@ -23,5 +23,4 @@ public class User {
     public void addReports(List<Report> reports) {
         this.reports.addAll(reports);
     }
-
 }

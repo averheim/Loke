@@ -1,29 +1,27 @@
 package loke.service;
 
+import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
+import loke.utils.DecimalFormatter;
+import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import loke.utils.DecimalFormatter;
-import loke.HtmlTableCreator;
-import loke.utils.ResourceLoader;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class ResourceStartedLastWeekDao implements Service {
-    private static final Logger log = LogManager.getLogger(ResourceStartedLastWeekDao.class);
+public class ResourceStartedLastWeek implements Service {
+    private static final Logger log = LogManager.getLogger(ResourceStartedLastWeek.class);
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-
-
-    public ResourceStartedLastWeekDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
+    public ResourceStartedLastWeek(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
         this.userOwnerRegExp = userOwnerRegExp;
@@ -53,19 +51,19 @@ public class ResourceStartedLastWeekDao implements Service {
 
         double totalCost = 0;
         List<String> body = new ArrayList<>();
-        for (DetailedResource detailedResource : user.getResources()) {
-            body.add(detailedResource.account);
-            body.add(detailedResource.productName);
-            body.add(detailedResource.resourceId);
+        for (ResourceStartedLastWeekDao dao : user.getResources()) {
+            body.add(dao.account);
+            body.add(dao.productName);
+            body.add(dao.resourceId);
             Calendar day = Calendar.getInstance();
             try {
-                day.setTime(dateFormat.parse(detailedResource.startDate));
+                day.setTime(dateFormat.parse(dao.startDate));
             } catch (ParseException e) {
                 e.printStackTrace();
             }
             body.add(simpleDateFormat.format(day.getTime()));
-            body.add(DecimalFormatter.format(detailedResource.cost, 2));
-            totalCost += detailedResource.cost;
+            body.add(DecimalFormatter.format(dao.cost, 2));
+            totalCost += dao.cost;
         }
         String foot = "Total: $" + DecimalFormatter.format(totalCost, 2);
         return htmlTableCreator.createTable(head, body, foot, null, true);
@@ -73,22 +71,22 @@ public class ResourceStartedLastWeekDao implements Service {
 
     private Map<String, User> sendRequest() {
         Map<String, User> users = new HashMap<>();
-        JdbcManager.QueryResult<DetailedResource> queryResult = athenaClient.executeQuery(SQL_QUERY, DetailedResource.class);
-        for (DetailedResource detailedResource : queryResult.getResultList()) {
-            if (!detailedResource.userOwner.matches(userOwnerRegExp)) {
+        JdbcManager.QueryResult<ResourceStartedLastWeekDao> queryResult = athenaClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class);
+        for (ResourceStartedLastWeekDao resourceStartedLastWeekDao : queryResult.getResultList()) {
+            if (!resourceStartedLastWeekDao.userOwner.matches(userOwnerRegExp)) {
                 continue;
             }
 
-            if (!users.containsKey(detailedResource.userOwner)) {
-                users.put(detailedResource.userOwner, new User(detailedResource.userOwner));
+            if (!users.containsKey(resourceStartedLastWeekDao.userOwner)) {
+                users.put(resourceStartedLastWeekDao.userOwner, new User(resourceStartedLastWeekDao.userOwner));
             }
-            users.get(detailedResource.userOwner).addResource(detailedResource);
+            users.get(resourceStartedLastWeekDao.userOwner).addResource(resourceStartedLastWeekDao);
         }
 
         return users;
     }
 
-    public static class DetailedResource {
+    public static class ResourceStartedLastWeekDao {
         @JdbcManager.Column(value = "account_name")
         public String account;
         @JdbcManager.Column(value = "user_owner")
@@ -105,7 +103,7 @@ public class ResourceStartedLastWeekDao implements Service {
 
     private class User {
         private String userOwner;
-        private List<ResourceStartedLastWeekDao.DetailedResource> resources;
+        private List<ResourceStartedLastWeekDao> resources;
 
         public User(String userOwner) {
             this.userOwner = userOwner;
@@ -116,11 +114,11 @@ public class ResourceStartedLastWeekDao implements Service {
             return userOwner;
         }
 
-        public List<DetailedResource> getResources() {
+        public List<ResourceStartedLastWeekDao> getResources() {
             return resources;
         }
 
-        public void addResource(DetailedResource resource) {
+        public void addResource(ResourceStartedLastWeekDao resource) {
             resources.add(resource);
         }
     }

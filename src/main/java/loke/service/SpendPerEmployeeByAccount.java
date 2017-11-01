@@ -5,7 +5,6 @@ import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
-import loke.model.TotalPerAccountReport;
 import loke.utils.CalendarGenerator;
 import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
@@ -18,20 +17,20 @@ import java.util.*;
 
 import static com.googlecode.charts4j.Color.*;
 
-public class SpendPerUserByAccountDao implements Service {
-    private static final Logger log = LogManager.getLogger(SpendPerUserByAccountDao.class);
+public class SpendPerEmployeeByAccount implements Service {
+    private static final Logger log = LogManager.getLogger(SpendPerEmployeeByAccount.class);
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerUserByAccount.sql");
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
     private double showAccountThreshold;
-    private static final List<Calendar> THIRTY_DAYS_BACK = CalendarGenerator.getDaysBack(60);
+    private static final List<Calendar> DAYS_BACK = CalendarGenerator.getDaysBack(60);
     private int colorCounter = 0;
     private double accountTotal = 0;
     private double total = 0;
 
-    public SpendPerUserByAccountDao(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
+    public SpendPerEmployeeByAccount(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
         this.userOwnerRegExp = userOwnerRegExp;
@@ -47,7 +46,7 @@ public class SpendPerUserByAccountDao implements Service {
     private List<Report> generateReports(Map<String, User> users) {
         List<Report> charts = new ArrayList<>();
         for (User user : users.values()) {
-            Report report = new TotalPerAccountReport(user.getUserOwner());
+            Report report = new Report(user.getUserOwner());
             report.addHtmlURLs(generateHtmlURLs(user));
             report.addHtmlTables(generateHTMLTables(user));
             for (String s : generateHtmlURLs(user)) {
@@ -85,7 +84,7 @@ public class SpendPerUserByAccountDao implements Service {
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
         String total = DecimalFormatter.format(calculateAccountTotal(account), 2);
-        chart.setTitle("Total cost for " + userName + " in " + account.getAccountId() + " the past " + THIRTY_DAYS_BACK.size() + "days. " + total + " UDS total.");
+        chart.setTitle("Total cost for " + userName + " in " + account.getAccountId() + " the past " + DAYS_BACK.size() + "days. " + total + " UDS total.");
     }
 
     private double calculateAccountTotal(Account account) {
@@ -128,7 +127,7 @@ public class SpendPerUserByAccountDao implements Service {
 
     private List<Double> getDailyCosts(Resource resource) {
         List<Double> data = new ArrayList<>();
-        for (Calendar calendar : THIRTY_DAYS_BACK) {
+        for (Calendar calendar : DAYS_BACK) {
             Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
             if (day == null) {
                 data.add(0.0);
@@ -142,7 +141,7 @@ public class SpendPerUserByAccountDao implements Service {
     private Scale checkScale(Account account) {
         List<Double> dailyCosts = new ArrayList<>();
 
-        for (Calendar calendar : THIRTY_DAYS_BACK) {
+        for (Calendar calendar : DAYS_BACK) {
             double dailyCost = 0.0;
             for (Resource resource : account.getResources().values()) {
                 Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
@@ -187,7 +186,7 @@ public class SpendPerUserByAccountDao implements Service {
         List<String> labels = new ArrayList<>();
 
         // add labels
-        for (Calendar day : THIRTY_DAYS_BACK) {
+        for (Calendar day : DAYS_BACK) {
             String date = dateFormat.format(day.getTime());
             if (!labels.contains(date)) {
                 labels.add(date.substring(8, 10));
@@ -202,7 +201,7 @@ public class SpendPerUserByAccountDao implements Service {
         List<String> head = new ArrayList<>();
 
         head.add("Products by Account");
-        for (Calendar calendar : THIRTY_DAYS_BACK) {
+        for (Calendar calendar : DAYS_BACK) {
             head.add(simpleDateFormat.format(calendar.getTime()));
         }
         head.add("Total ($)");
@@ -213,12 +212,12 @@ public class SpendPerUserByAccountDao implements Service {
             Collections.reverse(resources);
 
             if (accountTotal >= showAccountThreshold) {
-                bodies.add(getAccountTotalRows(THIRTY_DAYS_BACK, account, resources));
-                bodies.add(getResourceRows(THIRTY_DAYS_BACK, resources));
+                bodies.add(getAccountTotalRows(DAYS_BACK, account, resources));
+                bodies.add(getResourceRows(DAYS_BACK, resources));
             }
             resources.clear();
         }
-        bodies.add(getTotalCostRow(user, THIRTY_DAYS_BACK));
+        bodies.add(getTotalCostRow(user, DAYS_BACK));
 
 
         String heading = "Monthly spend for " + user.getUserOwner() + " (Accounts with total cost below $"
@@ -298,41 +297,41 @@ public class SpendPerUserByAccountDao implements Service {
 
     private Map<String, User> sendRequest() {
         Map<String, User> users = new HashMap<>();
-        JdbcManager.QueryResult<SpendPerUserAndAccount> queryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerUserAndAccount.class);
-        for (SpendPerUserAndAccount spendPerUserAndAccount : queryResult.getResultList()) {
-            if (!spendPerUserAndAccount.userOwner.matches(userOwnerRegExp)) {
+        JdbcManager.QueryResult<SpendPerEmployeeAndAccountDao> queryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerEmployeeAndAccountDao.class);
+        for (SpendPerEmployeeAndAccountDao dao : queryResult.getResultList()) {
+            if (!dao.userOwner.matches(userOwnerRegExp)) {
                 continue;
             }
 
-            if (!users.containsKey(spendPerUserAndAccount.userOwner)) {
-                users.put(spendPerUserAndAccount.userOwner, new User(spendPerUserAndAccount.userOwner));
+            if (!users.containsKey(dao.userOwner)) {
+                users.put(dao.userOwner, new User(dao.userOwner));
             }
 
-            User user = users.get(spendPerUserAndAccount.userOwner);
-            if (!user.getAccounts().containsKey(spendPerUserAndAccount.accountId)) {
-                user.addAccount(spendPerUserAndAccount.accountId, new Account(spendPerUserAndAccount.accountId));
+            User user = users.get(dao.userOwner);
+            if (!user.getAccounts().containsKey(dao.accountId)) {
+                user.addAccount(dao.accountId, new Account(dao.accountId));
             }
 
-            Account account = user.getAccounts().get(spendPerUserAndAccount.accountId);
-            if (!account.getResources().containsKey(spendPerUserAndAccount.productName)) {
-                account.addResource(spendPerUserAndAccount.productName, new Resource(spendPerUserAndAccount.productName));
+            Account account = user.getAccounts().get(dao.accountId);
+            if (!account.getResources().containsKey(dao.productName)) {
+                account.addResource(dao.productName, new Resource(dao.productName));
             }
 
-            Resource resource = account.getResources().get(spendPerUserAndAccount.productName);
+            Resource resource = account.getResources().get(dao.productName);
             Calendar date = Calendar.getInstance();
             try {
-                date.setTime(dateFormat.parse(spendPerUserAndAccount.startDate));
+                date.setTime(dateFormat.parse(dao.startDate));
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            Day day = new Day(date, spendPerUserAndAccount.cost);
+            Day day = new Day(date, dao.cost);
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }
         log.info("REQUEST: {}", users.size());
         return users;
     }
 
-    public static class SpendPerUserAndAccount {
+    public static class SpendPerEmployeeAndAccountDao {
         @JdbcManager.Column(value = "user_owner")
         public String userOwner;
         @JdbcManager.Column(value = "account_name")

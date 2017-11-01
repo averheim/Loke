@@ -14,42 +14,42 @@ import java.util.List;
 import static loke.db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
-import static loke.service.ResourceStartedLastWeekDao.*;
+import static loke.service.ResourceStartedLastWeek.*;
 
-public class ResourceStartedLastWeekDaoTest {
+public class ResourceStartedLastWeekTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
-    private ResourceStartedLastWeekDao resourceStartedLastWeekDao;
+    private ResourceStartedLastWeek resourceStartedLastWeek;
 
     @Before
     public void setUp() throws Exception {
         athenaClient = mock(AthenaClient.class);
         htmlTableCreator = new HtmlTableCreator();
         String userOwnerRegExp = "";
-        resourceStartedLastWeekDao = new ResourceStartedLastWeekDao(athenaClient, htmlTableCreator, userOwnerRegExp);
+        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, htmlTableCreator, userOwnerRegExp);
     }
 
     @Test
     public void test_1() throws Exception {
-        List<DetailedResource> resultList = new ArrayList<>();
+        List<ResourceStartedLastWeekDao> resultList = new ArrayList<>();
         resultList.add(createDbResponse("QA", "john.doe", "Ec2", "i-01def0a998e06c30e", "2017-09-19", 1000));
         resultList.add(createDbResponse("Nova", "john.doe", "Ec2", "v-01def02344e06c30e", "2017-09-20", 1000));
 
         QueryResult queryResult = new QueryResult();
         queryResult.setResultList(resultList);
 
-        Mockito.when(athenaClient.executeQuery(SQL_QUERY, DetailedResource.class)).thenReturn(queryResult);
+        Mockito.when(athenaClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class)).thenReturn(queryResult);
 
         String expected = TestResourceLoader.loadResource("ResourceStartedLastWeekTableTest1.html");
-        String result = resourceStartedLastWeekDao.getReports().get(0).getHtmlTables().get(0);
+        String result = resourceStartedLastWeek.getReports().get(0).getHtmlTables().get(0);
         assertEquals(expected, result);
     }
 
 
 
-    public DetailedResource createDbResponse(String account, String userOwner, String productName, String resourceId, String startDate, double cost) {
-        DetailedResource spendPerUser = new DetailedResource();
+    public ResourceStartedLastWeekDao createDbResponse(String account, String userOwner, String productName, String resourceId, String startDate, double cost) {
+        ResourceStartedLastWeekDao spendPerUser = new ResourceStartedLastWeekDao();
         spendPerUser.account = account;
         spendPerUser.userOwner = userOwner;
         spendPerUser.productName = productName;

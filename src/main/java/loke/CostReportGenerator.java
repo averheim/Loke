@@ -1,82 +1,74 @@
 package loke;
 
 import loke.db.athena.AthenaClient;
-import loke.model.*;
+import loke.model.Employee;
+import loke.model.Report;
 import loke.service.*;
-import loke.service.dao.SpendPerUserDao;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CostReportGenerator {
     private Logger log = LogManager.getLogger(CostReportGenerator.class);
-    private List<Service> services;
-    private List<User> admins;
+    private Map<String, Service> services;
 
     public CostReportGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
-        SpendPerUserDao spendPerUserDao = new SpendPerUserDao(athena, userOwnerRegExp);
-        services = new ArrayList<>();
-        services.add(new TotalSpendPerUserReport(spendPerUserDao));
-        services.add(new SpendPerUserByResourceReport(htmlTableCreator, spendPerUserDao));
-        services.add(new SpendPerUserByAccountDao(athena, htmlTableCreator, userOwnerRegExp, showAccountThreshold));
-        services.add(new ResourceStartedLastWeekDao(athena, htmlTableCreator, userOwnerRegExp));
-        admins = new ArrayList<>();
+        services = new HashMap<>();
+        services.put(TotalSpendPerEmployee.class.getName(), new TotalSpendPerEmployee(athena, userOwnerRegExp));
+        services.put(SpendPerEmployeeByResource.class.getName(), new SpendPerEmployeeByResource(athena, userOwnerRegExp, htmlTableCreator));
+        services.put(SpendPerEmployeeByAccount.class.getName(), new SpendPerEmployeeByAccount(athena, htmlTableCreator, userOwnerRegExp,showAccountThreshold));
+        services.put(ResourceStartedLastWeek.class.getName(), new ResourceStartedLastWeek(athena, htmlTableCreator, userOwnerRegExp));
     }
 
-    public List<User> generateReportsOrderedByUser() {
-        List<User> users = orderChartsByUser(getReports());
-        addReportsToAdmin(users);
-        users.addAll(admins);
-        return users;
+    public List<Employee> generateReports() {
+        return orderChartsByUser(getReports());
     }
 
-    public void addAdmins(List<AdminUser> admins) {
-        this.admins.addAll(admins);
+    public List<Employee> generateAdminReports() {
+        return orderChartsByUser(getAdminReports());
     }
 
     private List<Report> getReports() {
+        log.info("Generating reports");
         List<Report> reports = new ArrayList<>();
-        for (Service service : services) {
-            List<Report> reportList = service.getReports();
-            reports.addAll(reportList);
-        }
+        reports.addAll(services.get(SpendPerEmployeeByResource.class.getName()).getReports());
+        reports.addAll(services.get(SpendPerEmployeeByAccount.class.getName()).getReports());
+        reports.addAll(services.get(ResourceStartedLastWeek.class.getName()).getReports());
+        log.info("Reports generated");
         return reports;
     }
 
-    private void addReportsToAdmin(List<User> users) {
-        List<Report> costReports = new ArrayList<>();
-        for (User user : users) {
-            List<Report> reports = user.getReports();
-            for (Report report : reports) {
-                if (report instanceof TotalReport) costReports.add(report);
-                else if(report instanceof TotalPerAccountReport) costReports.add(report);
-            }
-        }
-        for (User admin : admins) {
-            admin.addReports(costReports);
-        }
+    private List<Report> getAdminReports() {
+        log.info("Generating admin-reports");
+        List<Report> reports = new ArrayList<>();
+        reports.addAll(services.get(TotalSpendPerEmployee.class.getName()).getReports());
+        reports.addAll(services.get(SpendPerEmployeeByAccount.class.getName()).getReports());
+        log.info("Admin-reports generated");
+        return reports;
     }
 
-    private List<User> orderChartsByUser(List<Report> reports) {
-        List<User> users = new ArrayList<>();
+    private List<Employee> orderChartsByUser(List<Report> reports) {
+        List<Employee> employees = new ArrayList<>();
         for (Report report : reports) {
-            if (users.stream().noneMatch(user -> user.getUserName().equals(report.getOwner()))) {
-                users.add(new User(report.getOwner()));
+            if (employees.stream().noneMatch(user -> user.getUserName().equals(report.getOwner()))) {
+                employees.add(new Employee(report.getOwner()));
             }
-            User user = findUser(users, report.getOwner());
-            if (user != null) {
-                user.getReports().add(report);
+            Employee employee = findUser(employees, report.getOwner());
+            if (employee != null) {
+                employee.getReports().add(report);
             }
         }
-        return users;
+        return employees;
     }
 
-    private User findUser(List<User> users, String owner) {
-        for (User user : users) {
-            if (user.getUserName().equals(owner)) {
-                return user;
+    private Employee findUser(List<Employee> employees, String owner) {
+        for (Employee employee : employees) {
+            if (employee.getUserName().equals(owner)) {
+                return employee;
             }
         }
         return null;
