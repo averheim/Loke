@@ -45,7 +45,7 @@ public class Loke {
     public void run() {
         //List<Employee> employeeReports = costReportGenerator.generateReports();
         List<Employee> adminReports = costReportGenerator.generateAdminReports();
-        //emailSender.sendEmployeeMail(employeeReports);
-        emailSender.sendAdminMail(configuration.getAdmins(), adminReports);
+        //emailSender.sendEmployeeMails(employeeReports);
+        emailSender.sendAdminMails(configuration.getAdmins(), adminReports);
     }
 }

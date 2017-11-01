@@ -35,7 +35,7 @@ public class AwsEmailSenderTest {
         employees.add(employee);
 
 
-        awsEmailSender.sendEmployeeMail(employees);
+        awsEmailSender.sendEmployeeMails(employees);
 
         String expected = "<table>Table 1</table>\n\n" + "<table>Table 2</table>";
 

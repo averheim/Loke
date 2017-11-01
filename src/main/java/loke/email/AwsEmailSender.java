@@ -24,7 +24,7 @@ public class AwsEmailSender {
         this.dryRun = dryRun;
     }
 
-    public void sendEmployeeMail(List<Employee> employeeReports) {
+    public void sendEmployeeMails(List<Employee> employeeReports) {
         log.info("Sending emails");
         for (Employee employee : employeeReports) {
             StringBuilder htmlBody = new StringBuilder();
@@ -43,7 +43,7 @@ public class AwsEmailSender {
         }
     }
 
-    public void sendAdminMail(List<Admin> admins, List<Employee> adminReports) {
+    public void sendAdminMails(List<Admin> admins, List<Employee> adminReports) {
         log.info("Sending emails");
         StringBuilder htmlBody = new StringBuilder();
         for (Employee employee : adminReports) {
