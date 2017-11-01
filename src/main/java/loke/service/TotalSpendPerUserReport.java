@@ -2,6 +2,7 @@ package loke.service;
 
 import com.googlecode.charts4j.*;
 import loke.model.Report;
+import loke.model.TotalReport;
 import loke.service.dao.SpendPerUserDao;
 import loke.utils.CalendarGenerator;
 import loke.utils.DecimalFormatter;
@@ -40,7 +41,7 @@ public class TotalSpendPerUserReport implements Service {
             List<Line> lineChartPlots = createPlots(user, scale);
             LineChart chart = GCharts.newLineChart(lineChartPlots);
             configureChart(xAxisLabels, chart, user, scale);
-            Report report = new Report(user.getUserName());
+            Report report = new TotalReport(user.getUserName());
             report.addHtmlURL(chart.toURLString());
             reports.add(report);
             log.info(report.getHtmlURLs() + "\n" + report.getHtmlTables());
@@ -88,7 +89,7 @@ public class TotalSpendPerUserReport implements Service {
         chart.addYAxisLabels(AxisLabelsFactory.newAxisLabels("Cost in " + scale.getSuffix(), 50));
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
-        chart.setTitle("Total cost for " + user.getUserName() + " the past 30 days " + DecimalFormatter.format(user.calculateTotalCost(), 2) + " USD");
+        chart.setTitle("Total cost for " + user.getUserName() + " the past " + THIRTY_DAYS_BACK.size() + " days " + DecimalFormatter.format(user.calculateTotalCost(), 2) + " USD");
     }
 
     private List<Line> createPlots(SpendPerUserDao.User user, Scale scale) {

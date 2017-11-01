@@ -45,7 +45,7 @@ public class Loke {
 
     public void run() {
         costReportGenerator.addAdmins(configuration.getAdmins());
-        List<User> users = costReportGenerator.generateChartsOrderedByUser();
+        List<User> users = costReportGenerator.generateReportsOrderedByUser();
         presenter.present(users);
     }
 }

@@ -5,6 +5,7 @@ import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
+import loke.model.TotalPerAccountReport;
 import loke.utils.CalendarGenerator;
 import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
@@ -46,7 +47,7 @@ public class SpendPerUserByAccountDao implements Service {
     private List<Report> generateReports(Map<String, User> users) {
         List<Report> charts = new ArrayList<>();
         for (User user : users.values()) {
-            Report report = new Report(user.getUserOwner());
+            Report report = new TotalPerAccountReport(user.getUserOwner());
             report.addHtmlURLs(generateHtmlURLs(user));
             report.addHtmlTables(generateHTMLTables(user));
             for (String s : generateHtmlURLs(user)) {
@@ -84,7 +85,7 @@ public class SpendPerUserByAccountDao implements Service {
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
         String total = DecimalFormatter.format(calculateAccountTotal(account), 2);
-        chart.setTitle("Total cost for " + userName + " in " + account.getAccountId() + " the past 30 days. " + total + " UDS total.");
+        chart.setTitle("Total cost for " + userName + " in " + account.getAccountId() + " the past " + THIRTY_DAYS_BACK.size() + "days. " + total + " UDS total.");
     }
 
     private double calculateAccountTotal(Account account) {
@@ -327,6 +328,7 @@ public class SpendPerUserByAccountDao implements Service {
             Day day = new Day(date, spendPerUserAndAccount.cost);
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }
+        log.info("REQUEST: {}", users.size());
         return users;
     }
 

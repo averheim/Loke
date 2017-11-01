@@ -1,8 +1,7 @@
 package loke;
 
 import loke.db.athena.AthenaClient;
-import loke.model.Report;
-import loke.model.User;
+import loke.model.*;
 import loke.service.*;
 import loke.service.dao.SpendPerUserDao;
 import org.apache.logging.log4j.LogManager;
@@ -26,31 +25,37 @@ public class CostReportGenerator {
         admins = new ArrayList<>();
     }
 
-    public List<User> generateChartsOrderedByUser() {
-        List<User> users = orderChartsByUser(getCharts());
+    public List<User> generateReportsOrderedByUser() {
+        List<User> users = orderChartsByUser(getReports());
+        addReportsToAdmin(users);
         users.addAll(admins);
         return users;
     }
 
-    public void addAdmins(List<User> admins) {
+    public void addAdmins(List<AdminUser> admins) {
         this.admins.addAll(admins);
     }
 
-    private List<Report> getCharts() {
+    private List<Report> getReports() {
         List<Report> reports = new ArrayList<>();
         for (Service service : services) {
             List<Report> reportList = service.getReports();
-            addChartsToAdmins(service, reportList);
             reports.addAll(reportList);
         }
         return reports;
     }
 
-    private void addChartsToAdmins(Service service, List<Report> reports) {
-        if (service instanceof SpendPerUserByAccountDao || service instanceof TotalSpendPerUserReport) {
-            for (User admin : admins) {
-                admin.addReports(reports);
+    private void addReportsToAdmin(List<User> users) {
+        List<Report> costReports = new ArrayList<>();
+        for (User user : users) {
+            List<Report> reports = user.getReports();
+            for (Report report : reports) {
+                if (report instanceof TotalReport) costReports.add(report);
+                else if(report instanceof TotalPerAccountReport) costReports.add(report);
             }
+        }
+        for (User admin : admins) {
+            admin.addReports(costReports);
         }
     }
 

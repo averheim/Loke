@@ -17,6 +17,7 @@ public class DecimalFormatter {
         DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
         formatter.applyPattern(pattern.toString());
         formatter.setRoundingMode(RoundingMode.CEILING);
+        formatter.setMinimumFractionDigits(2);
         DecimalFormatSymbols symbols = formatter.getDecimalFormatSymbols();
 
         symbols.setGroupingSeparator(' ');

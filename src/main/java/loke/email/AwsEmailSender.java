@@ -1,6 +1,8 @@
 package loke.email;
 
+import loke.model.AdminUser;
 import loke.model.Report;
+import loke.model.TotalReport;
 import loke.model.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,19 +32,30 @@ public class AwsEmailSender implements Presenter {
             String to = user.getUserName() + toEmailDomainName;
             StringBuilder htmlBody = new StringBuilder();
 
-
             for (Report report : user.getReports()) {
                 for (String htmlURL : report.getHtmlURLs()) {
-                    if (report.getHtmlURLs() != null) {
-                        htmlBody.append("<img src=\"").append(htmlURL).append("\"/img>");
+                    if (user instanceof AdminUser) {
+                        if (report instanceof TotalReport) {
+                            if (report.getHtmlURLs() != null) {
+                                htmlBody.append("<img src=\"").append(htmlURL).append("\"/img>");
+                            }
+                        }
+                    } else {
+                        if (report.getHtmlURLs() != null) {
+                            htmlBody.append("<img src=\"").append(htmlURL).append("\"/img>");
+                        }
                     }
                 }
                 for (String table : report.getHtmlTables()) {
+                    log.info(report.getClass());
                     htmlBody.append(table);
-                    htmlBody.append("\n\n");
                 }
             }
             log.info(htmlBody.toString());
+
+            if (user instanceof AdminUser) {
+                awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
+            }
             if (!dryRun) {
                 awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
             }

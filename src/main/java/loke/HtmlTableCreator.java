@@ -6,7 +6,7 @@ import java.util.List;
 public class HtmlTableCreator {
     private final static String OUTER_DIV_STYLE = " font-family: 'arial'; ";
     private final static String INNER_DIV_STYLE = " overflow-x: auto; "
-            + "width: 75%; "
+            + "width: 1000px; "
             + "border: 1px solid #ddd; ";
     private final static String TABLE_STYLE = " border-collapse: collapse; "
             + "border-spacing: 0; "
