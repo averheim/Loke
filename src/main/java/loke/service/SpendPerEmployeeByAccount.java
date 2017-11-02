@@ -44,29 +44,24 @@ public class SpendPerEmployeeByAccount implements Service {
     private List<Report> generateReports(Map<String, User> users) {
         List<Report> charts = new ArrayList<>();
         for (User user : users.values()) {
-            Report report = new Report(user.getUserOwner());
+            Report report = new Report(user.getUserName());
             report.addHtmlURLs(generateHtmlURLs(user));
             report.addHtmlTables(generateHTMLTables(user));
-            for (String s : generateHtmlURLs(user)) {
-                log.info("URL FOR " + user.getUserOwner() + ": " + s);
-            }
             charts.add(report);
-            log.info(report.getOwner() + "\n" + report.getHtmlTables());
+            log.info("Report generated for: {}", user.getUserName());
         }
         return charts;
     }
 
     private List<String> generateHtmlURLs(User user) {
         List<String> htmlURLs = new ArrayList<>();
-        log.info("USER: " + user.getUserOwner());
         for (Account account : user.getAccounts().values()) {
             ColorPicker.resetColor();
             Scale scale = checkScale(account);
-            log.info("SCALE: " + scale);
             List<String> xAxisLabels = getXAxisLabels();
             List<Line> lineChartPlots = createPlots(account, scale);
             LineChart chart = GCharts.newLineChart(lineChartPlots);
-            configureChart(xAxisLabels, chart, account, scale, user.getUserOwner());
+            configureChart(xAxisLabels, chart, account, scale, user.getUserName());
             htmlURLs.add(chart.toURLString());
         }
         return htmlURLs;
@@ -148,11 +143,7 @@ public class SpendPerEmployeeByAccount implements Service {
         }
 
         dailyCosts.sort((o1, o2) -> Double.compare(o2, o1));
-        for (Double dailyCost : dailyCosts) {
-            log.info("DAILY COST: " + dailyCost);
-        }
 
-        log.info("THE FIRST ONE: " + dailyCosts.get(0));
         if (dailyCosts.get(0) > 100) return Scale.OVER_HUNDRED;
         if (dailyCosts.get(0) < 10) return Scale.UNDER_TEN;
         return Scale.UNDER_HUNDRED;
@@ -161,7 +152,6 @@ public class SpendPerEmployeeByAccount implements Service {
     private List<String> getXAxisLabels() {
         List<String> labels = new ArrayList<>();
 
-        // add labels
         for (Calendar day : DAYS_BACK) {
             String date = dateFormat.format(day.getTime());
             if (!labels.contains(date)) {
@@ -199,7 +189,7 @@ public class SpendPerEmployeeByAccount implements Service {
         bodies.add(getTotalCostRow(user, DAYS_BACK));
 
 
-        String heading = "Monthly spend for " + user.getUserOwner() + " (Accounts with total cost below $"
+        String heading = "Monthly spend for " + user.getUserName() + " (Accounts with total cost below $"
                 + DecimalFormatter.format(showAccountThreshold, 2) + " will not be shown)";
         String footer = "Monthly total: $" + DecimalFormatter.format(total, 2);
 
@@ -275,6 +265,7 @@ public class SpendPerEmployeeByAccount implements Service {
     }
 
     private Map<String, User> sendRequest() {
+        log.info("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<SpendPerEmployeeAndAccountDao> queryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerEmployeeAndAccountDao.class);
         for (SpendPerEmployeeAndAccountDao dao : queryResult.getResultList()) {
@@ -306,7 +297,7 @@ public class SpendPerEmployeeByAccount implements Service {
             Day day = new Day(date, dao.cost);
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }
-        log.info("REQUEST: {}", users.size());
+        log.info("Done mapping objects");
         return users;
     }
 
@@ -324,16 +315,16 @@ public class SpendPerEmployeeByAccount implements Service {
     }
 
     private class User {
-        private String userOwner;
+        private String userName;
         private Map<String, Account> accounts;
 
-        public User(String userOwner) {
-            this.userOwner = userOwner;
+        public User(String userName) {
+            this.userName = userName;
             this.accounts = new HashMap<>();
         }
 
-        public String getUserOwner() {
-            return userOwner;
+        public String getUserName() {
+            return userName;
         }
 
         public Map<String, Account> getAccounts() {

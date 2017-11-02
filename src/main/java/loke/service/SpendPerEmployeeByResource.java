@@ -16,8 +16,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.googlecode.charts4j.Color.*;
-
 public class SpendPerEmployeeByResource implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerEmployeeByResource.class);
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByResource.sql");
@@ -52,7 +50,7 @@ public class SpendPerEmployeeByResource implements Service {
             report.addHtmlURL(chart.toURLString());
             report.addHtmlTable(generateHTMLTable(user));
             reports.add(report);
-            log.info(report.getHtmlURLs() + "\n" + report.getHtmlTables());
+            log.info("Report generated for: {}", user.getUserName());
         }
         return reports;
     }
@@ -108,7 +106,6 @@ public class SpendPerEmployeeByResource implements Service {
     private List<String> getXAxisLabels() {
         List<String> labels = new ArrayList<>();
 
-        // add labels
         for (Calendar day : DAYS_BACK) {
             String date = dateFormat.format(day.getTime());
             if (!labels.contains(date)) {
@@ -132,7 +129,6 @@ public class SpendPerEmployeeByResource implements Service {
 
     private List<Line> createPlots(User user, Scale scale) {
         List<Line> plots = new ArrayList<>();
-        log.info(user.getUserName());
         for (Resource resource : user.getResources().values()) {
             List<Double> lineSizeValues = getLineSize(resource, scale);
             double total = getResourceTotal(resource);
@@ -172,6 +168,7 @@ public class SpendPerEmployeeByResource implements Service {
     }
 
     private Map<String, User> sendRequest() {
+        log.info("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<SpendPerEmployeeByResourceDao> queryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerEmployeeByResourceDao.class);
         for (SpendPerEmployeeByResourceDao dao : queryResult.getResultList()) {
@@ -199,6 +196,7 @@ public class SpendPerEmployeeByResource implements Service {
             Day day = new Day(date, dao.cost);
             users.get(userName).getResources().get(productName).addDay(dateFormat.format(day.getDate().getTime()), day);
         }
+        log.info("Done mapping objects");
         return users;
     }
 

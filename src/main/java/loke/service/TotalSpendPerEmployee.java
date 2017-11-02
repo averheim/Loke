@@ -48,7 +48,7 @@ public class TotalSpendPerEmployee implements Service {
             Report report = new TotalReport(user.getUserName());
             report.addHtmlURL(chart.toURLString());
             reports.add(report);
-            log.info(report.getHtmlURLs() + "\n" + report.getHtmlTables());
+            log.info("Report generated for: {}", user.getUserName());
         }
         return reports;
     }
@@ -70,7 +70,6 @@ public class TotalSpendPerEmployee implements Service {
     private List<String> getXAxisLabels() {
         List<String> labels = new ArrayList<>();
 
-        // add labels
         for (Calendar day : DAYS_BACK) {
             String date = dateFormat.format(day.getTime());
             if (!labels.contains(date)) {
@@ -110,6 +109,7 @@ public class TotalSpendPerEmployee implements Service {
     }
 
     private Map<String, User> sendRequest() {
+        log.info("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<TotalSpendPerEmployeeDao> queryResult = athenaClient.executeQuery(SQL_QUERY, TotalSpendPerEmployeeDao.class);
         for (TotalSpendPerEmployeeDao dao : queryResult.getResultList()) {
@@ -133,6 +133,7 @@ public class TotalSpendPerEmployee implements Service {
             Day day = new Day(date, dao.cost);
             users.get(userName).addDay(dateFormat.format(day.getDate().getTime()), day);
         }
+        log.info("Done mapping objects");
         return users;
     }
 

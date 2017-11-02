@@ -47,7 +47,7 @@ public class AwsEmailSender {
         log.info("Sending emails");
         StringBuilder htmlBody = new StringBuilder();
         for (Employee employee : adminReports) {
-            log.info("Creating email for: {}", employee.getUserName());
+            log.info("Adding report for: {}", employee.getUserName());
             for (Report report : employee.getReports()) {
                 if (report instanceof TotalReport) {
                     addHtmlURLs(htmlBody, report);

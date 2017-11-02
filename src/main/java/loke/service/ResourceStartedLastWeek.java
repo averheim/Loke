@@ -36,15 +36,15 @@ public class ResourceStartedLastWeek implements Service {
     private List<Report> generateReports(Map<String, User> users) {
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
-            Report report = new Report(user.getUserOwner());
+            Report report = new Report(user.getUserName());
             report.addHtmlTable(generateHTMLTable(user));
             reports.add(report);
-            log.info(report.getOwner() + "\n" + report.getHtmlTables());
+            log.info("Report generated for: {}", user.getUserName());
         }
         return reports;
     }
 
-    public String generateHTMLTable(User user) {
+    private String generateHTMLTable(User user) {
         List<String> head = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
         head.addAll(Arrays.asList("Account", "Product Name", "Resource Id", "Start Date", "Cost ($)"));
@@ -70,6 +70,7 @@ public class ResourceStartedLastWeek implements Service {
     }
 
     private Map<String, User> sendRequest() {
+        log.info("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<ResourceStartedLastWeekDao> queryResult = athenaClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class);
         for (ResourceStartedLastWeekDao resourceStartedLastWeekDao : queryResult.getResultList()) {
@@ -82,7 +83,7 @@ public class ResourceStartedLastWeek implements Service {
             }
             users.get(resourceStartedLastWeekDao.userOwner).addResource(resourceStartedLastWeekDao);
         }
-
+        log.info("Done mapping objects");
         return users;
     }
 
@@ -102,16 +103,16 @@ public class ResourceStartedLastWeek implements Service {
     }
 
     private class User {
-        private String userOwner;
+        private String userName;
         private List<ResourceStartedLastWeekDao> resources;
 
-        public User(String userOwner) {
-            this.userOwner = userOwner;
+        public User(String userName) {
+            this.userName = userName;
             this.resources = new ArrayList<>();
         }
 
-        public String getUserOwner() {
-            return userOwner;
+        public String getUserName() {
+            return userName;
         }
 
         public List<ResourceStartedLastWeekDao> getResources() {
