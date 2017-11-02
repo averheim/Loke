@@ -211,9 +211,12 @@ public class SpendPerEmployeeByAccount implements Service {
             List<Resource> resources = new ArrayList<>(account.getResources().values());
             Collections.reverse(resources);
 
+            List<String> accountTotalRows = getAccountTotalRows(DAYS_BACK, account, resources);
+            List<String> resourceRows = getResourceRows(DAYS_BACK, resources);
+
             if (accountTotal >= showAccountThreshold) {
-                bodies.add(getAccountTotalRows(DAYS_BACK, account, resources));
-                bodies.add(getResourceRows(DAYS_BACK, resources));
+                bodies.add(accountTotalRows);
+                bodies.add(resourceRows);
             }
             resources.clear();
         }
