@@ -31,34 +31,6 @@ public class JdbcManager {
         myProps.setProperty(theName, theValue);
     }
     /**
-     * Executes a custom SQL to DB.
-     */
-    public boolean executeQuery(String theSql) throws SqlException {
-        try (
-                Connection aConn = DriverManager.getConnection(myUrl, myProps);
-                Statement aStmt = aConn.createStatement();
-        ) {
-            log.trace("Execute:\n{}", theSql);
-            return aStmt.execute(theSql);
-        } catch (Exception e) {
-            throw new SqlException("Failed to execute sql: " + theSql, e);
-        }
-    }
-    /**
-     * Executes a custom update sql to DB.
-     */
-    public int executeUpdate(String theSql) throws SqlException {
-        try (
-                Connection aConn = DriverManager.getConnection(myUrl, myProps);
-                Statement aStmt = aConn.createStatement();
-        ) {
-            log.trace("Execute:\n{}", theSql);
-            return aStmt.executeUpdate(theSql);
-        } catch (Exception e) {
-            throw new SqlException("Failed to execute sql: " + theSql, e);
-        }
-    }
-    /**
      * Executes a custom sql query to DB with callback support for resultset.
      */
     public void executeQuery(String theSql, RsAction theAction) throws SqlException {
