@@ -59,7 +59,7 @@ public class SpendPerEmployeeByResource implements Service {
     }
 
     private String generateHTMLTable(User user) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
         List<String> head = new ArrayList<>();
         head.add("Service");
         for (Calendar calendar : DAYS_BACK) {
