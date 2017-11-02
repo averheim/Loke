@@ -23,7 +23,6 @@ public class TotalSpendPerEmployee implements Service {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private final AthenaClient athenaClient;
     private final String userOwnerRegExp;
-    private int colorCounter = 0;
 
     public TotalSpendPerEmployee(AthenaClient athena, String userOwnerRegExp) {
         this.athenaClient = athena;

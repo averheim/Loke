@@ -6,6 +6,7 @@ import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
 import loke.utils.CalendarGenerator;
+import loke.utils.ColorPicker;
 import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
@@ -25,14 +26,12 @@ public class SpendPerEmployeeByResource implements Service {
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
     private HtmlTableCreator htmlTableCreator;
-    private int colorCounter = 0;
 
     public SpendPerEmployeeByResource(AthenaClient athenaClient, String userOwnerRegExp, HtmlTableCreator htmlTableCreator) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
         this.htmlTableCreator = htmlTableCreator;
     }
-
 
     @Override
     public List<Report> getReports() {
@@ -43,7 +42,7 @@ public class SpendPerEmployeeByResource implements Service {
     private List<Report> generateReports(Map<String, User> users) {
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
-            resetColor();
+            ColorPicker.resetColor();
             Scale scale = checkScale(user);
             List<String> xAxisLabels = getXAxisLabels();
             List<Line> lineChartPlots = createPlots(user, scale);
@@ -137,7 +136,7 @@ public class SpendPerEmployeeByResource implements Service {
         for (Resource resource : user.getResources().values()) {
             List<Double> lineSizeValues = getLineSize(resource, scale);
             double total = getResourceTotal(resource);
-            Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), getNextColor(), resource.getResourceName() + " " + DecimalFormatter.format(total, 4));
+            Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), ColorPicker.getNextColor(), resource.getResourceName() + " " + DecimalFormatter.format(total, 4));
             plots.add(0, lineChartPlot);
         }
         return plots;
@@ -171,28 +170,6 @@ public class SpendPerEmployeeByResource implements Service {
         }
         return data;
     }
-
-    private void resetColor() {
-        this.colorCounter = 0;
-    }
-
-    private Color getNextColor() {
-        List<Color> colors = new ArrayList<>();
-        colors.add(BLUE);
-        colors.add(RED);
-        colors.add(YELLOW);
-        colors.add(GREEN);
-        colors.add(GRAY);
-        colors.add(AQUAMARINE);
-        colors.add(ORANGE);
-        Color color = colors.get(colorCounter);
-        colorCounter++;
-        if (colorCounter == colors.size()) {
-            colorCounter = 0;
-        }
-        return color;
-    }
-
 
     private Map<String, User> sendRequest() {
         Map<String, User> users = new HashMap<>();

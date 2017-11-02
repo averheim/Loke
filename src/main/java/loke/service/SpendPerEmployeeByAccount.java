@@ -27,7 +27,6 @@ public class SpendPerEmployeeByAccount implements Service {
     private double showAccountThreshold;
     private double accountTotal = 0;
     private double total = 0;
-    private int colorCounter = 0;
 
     public SpendPerEmployeeByAccount(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
         this.athenaClient = athenaClient;
