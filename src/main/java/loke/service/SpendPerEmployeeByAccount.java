@@ -6,6 +6,7 @@ import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
 import loke.utils.CalendarGenerator;
+import loke.utils.ColorPicker;
 import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
@@ -14,8 +15,6 @@ import org.apache.logging.log4j.Logger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static com.googlecode.charts4j.Color.*;
 
 public class SpendPerEmployeeByAccount implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerEmployeeByAccount.class);
@@ -62,7 +61,7 @@ public class SpendPerEmployeeByAccount implements Service {
         List<String> htmlURLs = new ArrayList<>();
         log.info("USER: " + user.getUserOwner());
         for (Account account : user.getAccounts().values()) {
-            resetColor();
+            ColorPicker.resetColor();
             Scale scale = checkScale(account);
             log.info("SCALE: " + scale);
             List<String> xAxisLabels = getXAxisLabels();
@@ -101,10 +100,9 @@ public class SpendPerEmployeeByAccount implements Service {
             List<Double> lineSizeValues = getLineSize(resource, scale);
             double total = getResourceTotal(resource);
             Line lineChartPlot = Plots.newLine(
-                    Data.newData(lineSizeValues), getNextColor(),
+                    Data.newData(lineSizeValues), ColorPicker.getNextColor(),
                     resource.getProductName() + " " + DecimalFormatter.format(total, 2));
             plots.add(0, lineChartPlot);
-
         }
         return plots;
     }
@@ -159,27 +157,6 @@ public class SpendPerEmployeeByAccount implements Service {
         if (dailyCosts.get(0) > 100) return Scale.OVER_HUNDRED;
         if (dailyCosts.get(0) < 10) return Scale.UNDER_TEN;
         return Scale.UNDER_HUNDRED;
-    }
-
-    private void resetColor() {
-        this.colorCounter = 0;
-    }
-
-    private Color getNextColor() {
-        List<Color> colors = new ArrayList<>();
-        colors.add(BLUE);
-        colors.add(RED);
-        colors.add(YELLOW);
-        colors.add(GREEN);
-        colors.add(GRAY);
-        colors.add(AQUAMARINE);
-        colors.add(ORANGE);
-        Color color = colors.get(colorCounter);
-        colorCounter++;
-        if (colorCounter == colors.size()) {
-            colorCounter = 0;
-        }
-        return color;
     }
 
     private List<String> getXAxisLabels() {

@@ -6,6 +6,7 @@ import loke.db.athena.JdbcManager;
 import loke.model.Report;
 import loke.model.TotalReport;
 import loke.utils.CalendarGenerator;
+import loke.utils.ColorPicker;
 import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
@@ -14,8 +15,6 @@ import org.apache.logging.log4j.Logger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static com.googlecode.charts4j.Color.*;
 
 public class TotalSpendPerEmployee implements Service {
     private static final Logger log = LogManager.getLogger(TotalSpendPerEmployee.class);
@@ -41,7 +40,7 @@ public class TotalSpendPerEmployee implements Service {
     private List<Report> generateReports(Map<String, User> users) {
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
-            resetColor();
+            ColorPicker.resetColor();
             Scale scale = checkScale(user);
             List<String> xAxisLabels = getXAxisLabels();
             List<Line> lineChartPlots = createPlots(user, scale);
@@ -97,7 +96,7 @@ public class TotalSpendPerEmployee implements Service {
         List<Line> plots = new ArrayList<>();
         log.info(user.getUserName());
         List<Double> lineSizeValues = getLineSize(user, scale);
-        Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), getNextColor());
+        Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), ColorPicker.getNextColor());
         plots.add(0, lineChartPlot);
         return plots;
     }
@@ -109,27 +108,6 @@ public class TotalSpendPerEmployee implements Service {
             lineSizeValues.add((day != null) ? day.getDailyCost() / scale.getDivideBy() : 0);
         }
         return lineSizeValues;
-    }
-
-    private void resetColor() {
-        this.colorCounter = 0;
-    }
-
-    private Color getNextColor() {
-        List<Color> colors = new ArrayList<>();
-        colors.add(BLUE);
-        colors.add(RED);
-        colors.add(YELLOW);
-        colors.add(GREEN);
-        colors.add(GRAY);
-        colors.add(AQUAMARINE);
-        colors.add(ORANGE);
-        Color color = colors.get(colorCounter);
-        colorCounter++;
-        if (colorCounter == colors.size()) {
-            colorCounter = 0;
-        }
-        return color;
     }
 
     private Map<String, User> sendRequest() {
