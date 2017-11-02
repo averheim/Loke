@@ -92,7 +92,6 @@ public class TotalSpendPerEmployee implements Service {
 
     private List<Line> createPlots(User user, Scale scale) {
         List<Line> plots = new ArrayList<>();
-        log.info(user.getUserName());
         List<Double> lineSizeValues = getLineSize(user, scale);
         Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), ColorPicker.getNextColor());
         plots.add(0, lineChartPlot);

@@ -34,11 +34,10 @@ public class AwsEmailSender {
                 addHtmlURLs(htmlBody, report);
                 addHtmlTables(htmlBody, report);
             }
-            log.info(htmlBody.toString());
             if (!dryRun) {
                 awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
             } else {
-                log.info("DryRun: Emails not sent\nMail: {}", htmlBody.toString().trim());
+                log.info("DryRun: Emails not sent\nMail for {}: {}", employee.getUserName(), htmlBody.toString().trim());
             }
         }
     }
@@ -54,14 +53,13 @@ public class AwsEmailSender {
                 }
                 addHtmlTables(htmlBody, report);
             }
-            log.info(htmlBody.toString());
         }
         if (!dryRun) {
             for (Admin admin : admins) {
                 awsSesHandler.sendEmail(admin.getEmailAddress(), htmlBody.toString().trim(), subject, from);
             }
         } else {
-            log.info("DryRun: Emails not sent\nMail: {}", htmlBody.toString().trim());
+            log.info("DryRun: Emails not sent\nAdmin-mail: {}", htmlBody.toString().trim());
         }
     }
 
