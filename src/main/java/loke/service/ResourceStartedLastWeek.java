@@ -15,10 +15,10 @@ import java.util.*;
 
 public class ResourceStartedLastWeek implements Service {
     private static final Logger log = LogManager.getLogger(ResourceStartedLastWeek.class);
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public ResourceStartedLastWeek(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {

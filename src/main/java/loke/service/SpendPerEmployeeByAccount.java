@@ -19,16 +19,16 @@ import static com.googlecode.charts4j.Color.*;
 
 public class SpendPerEmployeeByAccount implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerEmployeeByAccount.class);
+    private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
+    private static final List<Calendar> DAYS_BACK = CalendarGenerator.getDaysBack(60);
     private AthenaClient athenaClient;
     private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
     private double showAccountThreshold;
-    private static final List<Calendar> DAYS_BACK = CalendarGenerator.getDaysBack(60);
-    private int colorCounter = 0;
     private double accountTotal = 0;
     private double total = 0;
+    private int colorCounter = 0;
 
     public SpendPerEmployeeByAccount(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
         this.athenaClient = athenaClient;

@@ -22,7 +22,7 @@ public class AwsSesHandler {
                             .withSubject(new Content().withCharset("UTF-8").withData(subject)))
                     .withSource(from);
             client.sendEmail(request);
-            log.info("Email sent!");
+            log.info("Email sent to: {}", to);
         } catch (Exception ex) {
             log.error("The email was not sent. Error message: "
                     + ex.getMessage());
