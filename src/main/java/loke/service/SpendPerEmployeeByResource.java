@@ -132,7 +132,7 @@ public class SpendPerEmployeeByResource implements Service {
         for (Resource resource : user.getResources().values()) {
             List<Double> lineSizeValues = getLineSize(resource, scale);
             double total = getResourceTotal(resource);
-            Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), ColorPicker.getNextColor(), resource.getResourceName() + " " + DecimalFormatter.format(total, 4));
+            Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), ColorPicker.getNextColor(), resource.getResourceName() + " " + DecimalFormatter.format(total, 2));
             plots.add(0, lineChartPlot);
         }
         return plots;
