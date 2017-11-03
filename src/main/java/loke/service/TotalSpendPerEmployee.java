@@ -39,6 +39,9 @@ public class TotalSpendPerEmployee implements Service {
     private List<Report> generateReports(Map<String, User> users) {
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
+            if (user.calculateTotalCost() <= 0){
+                continue;
+            }
             ColorPicker.resetColor();
             Scale scale = checkScale(user);
             List<String> xAxisLabels = getXAxisLabels();
