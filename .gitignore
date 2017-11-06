@@ -1,8 +1,10 @@
 .idea/
 *.iml
 *.yaml
-/tmp
+*.log
 /target
+*.csv
+/tmp
 *.com
 *.dll
 *.exe
@@ -16,7 +18,6 @@
 *.rar
 *.tar
 *.zip
-*.log
 *.sqlite
 .DS_Store
 .DS_Store?
