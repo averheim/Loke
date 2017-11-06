@@ -50,7 +50,7 @@ public class SpendPerEmployeeByAccountDaoTest {
         when(clock.instant()).thenReturn(Instant.parse("2017-09-30T00:00:00Z"));
         when(athenaClient.executeQuery(SQL_QUERY, SpendPerEmployeeAndAccountDao.class)).thenReturn(queryResult);
 
-        String expected = TestResourceLoader.loadResource("SpendPerUserAndAccountTableTest1.html");
+        String expected = TestResourceLoader.loadResource("sql/SpendPerUserAndAccountTableTest1.html");
         String result = spendPerEmployeeByAccount.getReports().get(0).getHtmlTables().get(0);
         System.out.println(spendPerEmployeeByAccount.getReports().get(0).getHtmlTables().get(1));
         assertEquals(expected, result);
