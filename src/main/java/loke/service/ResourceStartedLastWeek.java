@@ -54,7 +54,12 @@ public class ResourceStartedLastWeek implements Service {
         double totalCost = 0;
         List<String> body = new ArrayList<>();
         for (ResourceStartedLastWeekDao dao : user.getResources()) {
-            body.add(accounts.get(dao.accountId));
+            String accountName = dao.accountId;
+            if (accounts != null) {
+                String name = accounts.get(dao.accountId);
+                accountName = name != null ? name : dao.accountId;
+            }
+            body.add(accountName);
             body.add(dao.productName);
             body.add(dao.resourceId);
             Calendar day = Calendar.getInstance();

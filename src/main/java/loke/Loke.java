@@ -5,12 +5,17 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import loke.config.AccountReader;
 import loke.config.Configuration;
+import loke.config.MalformedCSVException;
 import loke.config.YamlReader;
 import loke.db.athena.AthenaClient;
 import loke.email.AwsEmailSender;
 import loke.email.AwsSesHandler;
 import loke.model.Employee;
+import loke.service.SpendPerEmployeeByAccount;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -18,10 +23,13 @@ public class Loke {
     private Configuration configuration;
     private CostReportGenerator costReportGenerator;
     private AwsEmailSender emailSender;
+    private AccountReader accountReader;
+    private static final Logger logger = LogManager.getLogger(Loke.class);
+
 
     public Loke() {
-        AccountReader accountReader = new AccountReader();
-        Map<String, String> accounts = accountReader.readCSV("accounts.csv");
+        this.accountReader = new AccountReader();
+        Map<String, String> accounts = readAccountsCsv("accounts.csv");
         this.configuration = new YamlReader().readConfigFile("configuration.yaml");
         AthenaClient athenaClient =
                 new AthenaClient(
@@ -44,6 +52,22 @@ public class Loke {
                 configuration.getFromEmailAddress(),
                 configuration.getToEmailDomainName(),
                 configuration.isDryRun());
+    }
+
+    private Map<String, String> readAccountsCsv(String filePath) {
+        logger.info("Loading accounts from: {}", filePath);
+        Map<String, String> accounts = null;
+        File csv = new File(filePath);
+        if (csv.isFile()) {
+            try {
+                accounts = accountReader.readCSV("accounts.csv");
+            } catch (MalformedCSVException e) {
+                e.printStackTrace();
+            }
+        } else {
+            logger.info("No resource file found with path: " + filePath);
+        }
+        return accounts;
     }
 
     public void run() {

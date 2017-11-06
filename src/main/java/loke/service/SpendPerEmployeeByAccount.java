@@ -75,11 +75,18 @@ public class SpendPerEmployeeByAccount implements Service {
         chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels(daysXAxisLabels));
         chart.addYAxisLabels(AxisLabelsFactory.newAxisLabels("Cost in " + scale.getSuffix(), 50));
-
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
         String total = DecimalFormatter.format(calculateAccountTotal(account), 2);
-        chart.setTitle("Total cost for " + userName + " in " + accounts.get(account.getAccountId()) + " the past " + DAYS_BACK.size() + "days. " + total + " UDS total.");
+
+        String accountName = account.getAccountId();
+        if (accounts != null) {
+            String name = accounts.get(account.getAccountId());
+            accountName = name != null ? name : account.getAccountId();
+        }
+        System.out.println("ACCOUNT ID " + accountName);
+
+        chart.setTitle("Total cost for " + userName + " in " + accountName + " the past " + DAYS_BACK.size() + "days. " + total + " UDS total.");
     }
 
     private double calculateAccountTotal(Account account) {
@@ -204,8 +211,12 @@ public class SpendPerEmployeeByAccount implements Service {
 
     private List<String> getAccountTotalRows(List<Calendar> calendarDaysBack, Account account, List<Resource> resources) {
         List<String> accountRows = new ArrayList<>();
-
-        accountRows.add(accounts.get(account.accountId) + " Total ($)");
+        String accountName = account.getAccountId();
+        if (accounts != null) {
+            String name = accounts.get(account.getAccountId());
+            accountName = name != null ? name : account.getAccountId();
+        }
+        accountRows.add(accountName + " Total ($)");
         accountTotal = 0;
         for (Calendar calendar : calendarDaysBack) {
             double dailyTotal = 0.00;

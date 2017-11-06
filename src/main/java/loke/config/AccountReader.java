@@ -11,23 +11,29 @@ public class AccountReader implements CsvReader {
     private static final Logger logger = LogManager.getLogger(AccountReader.class);
 
     @Override
-    public Map<String, String> readCSV(String filePath) {
-        logger.trace("Getting resource: {}", filePath);
+    public Map<String, String> readCSV(String filePath) throws MalformedCSVException {
         Map<String, String> accounts = new HashMap<>();
-        try (InputStream inputStream = new FileInputStream(filePath);
+
+        try (InputStream inputStream = new FileInputStream(new File(filePath));
              BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+
             String line = bufferedReader.readLine();
             while (line != null) {
+                logger.trace("Reading line: {}", line);
                 String[] split = line.split(",");
-                accounts.put(split[0], split[1]);
-                line = bufferedReader.readLine();
+                if (split.length == 2) {
+                    accounts.put(split[0], split[1]);
+                    line = bufferedReader.readLine();
+                } else {
+                    String message = "Malformed CSV:\nExpected: key,value\nGot: " + line;
+                    logger.warn(message);
+                    throw new MalformedCSVException(message);
+                }
             }
-            logger.trace("Finished getting resource");
         } catch (IOException e) {
             e.printStackTrace();
-            logger.error("Failed to read resource " + filePath + ", got exception: " + e, e);
-            throw new RuntimeException("Failed to read resource " + filePath + ", got exception: " + e, e);
         }
+        logger.trace("Finished getting resource");
         return accounts;
     }
 }

@@ -7,6 +7,7 @@ import loke.model.TotalReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.*;
 import java.util.List;
 
 public class AwsEmailSender {
@@ -60,6 +61,17 @@ public class AwsEmailSender {
             }
         } else {
             log.info("DryRun: Emails not sent\nAdmin-mail: {}", htmlBody.toString().trim());
+            printAdminEmailFile(htmlBody);
+        }
+    }
+
+    private void printAdminEmailFile(StringBuilder htmlBody) {
+        log.info("Printing admin Email to file: adminemail.html");
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream("adminemail.html"), "utf-8"))) {
+            writer.write(htmlBody.toString().trim());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
