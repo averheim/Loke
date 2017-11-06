@@ -1,6 +1,5 @@
 package loke.service;
 
-import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
@@ -21,14 +20,12 @@ public class ResourceStartedLastWeek implements Service {
     private static final Logger log = LogManager.getLogger(ResourceStartedLastWeek.class);
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
     private AthenaClient athenaClient;
-    private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private Map<String, String> accounts;
 
-    public ResourceStartedLastWeek(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, Map<String, String> accounts) {
+    public ResourceStartedLastWeek(AthenaClient athenaClient, String userOwnerRegExp, Map<String, String> accounts) {
         this.athenaClient = athenaClient;
-        this.htmlTableCreator = htmlTableCreator;
         this.userOwnerRegExp = userOwnerRegExp;
         this.accounts = accounts;
     }
@@ -54,15 +51,14 @@ public class ResourceStartedLastWeek implements Service {
         VelocityEngine velocityEngine = new VelocityEngine();
         velocityEngine.init();
 
-        VelocityContext context = new VelocityContext();
-        List<Resource> resources = formatForPresentation(user.getResources());
-        double total = 0;
-        for (Resource resource : user.getResources()) {
-            total += resource.getCost();
-        }
+        List<Resource> resources = user.getResources();
+        double total = calculateTotalSpend(resources);
 
+        VelocityContext context = new VelocityContext();
         context.put("resources", resources);
         context.put("total", total);
+        context.put("decimalFormatter", DecimalFormatter.class);
+        context.put("dateFormat", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
 
         Template template = velocityEngine.getTemplate("src/templates/resourcesstartedlastweek.vm");
 
@@ -70,43 +66,15 @@ public class ResourceStartedLastWeek implements Service {
         template.merge(context, stringWriter);
 
         System.out.println(stringWriter);
-
-        for (Resource resource : resources) {
-            System.out.printf("%s\n%s\n%s\n%s\n%f\n\n", resource.getAccountId(), resource.getProductName(), resource.getResourceId(), resource.getStartDate(), resource.getCost());
-        }
         return stringWriter.toString();
     }
 
-    private List<Resource> formatForPresentation(List<Resource> resources) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
-        List<Resource> formattedResources = new ArrayList<>();
-
+    private double calculateTotalSpend(List<Resource> resources) {
+        double total = 0;
         for (Resource resource : resources) {
-            String accountId = resource.getAccountId();
-            String productName = resource.getProductName();
-            String resourceId = resource.getResourceId();
-            String startDate = resource.getStartDate();
-            double cost = resource.getCost();
-
-            try {
-                Calendar date = Calendar.getInstance();
-                date.setTime(dateFormat.parse(startDate));
-                startDate = simpleDateFormat.format(date.getTime());
-                cost = Double.parseDouble(DecimalFormatter.format(cost, 2));
-
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
-            formattedResources.add(new Resource(
-                    accountId,
-                    productName,
-                    resourceId,
-                    startDate,
-                    cost)
-            );
+            total += resource.getCost();
         }
-        return formattedResources;
+        return total;
     }
 
     private Map<String, User> sendRequest() {
@@ -121,8 +89,21 @@ public class ResourceStartedLastWeek implements Service {
             if (!users.containsKey(dao.userOwner)) {
                 users.put(dao.userOwner, new User(dao.userOwner));
             }
+
+            Calendar calendar = Calendar.getInstance();
+            try {
+                Date date = dateFormat.parse(dao.startDate);
+                calendar.setTime(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            String accountId = dao.accountId;
+            String accountName = accounts.get(accountId);
+            accountId = (accountName != null) ? accountName : accountId;
+
             users.get(dao.userOwner).addResource(
-                    new Resource(dao.accountId, dao.productName, dao.resourceId, dao.startDate, dao.cost
+                    new Resource(accountId, dao.productName, dao.resourceId, calendar, dao.cost
                     ));
         }
         log.info("Done mapping objects");
@@ -170,10 +151,10 @@ public class ResourceStartedLastWeek implements Service {
         private String accountId;
         private String productName;
         private String resourceId;
-        private String startDate;
+        private Calendar startDate;
         private double cost;
 
-        public Resource(String accountId, String productName, String resourceId, String startDate, double cost) {
+        public Resource(String accountId, String productName, String resourceId, Calendar startDate, double cost) {
             this.accountId = accountId;
             this.productName = productName;
             this.resourceId = resourceId;
@@ -193,7 +174,7 @@ public class ResourceStartedLastWeek implements Service {
             return resourceId;
         }
 
-        public String getStartDate() {
+        public Calendar getStartDate() {
             return startDate;
         }
 

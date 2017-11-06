@@ -21,16 +21,14 @@ import static loke.service.ResourceStartedLastWeek.*;
 public class ResourceStartedLastWeekTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
     private AthenaClient athenaClient;
-    private HtmlTableCreator htmlTableCreator;
     private ResourceStartedLastWeek resourceStartedLastWeek;
 
     @Before
     public void setUp() throws Exception {
         athenaClient = mock(AthenaClient.class);
-        htmlTableCreator = new HtmlTableCreator();
         String userOwnerRegExp = "john.doe";
         Map<String, String> accounts = new AccountReader().readCSV("accounts.csv");
-        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, htmlTableCreator, userOwnerRegExp, accounts);
+        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, accounts);
     }
 
     @Test

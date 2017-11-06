@@ -16,14 +16,16 @@
                 <td nowrap style="border:1px solid #ddd;padding:8px;">$resource.getAccountId()</td>
                 <td nowrap style="border:1px solid #ddd;padding:8px;">$resource.getProductName()</td>
                 <td nowrap style="border:1px solid #ddd;padding:8px;">$resource.getResourceId()</td>
-                <td nowrap style="border:1px solid #ddd;padding:8px;">$resource.getStartDate()</td>
-                <td nowrap style="border:1px solid #ddd;padding:8px;">$resource.getCost()</td>
+                <td nowrap style="border:1px solid #ddd;padding:8px;">$dateFormat.format($resource.getStartDate().getTime())</td>
+                <td nowrap style="border:1px solid #ddd;padding:8px;">$decimalFormatter.format($resource.getCost(), 2)</td>
             </tr>
             #end##
             </tbody>
             <tfoot>
             <tr>
-                <td style="border:1px solid #ddd;padding:8px;background-color:#428aff" colspan="5">Total: $total</td>
+                <td style="border:1px solid #ddd;padding:8px;background-color:#428aff" colspan="5">
+                    Total: $decimalFormatter.format($total, 2)
+                </td>
             </tr>
             </tfoot>
         </table>

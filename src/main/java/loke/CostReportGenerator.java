@@ -20,8 +20,8 @@ public class CostReportGenerator {
         services = new HashMap<>();
         services.put(TotalSpendPerEmployee.class.getName(), new TotalSpendPerEmployee(athena, userOwnerRegExp));
         services.put(SpendPerEmployeeByResource.class.getName(), new SpendPerEmployeeByResource(athena, userOwnerRegExp, htmlTableCreator));
-        services.put(SpendPerEmployeeByAccount.class.getName(), new SpendPerEmployeeByAccount(athena, htmlTableCreator, userOwnerRegExp,showAccountThreshold, accounts));
-        services.put(ResourceStartedLastWeek.class.getName(), new ResourceStartedLastWeek(athena, htmlTableCreator, userOwnerRegExp, accounts));
+        services.put(SpendPerEmployeeByAccount.class.getName(), new SpendPerEmployeeByAccount(athena, htmlTableCreator, userOwnerRegExp, showAccountThreshold, accounts));
+        services.put(ResourceStartedLastWeek.class.getName(), new ResourceStartedLastWeek(athena, userOwnerRegExp, accounts));
     }
 
     public List<Employee> generateReports() {
