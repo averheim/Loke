@@ -8,7 +8,11 @@ import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -47,43 +51,79 @@ public class ResourceStartedLastWeek implements Service {
     }
 
     private String generateHTMLTable(User user) {
-        List<String> head = new ArrayList<>();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
-        head.addAll(Arrays.asList("Account", "Product Name", "Resource Id", "Start Date", "Cost ($)"));
+        VelocityEngine velocityEngine = new VelocityEngine();
+        velocityEngine.init();
 
-        double totalCost = 0;
-        List<String> body = new ArrayList<>();
-        for (ResourceStartedLastWeekDao dao : user.getResources()) {
-            body.add(accounts.get(dao.accountId));
-            body.add(dao.productName);
-            body.add(dao.resourceId);
-            Calendar day = Calendar.getInstance();
+        VelocityContext context = new VelocityContext();
+        List<Resource> resources = formatForPresentation(user.getResources());
+        double total = 0;
+        for (Resource resource : user.getResources()) {
+            total += resource.getCost();
+        }
+
+        context.put("resources", resources);
+        context.put("total", total);
+
+        Template template = velocityEngine.getTemplate("src/templates/resourcesstartedlastweek.vm");
+
+        StringWriter stringWriter = new StringWriter();
+        template.merge(context, stringWriter);
+
+        System.out.println(stringWriter);
+
+        for (Resource resource : resources) {
+            System.out.printf("%s\n%s\n%s\n%s\n%f\n\n", resource.getAccountId(), resource.getProductName(), resource.getResourceId(), resource.getStartDate(), resource.getCost());
+        }
+        return stringWriter.toString();
+    }
+
+    private List<Resource> formatForPresentation(List<Resource> resources) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
+        List<Resource> formattedResources = new ArrayList<>();
+
+        for (Resource resource : resources) {
+            String accountId = resource.getAccountId();
+            String productName = resource.getProductName();
+            String resourceId = resource.getResourceId();
+            String startDate = resource.getStartDate();
+            double cost = resource.getCost();
+
             try {
-                day.setTime(dateFormat.parse(dao.startDate));
+                Calendar date = Calendar.getInstance();
+                date.setTime(dateFormat.parse(startDate));
+                startDate = simpleDateFormat.format(date.getTime());
+                cost = Double.parseDouble(DecimalFormatter.format(cost, 2));
+
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            body.add(simpleDateFormat.format(day.getTime()));
-            body.add(DecimalFormatter.format(dao.cost, 2));
-            totalCost += dao.cost;
+
+            formattedResources.add(new Resource(
+                    accountId,
+                    productName,
+                    resourceId,
+                    startDate,
+                    cost)
+            );
         }
-        String foot = "Total: $" + DecimalFormatter.format(totalCost, 2);
-        return htmlTableCreator.createTable(head, body, foot, null, true);
+        return formattedResources;
     }
 
     private Map<String, User> sendRequest() {
         log.info("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<ResourceStartedLastWeekDao> queryResult = athenaClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class);
-        for (ResourceStartedLastWeekDao resourceStartedLastWeekDao : queryResult.getResultList()) {
-            if (!resourceStartedLastWeekDao.userOwner.matches(userOwnerRegExp)) {
+        for (ResourceStartedLastWeekDao dao : queryResult.getResultList()) {
+            if (!dao.userOwner.matches(userOwnerRegExp)) {
                 continue;
             }
 
-            if (!users.containsKey(resourceStartedLastWeekDao.userOwner)) {
-                users.put(resourceStartedLastWeekDao.userOwner, new User(resourceStartedLastWeekDao.userOwner));
+            if (!users.containsKey(dao.userOwner)) {
+                users.put(dao.userOwner, new User(dao.userOwner));
             }
-            users.get(resourceStartedLastWeekDao.userOwner).addResource(resourceStartedLastWeekDao);
+            users.get(dao.userOwner).addResource(
+                    new Resource(dao.accountId, dao.productName, dao.resourceId, dao.startDate, dao.cost
+                    ));
         }
         log.info("Done mapping objects");
         return users;
@@ -106,7 +146,7 @@ public class ResourceStartedLastWeek implements Service {
 
     private class User {
         private String userName;
-        private List<ResourceStartedLastWeekDao> resources;
+        private List<Resource> resources;
 
         public User(String userName) {
             this.userName = userName;
@@ -117,12 +157,48 @@ public class ResourceStartedLastWeek implements Service {
             return userName;
         }
 
-        public List<ResourceStartedLastWeekDao> getResources() {
+        public List<Resource> getResources() {
             return resources;
         }
 
-        public void addResource(ResourceStartedLastWeekDao resource) {
+        public void addResource(Resource resource) {
             resources.add(resource);
+        }
+    }
+
+    public class Resource {
+        private String accountId;
+        private String productName;
+        private String resourceId;
+        private String startDate;
+        private double cost;
+
+        public Resource(String accountId, String productName, String resourceId, String startDate, double cost) {
+            this.accountId = accountId;
+            this.productName = productName;
+            this.resourceId = resourceId;
+            this.startDate = startDate;
+            this.cost = cost;
+        }
+
+        public String getAccountId() {
+            return accountId;
+        }
+
+        public String getProductName() {
+            return productName;
+        }
+
+        public String getResourceId() {
+            return resourceId;
+        }
+
+        public String getStartDate() {
+            return startDate;
+        }
+
+        public double getCost() {
+            return cost;
         }
     }
 }
