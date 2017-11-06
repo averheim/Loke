@@ -1,5 +1,6 @@
 package loke.service;
 
+import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static loke.db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
@@ -33,7 +35,8 @@ public class SpendPerEmployeeByAccountDaoTest {
         athenaClient = mock(AthenaClient.class);
         htmlTableCreator = new HtmlTableCreator();
         String userOwnerRegExp = "";
-        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, htmlTableCreator, userOwnerRegExp, 0);
+        Map<String, String> accounts = new AccountReader().readCSV("config/accounts.csv");
+        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, htmlTableCreator, userOwnerRegExp, 0, accounts);
     }
 
     @Test

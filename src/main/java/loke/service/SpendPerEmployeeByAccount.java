@@ -27,12 +27,14 @@ public class SpendPerEmployeeByAccount implements Service {
     private double showAccountThreshold;
     private double accountTotal = 0;
     private double total = 0;
+    private Map<String, String> accounts;
 
-    public SpendPerEmployeeByAccount(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
+    public SpendPerEmployeeByAccount(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold, Map<String, String> accounts) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
         this.userOwnerRegExp = userOwnerRegExp;
         this.showAccountThreshold = showAccountThreshold;
+        this.accounts = accounts;
     }
 
     @Override
@@ -77,7 +79,7 @@ public class SpendPerEmployeeByAccount implements Service {
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
         String total = DecimalFormatter.format(calculateAccountTotal(account), 2);
-        chart.setTitle("Total cost for " + userName + " in " + account.getAccountId() + " the past " + DAYS_BACK.size() + "days. " + total + " UDS total.");
+        chart.setTitle("Total cost for " + userName + " in " + accounts.get(account.getAccountId()) + " the past " + DAYS_BACK.size() + "days. " + total + " UDS total.");
     }
 
     private double calculateAccountTotal(Account account) {
@@ -202,7 +204,8 @@ public class SpendPerEmployeeByAccount implements Service {
 
     private List<String> getAccountTotalRows(List<Calendar> calendarDaysBack, Account account, List<Resource> resources) {
         List<String> accountRows = new ArrayList<>();
-        accountRows.add(account.getAccountId() + " Total ($)");
+
+        accountRows.add(accounts.get(account.accountId) + " Total ($)");
         accountTotal = 0;
         for (Calendar calendar : calendarDaysBack) {
             double dailyTotal = 0.00;
@@ -304,7 +307,7 @@ public class SpendPerEmployeeByAccount implements Service {
     public static class SpendPerEmployeeAndAccountDao {
         @JdbcManager.Column(value = "user_owner")
         public String userOwner;
-        @JdbcManager.Column(value = "account_name")
+        @JdbcManager.Column(value = "account_id")
         public String accountId;
         @JdbcManager.Column(value = "product_name")
         public String productName;

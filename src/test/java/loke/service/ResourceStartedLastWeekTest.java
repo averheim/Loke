@@ -1,5 +1,6 @@
 package loke.service;
 
+import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import loke.utils.TestResourceLoader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static loke.db.athena.JdbcManager.*;
 import static org.junit.Assert.*;
@@ -27,7 +29,8 @@ public class ResourceStartedLastWeekTest {
         athenaClient = mock(AthenaClient.class);
         htmlTableCreator = new HtmlTableCreator();
         String userOwnerRegExp = "";
-        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, htmlTableCreator, userOwnerRegExp);
+        Map<String, String> accounts = new AccountReader().readCSV("config/accounts.csv");
+        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, htmlTableCreator, userOwnerRegExp, accounts);
     }
 
     @Test
@@ -50,7 +53,7 @@ public class ResourceStartedLastWeekTest {
 
     public ResourceStartedLastWeekDao createDbResponse(String account, String userOwner, String productName, String resourceId, String startDate, double cost) {
         ResourceStartedLastWeekDao spendPerUser = new ResourceStartedLastWeekDao();
-        spendPerUser.account = account;
+        spendPerUser.accountId = account;
         spendPerUser.userOwner = userOwner;
         spendPerUser.productName = productName;
         spendPerUser.resourceId = resourceId;

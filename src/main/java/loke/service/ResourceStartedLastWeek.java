@@ -20,11 +20,13 @@ public class ResourceStartedLastWeek implements Service {
     private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private Map<String, String> accounts;
 
-    public ResourceStartedLastWeek(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp) {
+    public ResourceStartedLastWeek(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, Map<String, String> accounts) {
         this.athenaClient = athenaClient;
         this.htmlTableCreator = htmlTableCreator;
         this.userOwnerRegExp = userOwnerRegExp;
+        this.accounts = accounts;
     }
 
     @Override
@@ -52,7 +54,7 @@ public class ResourceStartedLastWeek implements Service {
         double totalCost = 0;
         List<String> body = new ArrayList<>();
         for (ResourceStartedLastWeekDao dao : user.getResources()) {
-            body.add(dao.account);
+            body.add(accounts.get(dao.accountId));
             body.add(dao.productName);
             body.add(dao.resourceId);
             Calendar day = Calendar.getInstance();
@@ -88,8 +90,8 @@ public class ResourceStartedLastWeek implements Service {
     }
 
     public static class ResourceStartedLastWeekDao {
-        @JdbcManager.Column(value = "account_name")
-        public String account;
+        @JdbcManager.Column(value = "account_id")
+        public String accountId;
         @JdbcManager.Column(value = "user_owner")
         public String userOwner;
         @JdbcManager.Column(value = "product_name")

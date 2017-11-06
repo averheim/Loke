@@ -16,12 +16,12 @@ public class CostReportGenerator {
     private Logger log = LogManager.getLogger(CostReportGenerator.class);
     private Map<String, Service> services;
 
-    public CostReportGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold) {
+    public CostReportGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold, Map<String, String> accounts) {
         services = new HashMap<>();
         services.put(TotalSpendPerEmployee.class.getName(), new TotalSpendPerEmployee(athena, userOwnerRegExp));
         services.put(SpendPerEmployeeByResource.class.getName(), new SpendPerEmployeeByResource(athena, userOwnerRegExp, htmlTableCreator));
-        services.put(SpendPerEmployeeByAccount.class.getName(), new SpendPerEmployeeByAccount(athena, htmlTableCreator, userOwnerRegExp,showAccountThreshold));
-        services.put(ResourceStartedLastWeek.class.getName(), new ResourceStartedLastWeek(athena, htmlTableCreator, userOwnerRegExp));
+        services.put(SpendPerEmployeeByAccount.class.getName(), new SpendPerEmployeeByAccount(athena, htmlTableCreator, userOwnerRegExp,showAccountThreshold, accounts));
+        services.put(ResourceStartedLastWeek.class.getName(), new ResourceStartedLastWeek(athena, htmlTableCreator, userOwnerRegExp, accounts));
     }
 
     public List<Employee> generateReports() {
