@@ -2,6 +2,7 @@ package loke.service;
 
 import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
+import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 import loke.utils.CalendarGenerator;
@@ -36,7 +37,7 @@ public class SpendPerEmployeeByAccountDaoTest {
         htmlTableCreator = new HtmlTableCreator();
         String userOwnerRegExp = "";
         Map<String, String> accounts = new AccountReader().readCSV("config/accounts.csv");
-        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, htmlTableCreator, userOwnerRegExp, 0, accounts);
+        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, 0, accounts, new VelocityEngine());
     }
 
     @Test

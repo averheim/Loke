@@ -1,7 +1,6 @@
 package loke.service;
 
 import com.googlecode.charts4j.*;
-import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
@@ -11,7 +10,11 @@ import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -21,20 +24,20 @@ public class SpendPerEmployeeByAccount implements Service {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
     private static final List<Calendar> DAYS_BACK = CalendarGenerator.getDaysBack(60);
     private AthenaClient athenaClient;
-    private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private double showAccountThreshold;
     private double accountTotal = 0;
     private double total = 0;
-    private Map<String, String> accounts;
+    private Map<String, String> csvAccounts;
+    private VelocityEngine velocityEngine;
 
-    public SpendPerEmployeeByAccount(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold, Map<String, String> accounts) {
+    public SpendPerEmployeeByAccount(AthenaClient athenaClient, String userOwnerRegExp, double showAccountThreshold, Map<String, String> csvAccounts, VelocityEngine velocityEngine) {
         this.athenaClient = athenaClient;
-        this.htmlTableCreator = htmlTableCreator;
         this.userOwnerRegExp = userOwnerRegExp;
         this.showAccountThreshold = showAccountThreshold;
-        this.accounts = accounts;
+        this.csvAccounts = csvAccounts;
+        this.velocityEngine = velocityEngine;
     }
 
     @Override
@@ -44,15 +47,15 @@ public class SpendPerEmployeeByAccount implements Service {
     }
 
     private List<Report> generateReports(Map<String, User> users) {
-        List<Report> charts = new ArrayList<>();
+        List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
             Report report = new Report(user.getUserName());
             report.addHtmlURLs(generateHtmlURLs(user));
-            report.addHtmlTables(generateHTMLTables(user));
-            charts.add(report);
+            report.addHtmlTable(generateHTMLTable(user));
+            reports.add(report);
             log.info("Report generated for: {}", user.getUserName());
         }
-        return charts;
+        return reports;
     }
 
     private List<String> generateHtmlURLs(User user) {
@@ -80,8 +83,8 @@ public class SpendPerEmployeeByAccount implements Service {
         String total = DecimalFormatter.format(calculateAccountTotal(account), 2);
 
         String accountName = account.getAccountId();
-        if (accounts != null) {
-            String name = accounts.get(account.getAccountId());
+        if (csvAccounts != null) {
+            String name = csvAccounts.get(account.getAccountId());
             accountName = name != null ? name : account.getAccountId();
         }
         System.out.println("ACCOUNT ID " + accountName);
@@ -170,7 +173,24 @@ public class SpendPerEmployeeByAccount implements Service {
         return labels;
     }
 
-    private List<String> generateHTMLTables(User user) {
+    private String generateHTMLTable(User user) {
+        VelocityContext context = new VelocityContext();
+        context.put("dates", DAYS_BACK);
+        context.put("account", user.getAccounts().values());
+        context.put("colspan", DAYS_BACK.size() + 2);
+        context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
+        context.put("dateFormat", this.dateFormat);
+        context.put("decimalFormatter", DecimalFormatter.class);
+
+
+        Template template = velocityEngine.getTemplate("src/templates/spendperemployeebyaccount.vm");
+
+        StringWriter stringWriter = new StringWriter();
+        template.merge(context, stringWriter);
+
+        System.out.println(stringWriter);
+        return stringWriter.toString();
+        /*
         List<String> htmlTables = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
         List<String> head = new ArrayList<>();
@@ -207,13 +227,14 @@ public class SpendPerEmployeeByAccount implements Service {
         }
 
         return htmlTables;
+        */
     }
 
     private List<String> getAccountTotalRows(List<Calendar> calendarDaysBack, Account account, List<Resource> resources) {
         List<String> accountRows = new ArrayList<>();
         String accountName = account.getAccountId();
-        if (accounts != null) {
-            String name = accounts.get(account.getAccountId());
+        if (csvAccounts != null) {
+            String name = csvAccounts.get(account.getAccountId());
             accountName = name != null ? name : account.getAccountId();
         }
         accountRows.add(accountName + " Total ($)");
@@ -259,7 +280,7 @@ public class SpendPerEmployeeByAccount implements Service {
 
     private List<String> getTotalCostRow(User user, List<Calendar> calendarDaysBack) {
         List<String> totalCostRows = new ArrayList<>();
-        totalCostRows.add("Total for all accounts ($)");
+        totalCostRows.add("Total for all csvAccounts ($)");
         total = 0;
         for (Calendar calendar : calendarDaysBack) {
             double dailyTotal = 0;
@@ -308,6 +329,11 @@ public class SpendPerEmployeeByAccount implements Service {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
+
+            String accountId = dao.accountId;
+            String accountName = csvAccounts.get(accountId);
+            dao.accountId = (accountName != null) ? accountName : accountId;
+
             Day day = new Day(date, dao.cost);
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }
