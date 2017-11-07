@@ -1,18 +1,15 @@
 package loke.service;
 
-import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
-import loke.db.athena.JdbcManager.*;
-import loke.utils.CalendarGenerator;
+import loke.db.athena.JdbcManager.QueryResult;
 import loke.utils.ResourceLoader;
-import loke.utils.TestResourceLoader;
+import loke.utils.ResourceLoaderTestUtility;
 import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import static loke.service.SpendPerEmployeeByResource.SpendPerEmployeeByResourceDao;
@@ -23,13 +20,11 @@ public class SpendPerEmployeeByResourceTest {
 
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByResource.sql");
     private AthenaClient athenaClient;
-    private HtmlTableCreator htmlTableCreator;
     private SpendPerEmployeeByResource spendPerEmployeeByResource;
 
     @Before
     public void setUp() throws Exception {
         athenaClient = mock(AthenaClient.class);
-        htmlTableCreator = new HtmlTableCreator();
         String userOwnerRegExp = "john.doe";
         spendPerEmployeeByResource = new SpendPerEmployeeByResource(athenaClient, userOwnerRegExp, new VelocityEngine());
     }
@@ -47,7 +42,7 @@ public class SpendPerEmployeeByResourceTest {
 
         Mockito.when(athenaClient.executeQuery(SQL_QUERY, SpendPerEmployeeByResourceDao.class)).thenReturn(queryResult);
 
-        String expected = TestResourceLoader.loadResource("sql/ResourceStartedLastWeekTableTest1.html");
+        String expected = ResourceLoaderTestUtility.loadResource("sql/ResourceStartedLastWeekTableTest1.html");
         String result = spendPerEmployeeByResource.getReports().get(0).getHtmlTables().get(0);
         assertEquals(expected, result);
     }
