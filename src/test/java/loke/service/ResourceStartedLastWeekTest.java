@@ -2,21 +2,21 @@ package loke.service;
 
 import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
+import loke.utils.ResourceLoader;
+import loke.utils.ResourceLoaderTestUtility;
+import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import loke.HtmlTableCreator;
-import loke.utils.ResourceLoader;
-import loke.utils.TestResourceLoader;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static loke.db.athena.JdbcManager.*;
-import static org.junit.Assert.*;
+import static loke.db.athena.JdbcManager.QueryResult;
+import static loke.service.ResourceStartedLastWeek.ResourceStartedLastWeekDao;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static loke.service.ResourceStartedLastWeek.*;
 
 public class ResourceStartedLastWeekTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
@@ -28,7 +28,7 @@ public class ResourceStartedLastWeekTest {
         athenaClient = mock(AthenaClient.class);
         String userOwnerRegExp = "john.doe";
         Map<String, String> accounts = new AccountReader().readCSV("accounts.csv");
-        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, accounts);
+        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, accounts, new VelocityEngine());
     }
 
     @Test
@@ -42,8 +42,8 @@ public class ResourceStartedLastWeekTest {
 
         Mockito.when(athenaClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class)).thenReturn(queryResult);
 
-        String expected = TestResourceLoader.loadResource("sql/ResourceStartedLastWeekTableTest1.html");
-        String result = resourceStartedLastWeek.getReports().get(0).getOwner();
+        String expected = ResourceLoaderTestUtility.loadResource("sql/ResourceStartedLastWeekTestTable.html");
+        String result = resourceStartedLastWeek.getReports().get(0).getHtmlTables().get(0);
         assertEquals(expected, result);
     }
 

@@ -13,32 +13,41 @@ import loke.email.AwsSesHandler;
 import loke.model.Employee;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.velocity.app.VelocityEngine;
 
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 
 public class Loke {
+    private static final Logger log = LogManager.getLogger(Loke.class);
+    private AccountReader accountReader;
     private Configuration configuration;
     private CostReportGenerator costReportGenerator;
     private AwsEmailSender emailSender;
-    private AccountReader accountReader;
-    private static final Logger logger = LogManager.getLogger(Loke.class);
 
 
     public Loke() {
         this.accountReader = new AccountReader();
-        Map<String, String> accounts = readAccountsCsv("accounts.csv");
+        Map<String, String> csvAccounts = readAccountsCsv("accounts.csv");
         this.configuration = new YamlReader().readConfigFile("configuration.yaml");
-        AthenaClient athenaClient =
-                new AthenaClient(
-                        configuration.getHost(),
-                        configuration.getPort(),
-                        configuration.getAccessKey(),
-                        configuration.getSecretAccessKey(),
-                        configuration.getStagingDir());
+
+        AthenaClient athenaClient = new AthenaClient(
+                configuration.getHost(),
+                configuration.getPort(),
+                configuration.getAccessKey(),
+                configuration.getSecretAccessKey(),
+                configuration.getStagingDir());
+
         HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
-        this.costReportGenerator = new CostReportGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp(), configuration.getShowAccountThreshold(), accounts);
+
+        this.costReportGenerator = new CostReportGenerator(athenaClient,
+                htmlTableCreator,
+                configuration.getUserOwnerRegExp(),
+                configuration.getShowAccountThreshold(),
+                csvAccounts,
+                new VelocityEngine());
+
         AwsSesHandler awsSesHandler = new AwsSesHandler(AmazonSimpleEmailServiceClientBuilder.standard()
                 .withRegion(configuration.getRegion())
                 .withCredentials(
@@ -46,6 +55,7 @@ public class Loke {
                                 configuration.getAccessKey(),
                                 configuration.getSecretAccessKey())))
                 .build());
+
         this.emailSender = new AwsEmailSender(
                 awsSesHandler,
                 configuration.getFromEmailAddress(),
@@ -54,7 +64,7 @@ public class Loke {
     }
 
     private Map<String, String> readAccountsCsv(String filePath) {
-        logger.info("Loading accounts from: {}", filePath);
+        log.info("Loading accounts from: {}", filePath);
         Map<String, String> accounts = null;
         File csv = new File(filePath);
         if (csv.isFile()) {
@@ -64,7 +74,7 @@ public class Loke {
                 e.printStackTrace();
             }
         } else {
-            logger.info("No resource file found with path: " + filePath);
+            log.info("No resource file found with path: " + filePath);
         }
         return accounts;
     }

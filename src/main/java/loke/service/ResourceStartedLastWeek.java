@@ -22,12 +22,14 @@ public class ResourceStartedLastWeek implements Service {
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private Map<String, String> accounts;
+    private Map<String, String> csvAccounts;
+    private VelocityEngine velocityEngine;
 
-    public ResourceStartedLastWeek(AthenaClient athenaClient, String userOwnerRegExp, Map<String, String> accounts) {
+    public ResourceStartedLastWeek(AthenaClient athenaClient, String userOwnerRegExp, Map<String, String> csvAccounts, VelocityEngine velocityEngine) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
-        this.accounts = accounts;
+        this.csvAccounts = csvAccounts;
+        this.velocityEngine = velocityEngine;
     }
 
     @Override
@@ -48,9 +50,6 @@ public class ResourceStartedLastWeek implements Service {
     }
 
     private String generateHTMLTable(User user) {
-        VelocityEngine velocityEngine = new VelocityEngine();
-        velocityEngine.init();
-
         List<Resource> resources = user.getResources();
         double total = calculateTotalSpend(resources);
 
@@ -99,7 +98,7 @@ public class ResourceStartedLastWeek implements Service {
             }
 
             String accountId = dao.accountId;
-            String accountName = accounts.get(accountId);
+            String accountName = csvAccounts.get(accountId);
             accountId = (accountName != null) ? accountName : accountId;
 
             users.get(dao.userOwner).addResource(
