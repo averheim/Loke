@@ -1,7 +1,7 @@
 import org.junit.Before;
 import org.junit.Test;
 import loke.HtmlTableCreator;
-import loke.utils.TestResourceLoader;
+import loke.utils.ResourceLoaderTestUtility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class HtmlTableCreatorTest {
         body.add("Doe");
 
 
-        String expected = TestResourceLoader.loadResource("sql/HtmlTableTest1.html");
+        String expected = ResourceLoaderTestUtility.loadResource("sql/HtmlTableTest1.html");
         String result = htmlTableCreator.createTable(head, body, null, null, true);
 
         assertEquals(expected, result);

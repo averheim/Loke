@@ -5,9 +5,8 @@ import loke.db.athena.AthenaClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import loke.HtmlTableCreator;
 import loke.utils.ResourceLoader;
-import loke.utils.TestResourceLoader;
+import loke.utils.ResourceLoaderTestUtility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +41,8 @@ public class ResourceStartedLastWeekTest {
 
         Mockito.when(athenaClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class)).thenReturn(queryResult);
 
-        String expected = TestResourceLoader.loadResource("sql/ResourceStartedLastWeekTableTest1.html");
-        String result = resourceStartedLastWeek.getReports().get(0).getOwner();
+        String expected = ResourceLoaderTestUtility.loadResource("sql/ResourceStartedLastWeekTestTable.html");
+        String result = resourceStartedLastWeek.getReports().get(0).getHtmlTables().get(0);
         assertEquals(expected, result);
     }
 
