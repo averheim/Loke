@@ -1,7 +1,6 @@
 package loke.service;
 
 import com.googlecode.charts4j.*;
-import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
@@ -11,7 +10,11 @@ import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -23,12 +26,12 @@ public class SpendPerEmployeeByResource implements Service {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
-    private HtmlTableCreator htmlTableCreator;
+    private VelocityEngine velocityEngine;
 
-    public SpendPerEmployeeByResource(AthenaClient athenaClient, String userOwnerRegExp, HtmlTableCreator htmlTableCreator) {
+    public SpendPerEmployeeByResource(AthenaClient athenaClient, String userOwnerRegExp, VelocityEngine velocityEngine) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
-        this.htmlTableCreator = htmlTableCreator;
+        this.velocityEngine = velocityEngine;
     }
 
     @Override
@@ -56,31 +59,21 @@ public class SpendPerEmployeeByResource implements Service {
     }
 
     private String generateHTMLTable(User user) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
-        List<String> head = new ArrayList<>();
-        head.add("Service");
-        for (Calendar calendar : DAYS_BACK) {
-            String date = simpleDateFormat.format(calendar.getTime());
-            head.add(date);
-        }
-        head.add("Total");
+        VelocityContext context = new VelocityContext();
+        context.put("dates", DAYS_BACK);
+        context.put("user", user);
+        context.put("colspan", DAYS_BACK.size() + 2);
+        context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
+        context.put("dateFormat", this.dateFormat);
+        context.put("decimalFormatter", DecimalFormatter.class);
 
-        List<String> body = new ArrayList<>();
-        double total = 0.0;
-        for (Resource resource : user.getResources().values()) {
-            body.add(resource.getResourceName() + " ($)");
-            double resourceTotal = 0.0;
-            for (Calendar calendar : DAYS_BACK) {
-                Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                String cost = day != null ? DecimalFormatter.format(day.getDailyCost(), 2) : "0.00";
-                resourceTotal += day != null ? day.getDailyCost() : 0;
-                body.add(cost);
-            }
-            total += resourceTotal;
-            body.add(DecimalFormatter.format(resourceTotal, 2));
-        }
-        String foot = "Total: $" + DecimalFormatter.format(total, 2);
-        return htmlTableCreator.createTable(head, body, foot, null, false);
+        Template template = velocityEngine.getTemplate("src/templates/spendperemployeebyresource.vm");
+
+        StringWriter stringWriter = new StringWriter();
+        template.merge(context, stringWriter);
+
+        System.out.println(stringWriter);
+        return stringWriter.toString();
     }
 
     private Scale checkScale(User user) {
@@ -211,16 +204,13 @@ public class SpendPerEmployeeByResource implements Service {
         public String startDate;
     }
 
-    private class User {
+    public class User {
         private String userName;
         private HashMap<String, Resource> resources;
-
-        private double totalCost;
 
         public User(String userName) {
             this.userName = userName;
             this.resources = new HashMap<>();
-            this.totalCost = 0;
         }
 
         public void addResource(Resource resource) {
@@ -236,22 +226,27 @@ public class SpendPerEmployeeByResource implements Service {
         }
 
         public double calculateTotalCost() {
+            double totalCost = 0;
             for (Resource resource : resources.values()) {
                 for (Day day : resource.getDays().values()) {
-                    this.totalCost += day.getDailyCost();
+                    totalCost += day.getDailyCost();
                 }
             }
-            return this.totalCost;
+            return totalCost;
         }
     }
 
-    private class Resource {
+    public class Resource {
         private String resourceName;
         private HashMap<String, Day> days;
 
         public Resource(String resourceName) {
             this.resourceName = resourceName;
             this.days = new HashMap<>();
+        }
+
+        public Day getDay(String date) {
+            return days.get(date);
         }
 
         public void addDay(String key, Day day) {
@@ -265,9 +260,19 @@ public class SpendPerEmployeeByResource implements Service {
         public HashMap<String, Day> getDays() {
             return days;
         }
+
+        public double getResourceTotal() {
+            double total = 0;
+            for (Day day : days.values()) {
+                if (day != null) {
+                    total += day.getDailyCost();
+                }
+            }
+            return total;
+        }
     }
 
-    private class Day {
+    public class Day {
         private Calendar date;
         private double dailyCost;
 

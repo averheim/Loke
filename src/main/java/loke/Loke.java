@@ -11,7 +11,6 @@ import loke.db.athena.AthenaClient;
 import loke.email.AwsEmailSender;
 import loke.email.AwsSesHandler;
 import loke.model.Employee;
-import loke.service.SpendPerEmployeeByAccount;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

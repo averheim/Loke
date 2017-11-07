@@ -6,6 +6,7 @@ import loke.model.Report;
 import loke.service.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.velocity.app.VelocityEngine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +20,8 @@ public class CostReportGenerator {
     public CostReportGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold, Map<String, String> accounts) {
         services = new HashMap<>();
         services.put(TotalSpendPerEmployee.class.getName(), new TotalSpendPerEmployee(athena, userOwnerRegExp));
-        services.put(SpendPerEmployeeByResource.class.getName(), new SpendPerEmployeeByResource(athena, userOwnerRegExp, htmlTableCreator));
+        // TODO replace new VelocityEngine
+        services.put(SpendPerEmployeeByResource.class.getName(), new SpendPerEmployeeByResource(athena, userOwnerRegExp, new VelocityEngine()));
         services.put(SpendPerEmployeeByAccount.class.getName(), new SpendPerEmployeeByAccount(athena, htmlTableCreator, userOwnerRegExp, showAccountThreshold, accounts));
         services.put(ResourceStartedLastWeek.class.getName(), new ResourceStartedLastWeek(athena, userOwnerRegExp, accounts));
     }
