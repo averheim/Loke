@@ -21,16 +21,14 @@ import static loke.service.ResourceStartedLastWeek.*;
 public class ResourceStartedLastWeekTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
     private AthenaClient athenaClient;
-    private HtmlTableCreator htmlTableCreator;
     private ResourceStartedLastWeek resourceStartedLastWeek;
 
     @Before
     public void setUp() throws Exception {
         athenaClient = mock(AthenaClient.class);
-        htmlTableCreator = new HtmlTableCreator();
-        String userOwnerRegExp = "";
-        Map<String, String> accounts = new AccountReader().readCSV("config/accounts.csv");
-        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, htmlTableCreator, userOwnerRegExp, accounts);
+        String userOwnerRegExp = "john.doe";
+        Map<String, String> accounts = new AccountReader().readCSV("accounts.csv");
+        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, accounts);
     }
 
     @Test
@@ -45,7 +43,7 @@ public class ResourceStartedLastWeekTest {
         Mockito.when(athenaClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class)).thenReturn(queryResult);
 
         String expected = TestResourceLoader.loadResource("sql/ResourceStartedLastWeekTableTest1.html");
-        String result = resourceStartedLastWeek.getReports().get(0).getHtmlTables().get(0);
+        String result = resourceStartedLastWeek.getReports().get(0).getOwner();
         assertEquals(expected, result);
     }
 

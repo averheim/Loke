@@ -1,0 +1,33 @@
+<div style="font-family:'arial'">
+    <div style="overflow-x:auto;width:1000px;border:1px solid #ddd">
+        <table style="border-collapse:collapse;border-spacing:0;width:100%;font-size:small">
+            <thead>
+            <tr>
+                <th nowrap style="border:1px solid #ddd;padding:8px;width:270px">Account</th>
+                <th nowrap style="border:1px solid #ddd;padding:8px">Product Name</th>
+                <th nowrap style="border:1px solid #ddd;padding:8px">Resource Id</th>
+                <th nowrap style="border:1px solid #ddd;padding:8px">Start Date</th>
+                <th nowrap style="border:1px solid #ddd;padding:8px">Cost ($)</th>
+            </tr>
+            </thead>
+            <tbody>
+            #foreach( $resource in $resources)
+            <tr style="background-color:#f2f2f2">
+                <td nowrap style="border:1px solid #ddd;padding:8px;">$resource.getAccountId()</td>
+                <td nowrap style="border:1px solid #ddd;padding:8px;">$resource.getProductName()</td>
+                <td nowrap style="border:1px solid #ddd;padding:8px;">$resource.getResourceId()</td>
+                <td nowrap style="border:1px solid #ddd;padding:8px;">$dateFormat.format($resource.getStartDate().getTime())</td>
+                <td nowrap style="border:1px solid #ddd;padding:8px;">$decimalFormatter.format($resource.getCost(), 2)</td>
+            </tr>
+            #end##
+            </tbody>
+            <tfoot>
+            <tr>
+                <td style="border:1px solid #ddd;padding:8px;background-color:#428aff" colspan="5">
+                    Total: $decimalFormatter.format($total, 2)
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
