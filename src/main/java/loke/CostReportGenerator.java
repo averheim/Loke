@@ -20,7 +20,7 @@ public class CostReportGenerator {
     public CostReportGenerator(AthenaClient athena, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold, Map<String, String> csvAccounts, VelocityEngine velocityEngine) {
         services = new HashMap<>();
         services.put(TotalSpendPerEmployee.class.getName(), new TotalSpendPerEmployee(athena, userOwnerRegExp));
-        services.put(SpendPerEmployeeByResource.class.getName(), new SpendPerEmployeeByResource(athena, userOwnerRegExp, htmlTableCreator));
+        services.put(SpendPerEmployeeByResource.class.getName(), new SpendPerEmployeeByResource(athena, userOwnerRegExp, velocityEngine));
         services.put(SpendPerEmployeeByAccount.class.getName(), new SpendPerEmployeeByAccount(athena, htmlTableCreator, userOwnerRegExp, showAccountThreshold, csvAccounts));
         services.put(ResourceStartedLastWeek.class.getName(), new ResourceStartedLastWeek(athena, userOwnerRegExp, csvAccounts, velocityEngine));
     }
