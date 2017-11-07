@@ -23,11 +23,13 @@ public class ResourceStartedLastWeek implements Service {
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private Map<String, String> csvAccounts;
+    private VelocityEngine velocityEngine;
 
-    public ResourceStartedLastWeek(AthenaClient athenaClient, String userOwnerRegExp, Map<String, String> csvAccounts) {
+    public ResourceStartedLastWeek(AthenaClient athenaClient, String userOwnerRegExp, Map<String, String> csvAccounts, VelocityEngine velocityEngine) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
         this.csvAccounts = csvAccounts;
+        this.velocityEngine = velocityEngine;
     }
 
     @Override
@@ -48,9 +50,6 @@ public class ResourceStartedLastWeek implements Service {
     }
 
     private String generateHTMLTable(User user) {
-        VelocityEngine velocityEngine = new VelocityEngine();
-        velocityEngine.init();
-
         List<Resource> resources = user.getResources();
         double total = calculateTotalSpend(resources);
 

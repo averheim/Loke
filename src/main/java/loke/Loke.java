@@ -10,6 +10,7 @@ import loke.db.athena.AthenaClient;
 import loke.email.AwsEmailSender;
 import loke.email.AwsSesHandler;
 import loke.model.Employee;
+import org.apache.velocity.app.VelocityEngine;
 
 import java.util.List;
 import java.util.Map;
@@ -23,15 +24,23 @@ public class Loke {
         AccountReader accountReader = new AccountReader();
         Map<String, String> csvAccounts = accountReader.readCSV("accounts.csv");
         this.configuration = new YamlReader().readConfigFile("configuration.yaml");
-        AthenaClient athenaClient =
-                new AthenaClient(
-                        configuration.getHost(),
-                        configuration.getPort(),
-                        configuration.getAccessKey(),
-                        configuration.getSecretAccessKey(),
-                        configuration.getStagingDir());
+
+        AthenaClient athenaClient = new AthenaClient(
+                configuration.getHost(),
+                configuration.getPort(),
+                configuration.getAccessKey(),
+                configuration.getSecretAccessKey(),
+                configuration.getStagingDir());
+
         HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
-        this.costReportGenerator = new CostReportGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp(), configuration.getShowAccountThreshold(), csvAccounts);
+
+        this.costReportGenerator = new CostReportGenerator(athenaClient,
+                htmlTableCreator,
+                configuration.getUserOwnerRegExp(),
+                configuration.getShowAccountThreshold(),
+                csvAccounts,
+                new VelocityEngine());
+
         AwsSesHandler awsSesHandler = new AwsSesHandler(AmazonSimpleEmailServiceClientBuilder.standard()
                 .withRegion(configuration.getRegion())
                 .withCredentials(
@@ -39,6 +48,7 @@ public class Loke {
                                 configuration.getAccessKey(),
                                 configuration.getSecretAccessKey())))
                 .build());
+
         this.emailSender = new AwsEmailSender(
                 awsSesHandler,
                 configuration.getFromEmailAddress(),
