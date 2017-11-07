@@ -11,7 +11,6 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 
-import javax.swing.text.NumberFormatter;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,12 +22,12 @@ public class ResourceStartedLastWeek implements Service {
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private Map<String, String> accounts;
+    private Map<String, String> csvAccounts;
 
-    public ResourceStartedLastWeek(AthenaClient athenaClient, String userOwnerRegExp, Map<String, String> accounts) {
+    public ResourceStartedLastWeek(AthenaClient athenaClient, String userOwnerRegExp, Map<String, String> csvAccounts) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
-        this.accounts = accounts;
+        this.csvAccounts = csvAccounts;
     }
 
     @Override
@@ -100,7 +99,7 @@ public class ResourceStartedLastWeek implements Service {
             }
 
             String accountId = dao.accountId;
-            String accountName = accounts.get(accountId);
+            String accountName = csvAccounts.get(accountId);
             accountId = (accountName != null) ? accountName : accountId;
 
             users.get(dao.userOwner).addResource(

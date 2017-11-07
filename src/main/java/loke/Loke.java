@@ -21,7 +21,7 @@ public class Loke {
 
     public Loke() {
         AccountReader accountReader = new AccountReader();
-        Map<String, String> accounts = accountReader.readCSV("accounts.csv");
+        Map<String, String> csvAccounts = accountReader.readCSV("accounts.csv");
         this.configuration = new YamlReader().readConfigFile("configuration.yaml");
         AthenaClient athenaClient =
                 new AthenaClient(
@@ -31,7 +31,7 @@ public class Loke {
                         configuration.getSecretAccessKey(),
                         configuration.getStagingDir());
         HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
-        this.costReportGenerator = new CostReportGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp(), configuration.getShowAccountThreshold(), accounts);
+        this.costReportGenerator = new CostReportGenerator(athenaClient, htmlTableCreator, configuration.getUserOwnerRegExp(), configuration.getShowAccountThreshold(), csvAccounts);
         AwsSesHandler awsSesHandler = new AwsSesHandler(AmazonSimpleEmailServiceClientBuilder.standard()
                 .withRegion(configuration.getRegion())
                 .withCredentials(
