@@ -20,7 +20,6 @@ public class AccountReaderTest {
         Map<String, String> accounts = getAccounts();
         String result = accounts.get("2");
         assertEquals("Account number two", result);
-
     }
 
     @Test
@@ -32,6 +31,12 @@ public class AccountReaderTest {
 
     private Map<String, String> getAccounts() {
         String path = ClassLoader.getSystemResource("config/accounts.csv").getPath();
-        return new AccountReader().readCSV(path);
+        Map<String, String> accounts = null;
+        try {
+            accounts = new AccountReader().readCSV(path);
+        } catch (MalformedCSVException e) {
+            e.printStackTrace();
+        }
+        return accounts;
     }
 }
