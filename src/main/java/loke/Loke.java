@@ -39,10 +39,7 @@ public class Loke {
                 configuration.getSecretAccessKey(),
                 configuration.getStagingDir());
 
-        HtmlTableCreator htmlTableCreator = new HtmlTableCreator();
-
         this.costReportGenerator = new CostReportGenerator(athenaClient,
-                htmlTableCreator,
                 configuration.getUserOwnerRegExp(),
                 configuration.getShowAccountThreshold(),
                 csvAccounts,

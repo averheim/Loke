@@ -30,7 +30,7 @@ public class SpendPerEmployeeByResourceTest {
     }
 
     @Test
-    public void test_1() throws Exception {
+    public void canCreateTable() throws Exception {
         List<SpendPerEmployeeByResourceDao> resultList = new ArrayList<>();
         resultList.add(createDbResponse("john.doe", "S3", "2017-11-07", 200));
         resultList.add(createDbResponse("john.doe", "EC2", "2017-11-07", 100));
