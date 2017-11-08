@@ -28,12 +28,14 @@ public class AwsEmailSenderTest {
 
         List<Employee> employees = new ArrayList<>();
         Employee employee = new Employee("john.doe");
-        Report report = new Report("john.doe");
-        report.addHtmlTable("<table>Table 1</table>");
-        report.addHtmlTable("<table>Table 2</table>");
-        employee.getReports().add(report);
-        employees.add(employee);
+        Report reportOne = new Report("john.doe");
+        Report reportTwo = new Report("john.doe");
+        reportOne.setHtmlTable("<table>Table 1</table>");
+        reportTwo.setHtmlTable("<table>Table 2</table>");
 
+        employee.addReport(reportOne);
+        employee.addReport(reportTwo);
+        employees.add(employee);
 
         awsEmailSender.sendEmployeeMails(employees);
 

@@ -20,7 +20,7 @@ public class Employee {
         return reports;
     }
 
-    public void addReports(List<Report> reports) {
-        this.reports.addAll(reports);
+    public void addReport(Report report) {
+        this.reports.add(report);
     }
 }

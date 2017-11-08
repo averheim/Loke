@@ -42,7 +42,7 @@ public class ResourceStartedLastWeek implements Service {
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
             Report report = new Report(user.getUserName());
-            report.addHtmlTable(generateHTMLTable(user));
+            report.setHtmlTable(generateHTMLTable(user));
             reports.add(report);
             log.info("Report generated for: {}", user.getUserName());
         }
@@ -54,6 +54,7 @@ public class ResourceStartedLastWeek implements Service {
         double total = calculateTotalSpend(resources);
 
         VelocityContext context = new VelocityContext();
+        context.put("userName", user.getUserName());
         context.put("resources", resources);
         context.put("total", total);
         context.put("decimalFormatter", DecimalFormatter.class);
@@ -64,8 +65,7 @@ public class ResourceStartedLastWeek implements Service {
         StringWriter stringWriter = new StringWriter();
         template.merge(context, stringWriter);
 
-        System.out.println(stringWriter);
-        return stringWriter.toString();
+        return stringWriter.toString().trim();
     }
 
     private double calculateTotalSpend(List<Resource> resources) {

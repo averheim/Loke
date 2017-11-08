@@ -48,29 +48,25 @@ public class SpendPerEmployeeByAccount implements Service {
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
             Report report = new Report(user.getUserName());
-            report.addHtmlURLs(generateHtmlURLs(user));
-            report.addHtmlTable(generateHTMLTable(user));
+            report.setChartUrl(generateChartUrl(user));
+            report.setHtmlTable(generateHTMLTable(user));
             reports.add(report);
             log.info("Report generated for: {}", user.getUserName());
         }
         return reports;
     }
 
-    private List<String> generateHtmlURLs(User user) {
-        List<String> htmlURLs = new ArrayList<>();
-        for (Account account : user.getAccounts().values()) {
-            ColorPicker.resetColor();
-            Scale scale = checkScale(account);
-            List<String> xAxisLabels = getXAxisLabels();
-            List<Line> lineChartPlots = createPlots(account, scale);
-            LineChart chart = GCharts.newLineChart(lineChartPlots);
-            configureChart(xAxisLabels, chart, account, scale, user.getUserName());
-            htmlURLs.add(chart.toURLString());
-        }
-        return htmlURLs;
+    private String generateChartUrl(User user) {
+        ColorPicker.resetColor();
+        Scale scale = checkScale(user.getAccounts().values());
+        List<String> xAxisLabels = getXAxisLabels();
+        List<Line> lineChartPlots = createPlots(user, scale);
+        LineChart chart = GCharts.newLineChart(lineChartPlots);
+        configureChart(xAxisLabels, chart, user, scale, user.getUserName());
+        return chart.toURLForHTML();
     }
 
-    private void configureChart(List<String> daysXAxisLabels, LineChart chart, Account account, Scale scale, String userName) {
+    private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, Scale scale, String userName) {
         int chartWidth = 1000;
         int chartHeight = 300;
         chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
@@ -78,78 +74,41 @@ public class SpendPerEmployeeByAccount implements Service {
         chart.addYAxisLabels(AxisLabelsFactory.newAxisLabels("Cost in " + scale.getSuffix(), 50));
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
-        String total = DecimalFormatter.format(calculateAccountTotal(account), 2);
-
-        String accountName = account.getAccountId();
-        if (csvAccounts != null) {
-            String name = csvAccounts.get(account.getAccountId());
-            accountName = name != null ? name : account.getAccountId();
-        }
-        System.out.println("ACCOUNT ID " + accountName);
-
-        chart.setTitle("Total cost for " + userName + " in " + accountName + " the past " + DAYS_BACK.size() + "days. " + total + " UDS total.");
+        chart.setTitle("Total spend for "
+                + userName
+                + " in by account the past "
+                + DAYS_BACK.size()
+                + " days. "
+                + DecimalFormatter.format(user.calculateTotalCost(), 2) + " UDS total.");
     }
 
-    private double calculateAccountTotal(Account account) {
-        double total = 0;
-        for (Resource resource : account.getResources().values()) {
-            total += getResourceTotal(resource);
-        }
-        return total;
-    }
-
-    private List<Line> createPlots(Account account, Scale scale) {
+    private List<Line> createPlots(User user, Scale scale) {
         List<Line> plots = new ArrayList<>();
-        for (Resource resource : account.getResources().values()) {
-            List<Double> lineSizeValues = getLineSize(resource, scale);
-            double total = getResourceTotal(resource);
+
+        for (Account account : user.getAccounts().values()) {
+            List<Double> lineSizeValues = new ArrayList<>();
+            for (Calendar calendar : DAYS_BACK) {
+                lineSizeValues.add(
+                        account.getAccountDailyTotal(dateFormat.format(calendar.getTime())) / scale.getDivideBy()
+                );
+
+            }
             Line lineChartPlot = Plots.newLine(
-                    Data.newData(lineSizeValues), ColorPicker.getNextColor(),
-                    resource.getResourceName() + " " + DecimalFormatter.format(total, 2));
+                    Data.newData(lineSizeValues),
+                    ColorPicker.getNextColor(),
+                    account.getAccountId() + " " + DecimalFormatter.format(account.getAccountTotal(), 2));
             plots.add(0, lineChartPlot);
         }
         return plots;
     }
 
-    private double getResourceTotal(Resource resource) {
-        double total = 0.0;
-        for (Double cost : getDailyCosts(resource)) {
-            total += cost;
-        }
-        return total;
-    }
-
-    private List<Double> getLineSize(Resource resource, Scale scale) {
-        List<Double> lineSizeValues = new ArrayList<>();
-        for (Double cost : getDailyCosts(resource)) {
-            lineSizeValues.add(cost / scale.getDivideBy());
-        }
-        return lineSizeValues;
-    }
-
-    private List<Double> getDailyCosts(Resource resource) {
-        List<Double> data = new ArrayList<>();
-        for (Calendar calendar : DAYS_BACK) {
-            Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-            if (day == null) {
-                data.add(0.0);
-            } else {
-                data.add(resource.getDays().get(dateFormat.format(calendar.getTime())).getDailyCost());
-            }
-        }
-        return data;
-    }
-
-    private Scale checkScale(Account account) {
+    private Scale checkScale(Collection<Account> accounts) {
         List<Double> dailyCosts = new ArrayList<>();
 
-        for (Calendar calendar : DAYS_BACK) {
-            double dailyCost = 0.0;
-            for (Resource resource : account.getResources().values()) {
-                Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                dailyCost += (day == null) ? 0 : day.getDailyCost();
+        for (Account account : accounts) {
+            for (Calendar calendar : DAYS_BACK) {
+                dailyCosts.add(account.getAccountDailyTotal(dateFormat.format(calendar.getTime())));
             }
-            dailyCosts.add(dailyCost);
         }
 
         dailyCosts.sort((o1, o2) -> Double.compare(o2, o1));
@@ -172,24 +131,26 @@ public class SpendPerEmployeeByAccount implements Service {
     }
 
     private String generateHTMLTable(User user) {
-        VelocityContext context = new VelocityContext();
-        context.put("userName", user.getUserName());
-        context.put("showAccountThreshold", this.showAccountThreshold);
-        context.put("dates", DAYS_BACK);
-        context.put("accounts", user.getAccounts().values());
-        context.put("total", user.calculateTotalCost());
-        context.put("colspan", DAYS_BACK.size() + 2);
-        context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
-        context.put("dateFormat", this.dateFormat);
-        context.put("decimalFormatter", DecimalFormatter.class);
+        if (user.calculateTotalCost() < showAccountThreshold) {
+            return null;
+        }
+            VelocityContext context = new VelocityContext();
+            context.put("userName", user.getUserName());
+            context.put("showAccountThreshold", this.showAccountThreshold);
+            context.put("dates", DAYS_BACK);
+            context.put("accounts", user.getAccounts().values());
+            context.put("total", user.calculateTotalCost());
+            context.put("colspan", DAYS_BACK.size() + 2);
+            context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
+            context.put("dateFormat", this.dateFormat);
+            context.put("decimalFormatter", DecimalFormatter.class);
 
-        Template template = velocityEngine.getTemplate("src/templates/spendperemployeebyaccount.vm");
+            Template template = velocityEngine.getTemplate("src/templates/spendperemployeebyaccount.vm");
 
-        StringWriter stringWriter = new StringWriter();
-        template.merge(context, stringWriter);
+            StringWriter stringWriter = new StringWriter();
+            template.merge(context, stringWriter);
 
-        System.out.println(stringWriter);
-        return stringWriter.toString();
+            return stringWriter.toString().trim();
     }
 
     private Map<String, User> sendRequest() {

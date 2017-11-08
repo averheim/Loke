@@ -42,8 +42,8 @@ public class ResourceStartedLastWeekTest {
 
         Mockito.when(athenaClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class)).thenReturn(queryResult);
 
-        String expected = ResourceLoaderTestUtility.loadResource("sql/ResourceStartedLastWeekTestTable.html");
-        String result = resourceStartedLastWeek.getReports().get(0).getHtmlTables().get(0);
+        String expected = ResourceLoaderTestUtility.loadResource("htmltables/ResourceStartedLastWeekTestTable.html");
+        String result = resourceStartedLastWeek.getReports().get(0).getHtmlTable();
         assertEquals(expected, result);
     }
 

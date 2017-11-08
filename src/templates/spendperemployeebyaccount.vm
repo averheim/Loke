@@ -1,5 +1,5 @@
 <div style="font-family:'arial'">
-    <h4>Monthly spend for $userName (Accounts with total cost below $$showAccountThreshold will not be shown)</h4>
+    <h4>Monthly spend for $userName (Accounts with total spend below $$showAccountThreshold will not be shown)</h4>
     <div style="overflow-x:auto;width:100%;border:1px solid #ddd">
         <table style="border-collapse:collapse;border-spacing:0;width:100%;font-size:small">
             <thead>

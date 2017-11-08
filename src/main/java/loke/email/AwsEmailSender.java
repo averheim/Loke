@@ -32,8 +32,8 @@ public class AwsEmailSender {
             log.info("Creating email for: {}", employee.getUserName());
             String to = employee.getUserName() + toEmailDomainName;
             for (Report report : employee.getReports()) {
-                addHtmlURLs(htmlBody, report);
-                addHtmlTables(htmlBody, report);
+                addChartUrl(htmlBody, report);
+                addHtmlTable(htmlBody, report);
             }
             if (!dryRun) {
                 awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
@@ -50,9 +50,9 @@ public class AwsEmailSender {
             log.info("Adding report for: {}", employee.getUserName());
             for (Report report : employee.getReports()) {
                 if (report instanceof TotalReport) {
-                    addHtmlURLs(htmlBody, report);
+                    addChartUrl(htmlBody, report);
                 }
-                addHtmlTables(htmlBody, report);
+                addHtmlTable(htmlBody, report);
             }
         }
         if (!dryRun) {
@@ -75,18 +75,16 @@ public class AwsEmailSender {
         }
     }
 
-    private void addHtmlURLs(StringBuilder htmlBody, Report report) {
-        for (String htmlURL : report.getHtmlURLs()) {
-            if (report.getHtmlURLs() != null) {
-                htmlBody.append("<img src=\"").append(htmlURL).append("\"/img>");
+    private void addChartUrl(StringBuilder htmlBody, Report report) {
+        if (report.getChartUrl() != null) {
+            htmlBody.append("<img src=\"").append(report.getChartUrl()).append("\"/img>");
                 htmlBody.append("\n\n");
             }
-        }
     }
 
-    private void addHtmlTables(StringBuilder htmlBody, Report report) {
-        for (String table : report.getHtmlTables()) {
-            htmlBody.append(table);
+    private void addHtmlTable(StringBuilder htmlBody, Report report) {
+        if (report.getHtmlTable() != null) {
+            htmlBody.append(report.getHtmlTable());
             htmlBody.append("\n\n");
         }
     }

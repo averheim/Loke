@@ -15,6 +15,6 @@ public class ResourceLoaderTestUtility {
             stringBuilder.append(line).append("\n");
             line = bufferedReader.readLine();
         }
-        return stringBuilder.toString();
+        return stringBuilder.toString().trim();
     }
 }

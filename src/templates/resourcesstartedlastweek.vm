@@ -1,5 +1,6 @@
 <div style="font-family:'arial'">
-    <div style="overflow-x:auto;width:100%;border:1px solid #ddd">
+    <h4>Resources started last week by $userName</h4>
+    <div style="overflow-x:auto;width:1100px;border:1px solid #ddd">
         <table style="border-collapse:collapse;border-spacing:0;width:100%;font-size:small">
             <thead>
             <tr>

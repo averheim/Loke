@@ -1,4 +1,5 @@
 <div style="font-family:'arial'">
+    <h4>Total spend for $user.getUserName() the past $dates.size() days</h4>
     <div style="overflow-x:auto;width:100%;border:1px solid #ddd">
         <table style="border-collapse:collapse;border-spacing:0;width:100%;font-size:small">
             <thead>

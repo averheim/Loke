@@ -2,12 +2,12 @@ package loke.service;
 
 import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
-import org.apache.velocity.app.VelocityEngine;
-import org.junit.Before;
-import org.junit.Test;
 import loke.utils.CalendarGenerator;
 import loke.utils.ResourceLoader;
 import loke.utils.ResourceLoaderTestUtility;
+import org.apache.velocity.app.VelocityEngine;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static loke.db.athena.JdbcManager.*;
-import static org.junit.Assert.*;
+import static loke.db.athena.JdbcManager.QueryResult;
+import static loke.service.SpendPerEmployeeByAccount.SpendPerEmployeeAndAccountDao;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static loke.service.SpendPerEmployeeByAccount.*;
 
 public class SpendPerEmployeeByAccountDaoTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
@@ -51,9 +51,8 @@ public class SpendPerEmployeeByAccountDaoTest {
 
         when(athenaClient.executeQuery(SQL_QUERY, SpendPerEmployeeAndAccountDao.class)).thenReturn(queryResult);
 
-        String expected = ResourceLoaderTestUtility.loadResource("sql/SpendPerUserAndAccountTestTable.html");
-        String result = spendPerEmployeeByAccount.getReports().get(0).getHtmlTables().get(0);
-        System.out.println(spendPerEmployeeByAccount.getReports().get(0).getHtmlTables().get(0));
+        String expected = ResourceLoaderTestUtility.loadResource("htmltables/SpendPerUserAndAccountTestTable.html");
+        String result = spendPerEmployeeByAccount.getReports().get(0).getHtmlTable();
         assertEquals(expected, result);
     }
 

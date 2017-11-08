@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class AccountReaderTest {
 
@@ -30,7 +30,7 @@ public class AccountReaderTest {
     }
 
     private Map<String, String> getAccounts() {
-        String path = ClassLoader.getSystemResource("config/accounts.csv").getPath();
+        String path = ClassLoader.getSystemResource("accounts.csv").getPath();
         Map<String, String> accounts = null;
         try {
             accounts = new AccountReader().readCSV(path);
