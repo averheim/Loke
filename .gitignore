@@ -4,7 +4,6 @@
 *.log
 *.log.*
 /target
-*.csv
 /tmp
 *.com
 *.dll
@@ -27,4 +26,3 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
-!resources/*
