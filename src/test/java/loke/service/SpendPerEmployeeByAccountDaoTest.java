@@ -2,10 +2,10 @@ package loke.service;
 
 import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
+import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 import loke.utils.CalendarGenerator;
-import loke.HtmlTableCreator;
 import loke.utils.ResourceLoader;
 import loke.utils.ResourceLoaderTestUtility;
 
@@ -24,7 +24,6 @@ import static loke.service.SpendPerEmployeeByAccount.*;
 public class SpendPerEmployeeByAccountDaoTest {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
     private AthenaClient athenaClient;
-    private HtmlTableCreator htmlTableCreator;
     private SpendPerEmployeeByAccount spendPerEmployeeByAccount;
     private Clock clock;
 
@@ -32,15 +31,15 @@ public class SpendPerEmployeeByAccountDaoTest {
     public void setUp() throws Exception {
         clock = mock(Clock.class);
         CalendarGenerator.clock = clock;
+        when(clock.instant()).thenReturn(Instant.parse("2017-09-30T00:00:00Z"));
         athenaClient = mock(AthenaClient.class);
-        htmlTableCreator = new HtmlTableCreator();
-        String userOwnerRegExp = "";
-        Map<String, String> accounts = new AccountReader().readCSV("config/accounts.csv");
-        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, htmlTableCreator, userOwnerRegExp, 0, accounts);
+        String userOwnerRegExp = "john.doe";
+        Map<String, String> csvAccounts = new AccountReader().readCSV("accounts.csv");
+        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, 0, csvAccounts, new VelocityEngine());
     }
 
     @Test
-    public void test_1() throws Exception {
+    public void canCreateTable() throws Exception {
         List<SpendPerEmployeeAndAccountDao> spendPerEmployeeAndAccountDaos = new ArrayList<>();
         spendPerEmployeeAndAccountDaos.add(createDbResponse("john.doe", "QA", "Ec2", "2017-09-01 09:00:00", 100));
         spendPerEmployeeAndAccountDaos.add(createDbResponse("john.doe", "QA", "Ec2", "2017-09-02 09:00:00", 100));
@@ -50,12 +49,11 @@ public class SpendPerEmployeeByAccountDaoTest {
         QueryResult queryResult = new QueryResult();
         queryResult.setResultList(spendPerEmployeeAndAccountDaos);
 
-        when(clock.instant()).thenReturn(Instant.parse("2017-09-30T00:00:00Z"));
         when(athenaClient.executeQuery(SQL_QUERY, SpendPerEmployeeAndAccountDao.class)).thenReturn(queryResult);
 
-        String expected = ResourceLoaderTestUtility.loadResource("sql/SpendPerUserAndAccountTableTest1.html");
+        String expected = ResourceLoaderTestUtility.loadResource("sql/SpendPerUserAndAccountTestTable.html");
         String result = spendPerEmployeeByAccount.getReports().get(0).getHtmlTables().get(0);
-        System.out.println(spendPerEmployeeByAccount.getReports().get(0).getHtmlTables().get(1));
+        System.out.println(spendPerEmployeeByAccount.getReports().get(0).getHtmlTables().get(0));
         assertEquals(expected, result);
     }
 

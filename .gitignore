@@ -2,6 +2,7 @@
 *.iml
 *.yaml
 *.log
+*.log.*
 /target
 *.csv
 /tmp

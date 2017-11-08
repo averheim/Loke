@@ -1,7 +1,6 @@
 package loke.service;
 
 import com.googlecode.charts4j.*;
-import loke.HtmlTableCreator;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
@@ -11,7 +10,11 @@ import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -21,20 +24,18 @@ public class SpendPerEmployeeByAccount implements Service {
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
     private static final List<Calendar> DAYS_BACK = CalendarGenerator.getDaysBack(60);
     private AthenaClient athenaClient;
-    private HtmlTableCreator htmlTableCreator;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private double showAccountThreshold;
-    private double accountTotal = 0;
-    private double total = 0;
-    private Map<String, String> accounts;
+    private Map<String, String> csvAccounts;
+    private VelocityEngine velocityEngine;
 
-    public SpendPerEmployeeByAccount(AthenaClient athenaClient, HtmlTableCreator htmlTableCreator, String userOwnerRegExp, double showAccountThreshold, Map<String, String> accounts) {
+    public SpendPerEmployeeByAccount(AthenaClient athenaClient, String userOwnerRegExp, double showAccountThreshold, Map<String, String> csvAccounts, VelocityEngine velocityEngine) {
         this.athenaClient = athenaClient;
-        this.htmlTableCreator = htmlTableCreator;
         this.userOwnerRegExp = userOwnerRegExp;
         this.showAccountThreshold = showAccountThreshold;
-        this.accounts = accounts;
+        this.csvAccounts = csvAccounts;
+        this.velocityEngine = velocityEngine;
     }
 
     @Override
@@ -44,15 +45,15 @@ public class SpendPerEmployeeByAccount implements Service {
     }
 
     private List<Report> generateReports(Map<String, User> users) {
-        List<Report> charts = new ArrayList<>();
+        List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
             Report report = new Report(user.getUserName());
             report.addHtmlURLs(generateHtmlURLs(user));
-            report.addHtmlTables(generateHTMLTables(user));
-            charts.add(report);
+            report.addHtmlTable(generateHTMLTable(user));
+            reports.add(report);
             log.info("Report generated for: {}", user.getUserName());
         }
-        return charts;
+        return reports;
     }
 
     private List<String> generateHtmlURLs(User user) {
@@ -80,8 +81,8 @@ public class SpendPerEmployeeByAccount implements Service {
         String total = DecimalFormatter.format(calculateAccountTotal(account), 2);
 
         String accountName = account.getAccountId();
-        if (accounts != null) {
-            String name = accounts.get(account.getAccountId());
+        if (csvAccounts != null) {
+            String name = csvAccounts.get(account.getAccountId());
             accountName = name != null ? name : account.getAccountId();
         }
         System.out.println("ACCOUNT ID " + accountName);
@@ -104,7 +105,7 @@ public class SpendPerEmployeeByAccount implements Service {
             double total = getResourceTotal(resource);
             Line lineChartPlot = Plots.newLine(
                     Data.newData(lineSizeValues), ColorPicker.getNextColor(),
-                    resource.getProductName() + " " + DecimalFormatter.format(total, 2));
+                    resource.getResourceName() + " " + DecimalFormatter.format(total, 2));
             plots.add(0, lineChartPlot);
         }
         return plots;
@@ -170,112 +171,25 @@ public class SpendPerEmployeeByAccount implements Service {
         return labels;
     }
 
-    private List<String> generateHTMLTables(User user) {
-        List<String> htmlTables = new ArrayList<>();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, YYYY", Locale.US);
-        List<String> head = new ArrayList<>();
+    private String generateHTMLTable(User user) {
+        VelocityContext context = new VelocityContext();
+        context.put("userName", user.getUserName());
+        context.put("showAccountThreshold", this.showAccountThreshold);
+        context.put("dates", DAYS_BACK);
+        context.put("accounts", user.getAccounts().values());
+        context.put("total", user.calculateTotalCost());
+        context.put("colspan", DAYS_BACK.size() + 2);
+        context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
+        context.put("dateFormat", this.dateFormat);
+        context.put("decimalFormatter", DecimalFormatter.class);
 
-        head.add("Products by Account");
-        for (Calendar calendar : DAYS_BACK) {
-            head.add(simpleDateFormat.format(calendar.getTime()));
-        }
-        head.add("Total ($)");
+        Template template = velocityEngine.getTemplate("src/templates/spendperemployeebyaccount.vm");
 
-        List<List<String>> bodies = new ArrayList<>();
-        for (Account account : user.getAccounts().values()) {
-            List<Resource> resources = new ArrayList<>(account.getResources().values());
-            Collections.reverse(resources);
+        StringWriter stringWriter = new StringWriter();
+        template.merge(context, stringWriter);
 
-            List<String> accountTotalRows = getAccountTotalRows(DAYS_BACK, account, resources);
-            List<String> resourceRows = getResourceRows(DAYS_BACK, resources);
-
-            if (accountTotal >= showAccountThreshold) {
-                bodies.add(accountTotalRows);
-                bodies.add(resourceRows);
-            }
-            resources.clear();
-        }
-        bodies.add(getTotalCostRow(user, DAYS_BACK));
-
-
-        String heading = "Monthly spend for " + user.getUserName() + " (Accounts with total cost below $"
-                + DecimalFormatter.format(showAccountThreshold, 2) + " will not be shown)";
-        String footer = "Monthly total: $" + DecimalFormatter.format(total, 2);
-
-        if (bodies.size() > 1) {
-            htmlTables.add(htmlTableCreator.createMarkedRowTable(head, bodies, footer, heading, "Total"));
-        }
-
-        return htmlTables;
-    }
-
-    private List<String> getAccountTotalRows(List<Calendar> calendarDaysBack, Account account, List<Resource> resources) {
-        List<String> accountRows = new ArrayList<>();
-        String accountName = account.getAccountId();
-        if (accounts != null) {
-            String name = accounts.get(account.getAccountId());
-            accountName = name != null ? name : account.getAccountId();
-        }
-        accountRows.add(accountName + " Total ($)");
-        accountTotal = 0;
-        for (Calendar calendar : calendarDaysBack) {
-            double dailyTotal = 0.00;
-            for (Resource resource : resources) {
-                Day day = resource.days.get(dateFormat.format(calendar.getTime()));
-                if (day != null) {
-                    dailyTotal += day.getDailyCost();
-                }
-            }
-            if (dailyTotal > 0) {
-                accountRows.add(DecimalFormatter.format(dailyTotal, 2));
-            } else {
-                accountRows.add("0.00");
-            }
-            accountTotal += dailyTotal;
-        }
-        accountRows.add(DecimalFormatter.format(accountTotal, 2));
-        return accountRows;
-    }
-
-    private List<String> getResourceRows(List<Calendar> calendarDaysBack, List<Resource> resources) {
-        List<String> resourceRows = new ArrayList<>();
-        for (Resource resource : resources) {
-            resourceRows.add(resource.productName + " ($)");
-            double resourceTotal = 0.00;
-
-            for (Calendar calendar : calendarDaysBack) {
-                Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                if (day != null) {
-                    resourceRows.add(DecimalFormatter.format(day.getDailyCost(), 2));
-                    resourceTotal += day.getDailyCost();
-                } else {
-                    resourceRows.add("0.00");
-                }
-            }
-            resourceRows.add(DecimalFormatter.format(resourceTotal, 2));
-        }
-        return resourceRows;
-    }
-
-    private List<String> getTotalCostRow(User user, List<Calendar> calendarDaysBack) {
-        List<String> totalCostRows = new ArrayList<>();
-        totalCostRows.add("Total for all accounts ($)");
-        total = 0;
-        for (Calendar calendar : calendarDaysBack) {
-            double dailyTotal = 0;
-            for (Account account : user.getAccounts().values()) {
-                for (Resource resource : account.getResources().values()) {
-                    Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                    if (day != null) {
-                        dailyTotal += day.getDailyCost();
-                    }
-                }
-            }
-            total += dailyTotal;
-            totalCostRows.add((dailyTotal != 0) ? DecimalFormatter.format(dailyTotal, 2) : "0.00");
-        }
-        totalCostRows.add((total != 0) ? DecimalFormatter.format(total, 2) : "0.00");
-        return totalCostRows;
+        System.out.println(stringWriter);
+        return stringWriter.toString();
     }
 
     private Map<String, User> sendRequest() {
@@ -308,6 +222,11 @@ public class SpendPerEmployeeByAccount implements Service {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
+
+            String accountId = dao.accountId;
+            String accountName = csvAccounts.get(accountId);
+            dao.accountId = (accountName != null) ? accountName : accountId;
+
             Day day = new Day(date, dao.cost);
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }
@@ -328,13 +247,21 @@ public class SpendPerEmployeeByAccount implements Service {
         public double cost;
     }
 
-    private class User {
+    public class User {
         private String userName;
         private Map<String, Account> accounts;
 
         public User(String userName) {
             this.userName = userName;
             this.accounts = new HashMap<>();
+        }
+
+        public double calculateTotalCost() {
+            double total = 0;
+            for (Account account : accounts.values()) {
+                total += account.getAccountTotal();
+            }
+            return total;
         }
 
         public String getUserName() {
@@ -350,7 +277,7 @@ public class SpendPerEmployeeByAccount implements Service {
         }
     }
 
-    private class Account {
+    public class Account {
         private String accountId;
         private Map<String, Resource> resources;
 
@@ -363,6 +290,25 @@ public class SpendPerEmployeeByAccount implements Service {
             return accountId;
         }
 
+        public double getAccountDailyTotal(String date) {
+            double total = 0.00;
+            for (Resource resource : resources.values()) {
+                Day day = resource.getDay(date);
+                if (day != null) {
+                    total += resource.getDay(date).getDailyCost();
+                }
+            }
+            return total;
+        }
+
+        public double getAccountTotal() {
+            double total = 0;
+            for (Resource resource : resources.values()) {
+                total += resource.getResourceTotal();
+            }
+            return total;
+        }
+
         public Map<String, Resource> getResources() {
             return resources;
         }
@@ -372,7 +318,7 @@ public class SpendPerEmployeeByAccount implements Service {
         }
     }
 
-    private class Resource {
+    public class Resource {
         private String productName;
         private Map<String, Day> days;
 
@@ -381,16 +327,28 @@ public class SpendPerEmployeeByAccount implements Service {
             this.days = new HashMap<>();
         }
 
-        public String getProductName() {
+        public String getResourceName() {
             return productName;
+        }
+
+        public double getResourceTotal() {
+            double total = 0;
+            for (Day day : days.values()) {
+                total += day.getDailyCost();
+            }
+            return total;
         }
 
         public Map<String, Day> getDays() {
             return days;
         }
+
+        public Day getDay(String key) {
+            return days.get(key);
+        }
     }
 
-    private class Day {
+    public class Day {
         private Calendar date;
         private double dailyCost;
 

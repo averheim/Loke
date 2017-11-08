@@ -1,0 +1,71 @@
+<div style="font-family:'arial'">
+    <h4>Monthly spend for $userName (Accounts with total cost below $$showAccountThreshold will not be shown)</h4>
+    <div style="overflow-x:auto;width:100%;border:1px solid #ddd">
+        <table style="border-collapse:collapse;border-spacing:0;width:100%;font-size:small">
+            <thead>
+            <tr>
+                <th nowrap style="border:1px solid #ddd;padding:8px;width:270px">Products by Account</th>
+                #foreach($date in $dates)
+                <th nowrap style="border:1px solid #ddd;padding:8px">
+                    $simpleDateForamt.format($date.getTime())
+                </th>
+                #end
+                <th nowrap style="border:1px solid #ddd;padding:8px">Total ($)</th>
+            </tr>
+            </thead>
+            <tbody>
+            #foreach($account in $accounts)
+            #if($account.getAccountTotal() >= $showAccountThreshold)
+            <tr>
+                <td style="border:1px solid #ddd;padding:8px;width:270px;background-color:#b3ccff">
+                    $account.getAccountId()
+                </td>
+                #foreach($date in $dates)
+                <td style="border:1px solid #ddd;padding:8px;background-color:#b3ccff;text-align:right;">
+                    $decimalFormatter.format($account.getAccountDailyTotal($dateFormat.format($date.getTime())), 2)
+                </td>
+                #end
+                <td style="border:1px solid #ddd;padding:8px;background-color:#b3ccff;text-align:right;">
+                    $decimalFormatter.format($account.getAccountTotal(), 2)
+                </td>
+            </tr>
+            #set($resources = $account.getResources().values())
+            #foreach($resource in $resources)
+            #if($rowColor)
+            <tr style="background-color:#f2f2f2">
+                #else
+            <tr>
+                #end
+                <td nowrap style="border:1px solid #ddd;padding:8px;width:270px">
+                    $resource.getResourceName() ($)
+                </td>
+                #foreach($date in $dates)
+                #set($temp_day = $resource.getDay($dateFormat.format($date.getTime())))
+                #if($temp_day)
+                <td nowrap style="border:1px solid #ddd;padding:8px;text-align:right">
+                    $decimalFormatter.format($temp_day.getDailyCost(), 2)
+                </td>
+                #else
+                <td nowrap style="border:1px solid #ddd;padding:8px;text-align:right">0.00</td>
+                #end
+                #set($temp_day = false)
+                #end
+                <td nowrap style="border:1px solid #ddd;padding:8px;text-align:right">
+                    $decimalFormatter.format($resource.getResourceTotal(),2)
+                </td>
+            </tr>
+            #set($rowColor = !$rowColor)
+            #end
+            #end
+            #end
+            </tbody>
+            <tfoot>
+            <tr>
+                <td style="border:1px solid #ddd;padding:8px;background-color:#428aff" colspan="$colspan">
+                    Total: $$decimalFormatter.format($total, 2)
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
