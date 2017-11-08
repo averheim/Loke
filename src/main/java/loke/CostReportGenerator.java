@@ -9,20 +9,29 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.app.VelocityEngine;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class CostReportGenerator {
     private Logger log = LogManager.getLogger(CostReportGenerator.class);
-    private Map<String, Service> services;
+    private List<Service> employeeServices;
+    private List<Service> adminServices;
 
     public CostReportGenerator(AthenaClient athena, String userOwnerRegExp, double showAccountThreshold, Map<String, String> csvAccounts, VelocityEngine velocityEngine) {
-        services = new HashMap<>();
-        services.put(TotalSpendPerEmployee.class.getName(), new TotalSpendPerEmployee(athena, userOwnerRegExp));
-        services.put(SpendPerEmployeeByResource.class.getName(), new SpendPerEmployeeByResource(athena, userOwnerRegExp, velocityEngine));
-        services.put(SpendPerEmployeeByAccount.class.getName(), new SpendPerEmployeeByAccount(athena, userOwnerRegExp, showAccountThreshold, csvAccounts, velocityEngine));
-        services.put(ResourceStartedLastWeek.class.getName(), new ResourceStartedLastWeek(athena, userOwnerRegExp, csvAccounts, velocityEngine));
+        this.employeeServices = new ArrayList<>();
+        this.adminServices = new ArrayList<>();
+
+        TotalSpendPerEmployee totalSpendPerEmployee = new TotalSpendPerEmployee(athena, userOwnerRegExp);
+        SpendPerEmployeeByResource spendPerEmployeeByResource = new SpendPerEmployeeByResource(athena, userOwnerRegExp, velocityEngine);
+        SpendPerEmployeeByAccount spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athena, userOwnerRegExp, showAccountThreshold, csvAccounts, velocityEngine);
+        ResourceStartedLastWeek resourceStartedLastWeek = new ResourceStartedLastWeek(athena, userOwnerRegExp, csvAccounts, velocityEngine);
+
+        this.employeeServices.add(spendPerEmployeeByResource);
+        this.employeeServices.add(spendPerEmployeeByAccount);
+        this.employeeServices.add(resourceStartedLastWeek);
+
+        this.adminServices.add(totalSpendPerEmployee);
+        this.adminServices.add(spendPerEmployeeByAccount);
     }
 
     public List<Employee> generateReports() {
@@ -36,9 +45,9 @@ public class CostReportGenerator {
     private List<Report> getReports() {
         log.info("Generating reports");
         List<Report> reports = new ArrayList<>();
-        reports.addAll(services.get(SpendPerEmployeeByResource.class.getName()).getReports());
-        reports.addAll(services.get(SpendPerEmployeeByAccount.class.getName()).getReports());
-        reports.addAll(services.get(ResourceStartedLastWeek.class.getName()).getReports());
+        for (Service service : employeeServices) {
+            reports.addAll(service.getReports());
+        }
         log.info("Reports generated");
         return reports;
     }
@@ -46,8 +55,9 @@ public class CostReportGenerator {
     private List<Report> getAdminReports() {
         log.info("Generating admin-reports");
         List<Report> reports = new ArrayList<>();
-        reports.addAll(services.get(TotalSpendPerEmployee.class.getName()).getReports());
-        reports.addAll(services.get(SpendPerEmployeeByAccount.class.getName()).getReports());
+        for (Service service : adminServices) {
+            reports.addAll(service.getReports());
+        }
         log.info("Admin-reports generated");
         return reports;
     }
