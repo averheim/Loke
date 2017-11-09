@@ -44,22 +44,22 @@ public class CostReportGenerator {
 
     private List<Report> getReports() {
         log.info("Generating reports");
-        List<Report> reports = new ArrayList<>();
+        List<Report> employeeReports = new ArrayList<>();
         for (Service service : employeeServices) {
-            reports.addAll(service.getReports());
+            employeeReports.addAll(service.getReports());
         }
         log.info("Reports generated");
-        return reports;
+        return employeeReports;
     }
 
     private List<Report> getAdminReports() {
         log.info("Generating admin-reports");
-        List<Report> reports = new ArrayList<>();
+        List<Report> adminReports = new ArrayList<>();
         for (Service service : adminServices) {
-            reports.addAll(service.getReports());
+            adminReports.addAll(service.getReports());
         }
         log.info("Admin-reports generated");
-        return reports;
+        return adminReports;
     }
 
     private List<Employee> orderChartsByUser(List<Report> reports) {
