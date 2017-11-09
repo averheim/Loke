@@ -2,9 +2,9 @@ package loke.service;
 
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager.QueryResult;
+import loke.service.SpendPerEmployeeByResource.SpendPerEmployeeByResourceDao;
 import loke.utils.CalendarGenerator;
 import loke.utils.ResourceLoader;
-import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import static loke.service.SpendPerEmployeeByResource.SpendPerEmployeeByResourceDao;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,7 +33,7 @@ public class SpendPerEmployeeByResourceTest {
         when(clock.instant()).thenReturn(Instant.parse("2017-11-08T00:00:00Z"));
         athenaClient = mock(AthenaClient.class);
         String userOwnerRegExp = "john.doe";
-        spendPerEmployeeByResource = new SpendPerEmployeeByResource(athenaClient, userOwnerRegExp, new VelocityEngine());
+        spendPerEmployeeByResource = new SpendPerEmployeeByResource(athenaClient, userOwnerRegExp);
     }
 
     @Test

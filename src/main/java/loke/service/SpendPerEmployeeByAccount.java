@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
 
 import java.io.StringWriter;
 import java.text.ParseException;
@@ -25,14 +26,12 @@ public class SpendPerEmployeeByAccount implements Service {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private double showAccountThreshold;
     private Map<String, String> csvAccounts;
-    private VelocityEngine velocityEngine;
 
-    public SpendPerEmployeeByAccount(AthenaClient athenaClient, String userOwnerRegExp, double showAccountThreshold, Map<String, String> csvAccounts, VelocityEngine velocityEngine) {
+    public SpendPerEmployeeByAccount(AthenaClient athenaClient, String userOwnerRegExp, double showAccountThreshold, Map<String, String> csvAccounts) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
         this.showAccountThreshold = showAccountThreshold;
         this.csvAccounts = csvAccounts;
-        this.velocityEngine = velocityEngine;
     }
 
     @Override
@@ -55,7 +54,7 @@ public class SpendPerEmployeeByAccount implements Service {
 
     private String generateChartUrl(User user) {
         ColorPicker.resetColor();
-        Scale scale = checkScale(user.getAccounts().values());
+        ScaleChecker.Scale scale = checkScale(user.getAccounts().values());
         List<String> xAxisLabels = getXAxisLabels();
         List<Line> lineChartPlots = createPlots(user, scale);
         LineChart chart = GCharts.newLineChart(lineChartPlots);
@@ -63,7 +62,34 @@ public class SpendPerEmployeeByAccount implements Service {
         return chart.toURLString();
     }
 
-    private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, Scale scale, String userName) {
+    private String generateHTMLTable(User user) {
+        if (user.calculateTotalCost() < showAccountThreshold) {
+            return null;
+        }
+        VelocityEngine velocityEngine = new VelocityEngine();
+        velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "src/main/resources/templates/");
+        velocityEngine.init();
+
+        VelocityContext context = new VelocityContext();
+        context.put("userName", user.getUserName());
+        context.put("showAccountThreshold", this.showAccountThreshold);
+        context.put("dates", DAYS_BACK);
+        context.put("accounts", user.getAccounts().values());
+        context.put("total", user.calculateTotalCost());
+        context.put("colspan", DAYS_BACK.size() + 2);
+        context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
+        context.put("dateFormat", this.dateFormat);
+        context.put("decimalFormatter", DecimalFormatter.class);
+
+        Template template = velocityEngine.getTemplate("spendperemployeebyaccount.vm");
+
+        StringWriter stringWriter = new StringWriter();
+        template.merge(context, stringWriter);
+
+        return stringWriter.toString().trim();
+    }
+
+    private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, ScaleChecker.Scale scale, String userName) {
         int chartWidth = 1000;
         int chartHeight = 300;
         chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
@@ -79,7 +105,7 @@ public class SpendPerEmployeeByAccount implements Service {
                 + DecimalFormatter.format(user.calculateTotalCost(), 2) + " UDS total.");
     }
 
-    private List<Line> createPlots(User user, Scale scale) {
+    private List<Line> createPlots(User user, ScaleChecker.Scale scale) {
         List<Line> plots = new ArrayList<>();
 
         for (Account account : user.getAccounts().values()) {
@@ -88,7 +114,6 @@ public class SpendPerEmployeeByAccount implements Service {
                 lineSizeValues.add(
                         account.getAccountDailyTotal(dateFormat.format(calendar.getTime())) / scale.getDivideBy()
                 );
-
             }
             Line lineChartPlot = Plots.newLine(
                     Data.newData(lineSizeValues),
@@ -99,15 +124,13 @@ public class SpendPerEmployeeByAccount implements Service {
         return plots;
     }
 
-    private Scale checkScale(Collection<Account> accounts) {
+    private ScaleChecker.Scale checkScale(Collection<Account> accounts) {
         List<Double> dailyCosts = new ArrayList<>();
-
         for (Account account : accounts) {
             for (Calendar calendar : DAYS_BACK) {
                 dailyCosts.add(account.getAccountDailyTotal(dateFormat.format(calendar.getTime())));
             }
         }
-
         dailyCosts.sort((o1, o2) -> Double.compare(o2, o1));
         return ScaleChecker.checkScale(dailyCosts.get(0));
     }
@@ -122,29 +145,6 @@ public class SpendPerEmployeeByAccount implements Service {
             }
         }
         return labels;
-    }
-
-    private String generateHTMLTable(User user) {
-        if (user.calculateTotalCost() < showAccountThreshold) {
-            return null;
-        }
-        VelocityContext context = new VelocityContext();
-        context.put("userName", user.getUserName());
-        context.put("showAccountThreshold", this.showAccountThreshold);
-        context.put("dates", DAYS_BACK);
-        context.put("accounts", user.getAccounts().values());
-        context.put("total", user.calculateTotalCost());
-        context.put("colspan", DAYS_BACK.size() + 2);
-        context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
-        context.put("dateFormat", this.dateFormat);
-        context.put("decimalFormatter", DecimalFormatter.class);
-
-        Template template = velocityEngine.getTemplate("src/templates/spendperemployeebyaccount.vm");
-
-        StringWriter stringWriter = new StringWriter();
-        template.merge(context, stringWriter);
-
-        return stringWriter.toString().trim();
     }
 
     private Map<String, User> sendRequest() {

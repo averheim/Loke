@@ -4,7 +4,6 @@ import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
 import loke.utils.CalendarGenerator;
 import loke.utils.ResourceLoader;
-import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 import testutilities.ResourceLoaderTestUtility;
@@ -16,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import static loke.db.athena.JdbcManager.QueryResult;
-import static loke.service.SpendPerEmployeeByAccount.SpendPerEmployeeAndAccountDao;
+import static loke.service.SpendPerEmployeeByAccount.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -35,12 +34,12 @@ public class SpendPerEmployeeByAccountTest {
         athenaClient = mock(AthenaClient.class);
         String userOwnerRegExp = "john.doe";
         Map<String, String> csvAccounts = new AccountReader().readCSV("accounts.csv");
-        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, 0, csvAccounts, new VelocityEngine());
+        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, 0, csvAccounts);
     }
 
     @Test
     public void canCreateTable() throws Exception {
-        List<SpendPerEmployeeAndAccountDao> spendPerEmployeeAndAccountDaos = new ArrayList<>();
+        List<SpendPerEmployeeByAccount.SpendPerEmployeeAndAccountDao> spendPerEmployeeAndAccountDaos = new ArrayList<>();
         spendPerEmployeeAndAccountDaos.add(createDbResponse("john.doe", "QA", "Ec2", "2017-09-01 09:00:00", 100));
         spendPerEmployeeAndAccountDaos.add(createDbResponse("john.doe", "QA", "Ec2", "2017-09-02 09:00:00", 100));
         spendPerEmployeeAndAccountDaos.add(createDbResponse("john.doe", "QA", "Ec2", "2017-09-03 09:00:00", 50));

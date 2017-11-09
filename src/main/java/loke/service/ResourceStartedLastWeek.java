@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
 
 import java.io.StringWriter;
 import java.text.ParseException;
@@ -23,13 +24,11 @@ public class ResourceStartedLastWeek implements Service {
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private Map<String, String> csvAccounts;
-    private VelocityEngine velocityEngine;
 
-    public ResourceStartedLastWeek(AthenaClient athenaClient, String userOwnerRegExp, Map<String, String> csvAccounts, VelocityEngine velocityEngine) {
+    public ResourceStartedLastWeek(AthenaClient athenaClient, String userOwnerRegExp, Map<String, String> csvAccounts) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
         this.csvAccounts = csvAccounts;
-        this.velocityEngine = velocityEngine;
     }
 
     @Override
@@ -50,30 +49,21 @@ public class ResourceStartedLastWeek implements Service {
     }
 
     private String generateHTMLTable(User user) {
-        List<Resource> resources = user.getResources();
-        double total = calculateTotalSpend(resources);
+        VelocityEngine velocityEngine = new VelocityEngine();
+        velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "src/main/resources/templates/");
+        velocityEngine.init();
 
         VelocityContext context = new VelocityContext();
-        context.put("userName", user.getUserName());
-        context.put("resources", resources);
-        context.put("total", total);
+        context.put("user", user);
         context.put("decimalFormatter", DecimalFormatter.class);
         context.put("dateFormat", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
 
-        Template template = velocityEngine.getTemplate("src/templates/resourcesstartedlastweek.vm");
+        Template template = velocityEngine.getTemplate("resourcesstartedlastweek.vm");
 
         StringWriter stringWriter = new StringWriter();
         template.merge(context, stringWriter);
 
         return stringWriter.toString().trim();
-    }
-
-    private double calculateTotalSpend(List<Resource> resources) {
-        double total = 0;
-        for (Resource resource : resources) {
-            total += resource.getCost();
-        }
-        return total;
     }
 
     private Map<String, User> sendRequest() {
@@ -124,7 +114,7 @@ public class ResourceStartedLastWeek implements Service {
         public double cost;
     }
 
-    private class User {
+    public class User {
         private String userName;
         private List<Resource> resources;
 
@@ -132,6 +122,14 @@ public class ResourceStartedLastWeek implements Service {
             this.userName = userName;
             this.resources = new ArrayList<>();
         }
+
+        public double calculateTotalSpend() {
+        double total = 0;
+        for (Resource resource : resources) {
+            total += resource.getCost();
+        }
+        return total;
+    }
 
         public String getUserName() {
             return userName;

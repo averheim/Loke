@@ -1,5 +1,5 @@
 <div style="font-family:'arial'">
-    <h4>Resources started last week by $userName</h4>
+    <h4>Resources started last week by $user.getUserName()</h4>
     <div style="overflow-x:auto;width:1100px;border:1px solid #ddd">
         <table style="border-collapse:collapse;border-spacing:0;width:100%;font-size:small">
             <thead>
@@ -13,7 +13,7 @@
             </thead>
             <tbody>
             #set($style = "true")
-            #foreach( $resource in $resources)
+            #foreach( $resource in $user.getResources())
             #if($style == "true")
             <tr style="background-color:#f2f2f2">
             #else
@@ -31,7 +31,7 @@
             <tfoot>
             <tr>
                 <td style="border:1px solid #ddd;padding:8px;background-color:#428aff" colspan="5">
-                    Total: $$decimalFormatter.format($total, 2)
+                    Total: $$decimalFormatter.format($user.calculateTotalSpend(), 2)
                 </td>
             </tr>
             </tfoot>

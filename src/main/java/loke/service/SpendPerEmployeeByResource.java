@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
 
 import java.io.StringWriter;
 import java.text.ParseException;
@@ -23,12 +24,10 @@ public class SpendPerEmployeeByResource implements Service {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
-    private VelocityEngine velocityEngine;
 
-    public SpendPerEmployeeByResource(AthenaClient athenaClient, String userOwnerRegExp, VelocityEngine velocityEngine) {
+    public SpendPerEmployeeByResource(AthenaClient athenaClient, String userOwnerRegExp) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
-        this.velocityEngine = velocityEngine;
     }
 
     @Override
@@ -51,7 +50,7 @@ public class SpendPerEmployeeByResource implements Service {
 
     private String generateChartUrl(User user) {
         ColorPicker.resetColor();
-        Scale scale = checkScale(user);
+        ScaleChecker.Scale scale = checkScale(user);
         List<String> xAxisLabels = getXAxisLabels();
         List<Line> lineChartPlots = createPlots(user, scale);
         LineChart chart = GCharts.newLineChart(lineChartPlots);
@@ -60,6 +59,10 @@ public class SpendPerEmployeeByResource implements Service {
     }
 
     private String generateHTMLTable(User user) {
+        VelocityEngine velocityEngine = new VelocityEngine();
+        velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "src/main/resources/templates/");
+        velocityEngine.init();
+
         VelocityContext context = new VelocityContext();
         context.put("dates", DAYS_BACK);
         context.put("user", user);
@@ -68,7 +71,7 @@ public class SpendPerEmployeeByResource implements Service {
         context.put("dateFormat", this.dateFormat);
         context.put("decimalFormatter", DecimalFormatter.class);
 
-        Template template = velocityEngine.getTemplate("src/templates/spendperemployeebyresource.vm");
+        Template template = velocityEngine.getTemplate("spendperemployeebyresource.vm");
 
         StringWriter stringWriter = new StringWriter();
         template.merge(context, stringWriter);
@@ -76,7 +79,7 @@ public class SpendPerEmployeeByResource implements Service {
         return stringWriter.toString();
     }
 
-    private Scale checkScale(User user) {
+    private ScaleChecker.Scale checkScale(User user) {
         List<Double> dailyCosts = new ArrayList<>();
 
         for (Calendar calendar : DAYS_BACK) {
@@ -104,7 +107,7 @@ public class SpendPerEmployeeByResource implements Service {
         return labels;
     }
 
-    private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, Scale scale) {
+    private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, ScaleChecker.Scale scale) {
         int chartWidth = 1000;
         int chartHeight = 300;
         chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
@@ -122,7 +125,7 @@ public class SpendPerEmployeeByResource implements Service {
                 + " USD");
     }
 
-    private List<Line> createPlots(User user, Scale scale) {
+    private List<Line> createPlots(User user, ScaleChecker.Scale scale) {
         List<Line> plots = new ArrayList<>();
         for (Resource resource : user.getResources().values()) {
             List<Double> lineSizeValues = getLineSize(resource, scale);
@@ -141,7 +144,7 @@ public class SpendPerEmployeeByResource implements Service {
         return total;
     }
 
-    private List<Double> getLineSize(Resource resource, Scale scale) {
+    private List<Double> getLineSize(Resource resource, ScaleChecker.Scale scale) {
         List<Double> lineSizeValues = new ArrayList<>();
         for (Double cost : getDailyCosts(resource)) {
             lineSizeValues.add(cost / scale.getDivideBy());

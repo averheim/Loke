@@ -42,7 +42,7 @@ public class TotalSpendPerEmployee implements Service {
                 continue;
             }
             ColorPicker.resetColor();
-            Scale scale = checkScale(user);
+            ScaleChecker.Scale scale = checkScale(user);
             List<String> xAxisLabels = getXAxisLabels();
             List<Line> lineChartPlots = createPlots(user, scale);
             LineChart chart = GCharts.newLineChart(lineChartPlots);
@@ -55,7 +55,7 @@ public class TotalSpendPerEmployee implements Service {
         return reports;
     }
 
-    private Scale checkScale(User user) {
+    private ScaleChecker.Scale checkScale(User user) {
         List<Double> dailyCosts = new ArrayList<>();
 
         for (Calendar calendar : DAYS_BACK) {
@@ -79,7 +79,7 @@ public class TotalSpendPerEmployee implements Service {
         return labels;
     }
 
-    private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, Scale scale) {
+    private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, ScaleChecker.Scale scale) {
         int chartWidth = 1000;
         int chartHeight = 300;
         chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
@@ -95,7 +95,7 @@ public class TotalSpendPerEmployee implements Service {
                 + " USD");
     }
 
-    private List<Line> createPlots(User user, Scale scale) {
+    private List<Line> createPlots(User user, ScaleChecker.Scale scale) {
         List<Line> plots = new ArrayList<>();
         List<Double> lineSizeValues = getLineSize(user, scale);
         Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), ColorPicker.getNextColor());
@@ -103,7 +103,7 @@ public class TotalSpendPerEmployee implements Service {
         return plots;
     }
 
-    private List<Double> getLineSize(User user, Scale scale) {
+    private List<Double> getLineSize(User user, ScaleChecker.Scale scale) {
         List<Double> lineSizeValues = new ArrayList<>();
         for (Calendar calendar : DAYS_BACK) {
             Day day = user.getDays().get(dateFormat.format(calendar.getTime()));

@@ -3,7 +3,6 @@ package loke.service;
 import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
 import loke.utils.ResourceLoader;
-import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -28,7 +27,7 @@ public class ResourceStartedLastWeekTest {
         athenaClient = mock(AthenaClient.class);
         String userOwnerRegExp = "john.doe";
         Map<String, String> accounts = new AccountReader().readCSV("accounts.csv");
-        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, accounts, new VelocityEngine());
+        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, accounts);
     }
 
     @Test

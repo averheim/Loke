@@ -13,7 +13,6 @@ import loke.email.AwsSesHandler;
 import loke.model.Employee;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.app.VelocityEngine;
 
 import java.io.File;
 import java.util.List;
@@ -42,8 +41,7 @@ public class Loke {
         this.costReportGenerator = new CostReportGenerator(athenaClient,
                 configuration.getUserOwnerRegExp(),
                 configuration.getShowAccountThreshold(),
-                csvAccounts,
-                new VelocityEngine());
+                csvAccounts);
 
         AwsSesHandler awsSesHandler = new AwsSesHandler(AmazonSimpleEmailServiceClientBuilder.standard()
                 .withRegion(configuration.getRegion())
