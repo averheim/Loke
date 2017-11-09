@@ -1,4 +1,4 @@
-package loke.utils;
+package testutilities;
 
 import java.io.BufferedReader;
 import java.io.IOException;

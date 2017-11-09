@@ -9,7 +9,7 @@ public class ColorPicker {
     private final static Color[] COLORS = new Color[]{
             BLUE,
             RED,
-            YELLOW,
+            PURPLE,
             GREEN,
             GRAY,
             AQUAMARINE,

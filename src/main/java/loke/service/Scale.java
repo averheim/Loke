@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum Scale {
-    UNDER_TEN("USD", 0.1, Arrays.asList(0,1,2,3,4,5,6,7,8,9,10)),
-    UNDER_HUNDRED("USD", 1, Arrays.asList(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)),
-    OVER_HUNDRED("hundred USD", 10, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)),
-    OVER_THOUSAND("thousand USD", 100, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+    BETWEN_0_10("USD", 0.1, Arrays.asList(0,1,2,3,4,5,6,7,8,9,10)),
+    BETWEEN_11_100("USD", 1, Arrays.asList(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)),
+    BETWEEN_101_1000("hundred USD", 10, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)),
+    BETWEEN_1001_INFINITY("thousand USD", 100, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
 
     private final String name;
     private final double divideBy;

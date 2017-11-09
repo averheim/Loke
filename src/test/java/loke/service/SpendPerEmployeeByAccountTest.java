@@ -4,10 +4,10 @@ import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
 import loke.utils.CalendarGenerator;
 import loke.utils.ResourceLoader;
-import loke.utils.ResourceLoaderTestUtility;
 import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
+import testutilities.ResourceLoaderTestUtility;
 
 import java.time.Clock;
 import java.time.Instant;

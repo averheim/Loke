@@ -3,11 +3,11 @@ package loke.service;
 import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
 import loke.utils.ResourceLoader;
-import loke.utils.ResourceLoaderTestUtility;
 import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import testutilities.ResourceLoaderTestUtility;
 
 import java.util.ArrayList;
 import java.util.List;
