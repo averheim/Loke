@@ -83,19 +83,22 @@ public class SpendPerEmployeeByResource implements Service {
         List<Double> dailyCosts = new ArrayList<>();
 
         for (Calendar calendar : DAYS_BACK) {
-            double dailyCost = 0.0;
             for (Resource resource : user.getResources().values()) {
-
                 Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
-                dailyCost += (day == null) ? 0.0 : day.getDailyCost();
+                if (day != null) {
+                    dailyCosts.add(day.getDailyCost());
+                }
             }
-            dailyCosts.add(dailyCost);
         }
 
-        dailyCosts.sort((o1, o2) -> (int) (o1 + o2));
+        dailyCosts.sort((o1, o2) -> Double.compare(o2, o1));
 
-        if (dailyCosts.get(0) > 100) return Scale.OVER_HUNDRED;
-        if (dailyCosts.get(0) < 10) return Scale.UNDER_TEN;
+        Double highestCost = dailyCosts.get(0);
+        log.debug(dailyCosts);
+        log.debug(highestCost);
+        if (highestCost > 1000) return Scale.OVER_THOUSAND;
+        if (highestCost > 100 || highestCost <= 1000) return Scale.OVER_HUNDRED;
+        if (highestCost < 10) return Scale.UNDER_TEN;
         return Scale.UNDER_HUNDRED;
     }
 
