@@ -35,31 +35,25 @@ public class CostReportGenerator {
     }
 
     public List<Employee> generateReports() {
-        return orderChartsByUser(getReports());
+        log.info("Generating reports");
+        List<Report> employeeReports = getReports(this.employeeServices);
+        log.info("Reports generated");
+        return orderChartsByUser(employeeReports);
     }
 
     public List<Employee> generateAdminReports() {
-        return orderChartsByUser(getAdminReports());
-    }
-
-    private List<Report> getReports() {
-        log.info("Generating reports");
-        List<Report> employeeReports = new ArrayList<>();
-        for (Service service : employeeServices) {
-            employeeReports.addAll(service.getReports());
-        }
-        log.info("Reports generated");
-        return employeeReports;
-    }
-
-    private List<Report> getAdminReports() {
         log.info("Generating admin-reports");
-        List<Report> adminReports = new ArrayList<>();
-        for (Service service : adminServices) {
-            adminReports.addAll(service.getReports());
-        }
+        List<Report> adminReports = getReports(this.adminServices);
         log.info("Admin-reports generated");
-        return adminReports;
+        return orderChartsByUser(adminReports);
+    }
+
+    private List<Report> getReports(List<Service> services) {
+        List<Report> reports = new ArrayList<>();
+        for (Service service : services) {
+            reports.addAll(service.getReports());
+        }
+        return reports;
     }
 
     private List<Employee> orderChartsByUser(List<Report> reports) {
