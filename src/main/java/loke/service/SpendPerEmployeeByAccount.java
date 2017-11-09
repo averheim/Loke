@@ -60,7 +60,7 @@ public class SpendPerEmployeeByAccount implements Service {
         List<Line> lineChartPlots = createPlots(user, scale);
         LineChart chart = GCharts.newLineChart(lineChartPlots);
         configureChart(xAxisLabels, chart, user, scale, user.getUserName());
-        return chart.toURLForHTML();
+        return chart.toURLString();
     }
 
     private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, Scale scale, String userName) {
