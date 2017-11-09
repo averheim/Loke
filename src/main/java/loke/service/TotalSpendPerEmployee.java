@@ -5,10 +5,7 @@ import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
 import loke.model.TotalReport;
-import loke.utils.CalendarGenerator;
-import loke.utils.ColorPicker;
-import loke.utils.DecimalFormatter;
-import loke.utils.ResourceLoader;
+import loke.utils.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,7 +38,7 @@ public class TotalSpendPerEmployee implements Service {
     private List<Report> generateReports(Map<String, User> users) {
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
-            if (user.calculateTotalCost() < accountThreshold){
+            if (user.calculateTotalCost() < accountThreshold) {
                 continue;
             }
             ColorPicker.resetColor();
@@ -67,9 +64,7 @@ public class TotalSpendPerEmployee implements Service {
         }
 
         dailyCosts.sort((o1, o2) -> Double.compare(o2, o1));
-        if (dailyCosts.get(0) > 100) return Scale.OVER_HUNDRED;
-        if (dailyCosts.get(0) < 10) return Scale.UNDER_TEN;
-        return Scale.UNDER_HUNDRED;
+        return ScaleChecker.checkScale(dailyCosts.get(0));
     }
 
     private List<String> getXAxisLabels() {
@@ -92,7 +87,12 @@ public class TotalSpendPerEmployee implements Service {
         chart.addYAxisLabels(AxisLabelsFactory.newAxisLabels("Cost in " + scale.getSuffix(), 50));
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
-        chart.setTitle("Total spend for " + user.getUserName() + " the past " + DAYS_BACK.size() + " days " + DecimalFormatter.format(user.calculateTotalCost(), 2) + " USD");
+        chart.setTitle("Total spend for "
+                + user.getUserName()
+                + " the past " + DAYS_BACK.size()
+                + " days "
+                + DecimalFormatter.format(user.calculateTotalCost(), 2)
+                + " USD");
     }
 
     private List<Line> createPlots(User user, Scale scale) {

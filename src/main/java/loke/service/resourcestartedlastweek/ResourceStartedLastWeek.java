@@ -1,8 +1,9 @@
-package loke.service;
+package loke.service.resourcestartedlastweek;
 
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
+import loke.service.Service;
 import loke.utils.DecimalFormatter;
 import loke.utils.ResourceLoader;
 import org.apache.logging.log4j.LogManager;
@@ -52,7 +53,7 @@ public class ResourceStartedLastWeek implements Service {
         List<Resource> resources = user.getResources();
         double total = calculateTotalSpend(resources);
         VelocityEngine velocityEngine = new VelocityEngine();
-        velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "src/main/java/loke/service/templates");
+        velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "src/main/java/loke/service/resourcestartedlastweek/templates");
         velocityEngine.init();
 
         VelocityContext context = new VelocityContext();

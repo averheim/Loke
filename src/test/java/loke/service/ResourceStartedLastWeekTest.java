@@ -2,9 +2,9 @@ package loke.service;
 
 import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
+import loke.service.resourcestartedlastweek.ResourceStartedLastWeek;
 import loke.utils.ResourceLoader;
 import loke.utils.ResourceLoaderTestUtility;
-import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import static loke.db.athena.JdbcManager.QueryResult;
-import static loke.service.ResourceStartedLastWeek.ResourceStartedLastWeekDao;
+import static loke.service.resourcestartedlastweek.ResourceStartedLastWeek.ResourceStartedLastWeekDao;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
@@ -28,7 +28,7 @@ public class ResourceStartedLastWeekTest {
         athenaClient = mock(AthenaClient.class);
         String userOwnerRegExp = "john.doe";
         Map<String, String> accounts = new AccountReader().readCSV("accounts.csv");
-        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, accounts, new VelocityEngine());
+        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, accounts);
     }
 
     @Test

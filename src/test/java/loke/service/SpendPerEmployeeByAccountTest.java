@@ -2,10 +2,10 @@ package loke.service;
 
 import loke.config.AccountReader;
 import loke.db.athena.AthenaClient;
+import loke.service.spendperemployeebyaccount.SpendPerEmployeeByAccount;
 import loke.utils.CalendarGenerator;
 import loke.utils.ResourceLoader;
 import loke.utils.ResourceLoaderTestUtility;
-import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static loke.db.athena.JdbcManager.QueryResult;
-import static loke.service.SpendPerEmployeeByAccount.SpendPerEmployeeAndAccountDao;
+import static loke.service.spendperemployeebyaccount.SpendPerEmployeeByAccount.SpendPerEmployeeAndAccountDao;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -35,7 +35,7 @@ public class SpendPerEmployeeByAccountTest {
         athenaClient = mock(AthenaClient.class);
         String userOwnerRegExp = "john.doe";
         Map<String, String> csvAccounts = new AccountReader().readCSV("accounts.csv");
-        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, 0, csvAccounts, new VelocityEngine());
+        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, 0, csvAccounts);
     }
 
     @Test
