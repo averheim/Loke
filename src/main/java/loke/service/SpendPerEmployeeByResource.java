@@ -113,7 +113,13 @@ public class SpendPerEmployeeByResource implements Service {
 
         chart.addXAxisLabels(AxisLabelsFactory.newAxisLabels("Day", 50));
         chart.setSize(chartWidth, chartHeight);
-        chart.setTitle("Total spend for " + user.getUserName() + " the past " + DAYS_BACK.size() + " days " + DecimalFormatter.format(user.calculateTotalCost(), 2) + " USD");
+        chart.setTitle("Total spend for "
+                + user.getUserName()
+                + " the past "
+                + DAYS_BACK.size()
+                + " days "
+                + DecimalFormatter.format(user.calculateTotalCost(), 2)
+                + " USD");
     }
 
     private List<Line> createPlots(User user, Scale scale) {
