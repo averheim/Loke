@@ -4,10 +4,7 @@ import com.googlecode.charts4j.*;
 import loke.db.athena.AthenaClient;
 import loke.db.athena.JdbcManager;
 import loke.model.Report;
-import loke.utils.CalendarGenerator;
-import loke.utils.ColorPicker;
-import loke.utils.DecimalFormatter;
-import loke.utils.ResourceLoader;
+import loke.utils.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.Template;
@@ -112,10 +109,7 @@ public class SpendPerEmployeeByAccount implements Service {
         }
 
         dailyCosts.sort((o1, o2) -> Double.compare(o2, o1));
-
-        if (dailyCosts.get(0) > 100) return Scale.OVER_HUNDRED;
-        if (dailyCosts.get(0) < 10) return Scale.UNDER_TEN;
-        return Scale.UNDER_HUNDRED;
+        return ScaleChecker.checkScale(dailyCosts.get(0));
     }
 
     private List<String> getXAxisLabels() {
@@ -134,23 +128,23 @@ public class SpendPerEmployeeByAccount implements Service {
         if (user.calculateTotalCost() < showAccountThreshold) {
             return null;
         }
-            VelocityContext context = new VelocityContext();
-            context.put("userName", user.getUserName());
-            context.put("showAccountThreshold", this.showAccountThreshold);
-            context.put("dates", DAYS_BACK);
-            context.put("accounts", user.getAccounts().values());
-            context.put("total", user.calculateTotalCost());
-            context.put("colspan", DAYS_BACK.size() + 2);
-            context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
-            context.put("dateFormat", this.dateFormat);
-            context.put("decimalFormatter", DecimalFormatter.class);
+        VelocityContext context = new VelocityContext();
+        context.put("userName", user.getUserName());
+        context.put("showAccountThreshold", this.showAccountThreshold);
+        context.put("dates", DAYS_BACK);
+        context.put("accounts", user.getAccounts().values());
+        context.put("total", user.calculateTotalCost());
+        context.put("colspan", DAYS_BACK.size() + 2);
+        context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
+        context.put("dateFormat", this.dateFormat);
+        context.put("decimalFormatter", DecimalFormatter.class);
 
-            Template template = velocityEngine.getTemplate("src/templates/spendperemployeebyaccount.vm");
+        Template template = velocityEngine.getTemplate("src/templates/spendperemployeebyaccount.vm");
 
-            StringWriter stringWriter = new StringWriter();
-            template.merge(context, stringWriter);
+        StringWriter stringWriter = new StringWriter();
+        template.merge(context, stringWriter);
 
-            return stringWriter.toString().trim();
+        return stringWriter.toString().trim();
     }
 
     private Map<String, User> sendRequest() {
