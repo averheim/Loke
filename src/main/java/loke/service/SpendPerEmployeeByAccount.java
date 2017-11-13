@@ -20,7 +20,7 @@ import java.util.*;
 public class SpendPerEmployeeByAccount implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerEmployeeByAccount.class);
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
-    private static final List<Calendar> DAYS_BACK = CalendarGenerator.getDaysBack(60);
+    private List<Calendar> daysBack = CalendarGenerator.getDaysBack(60);
     private AthenaClient jdbcClient;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -73,10 +73,10 @@ public class SpendPerEmployeeByAccount implements Service {
         VelocityContext context = new VelocityContext();
         context.put("userName", user.getUserName());
         context.put("showAccountThreshold", this.showAccountThreshold);
-        context.put("dates", DAYS_BACK);
+        context.put("dates", daysBack);
         context.put("accounts", user.getAccounts().values());
         context.put("total", user.calculateTotalCost());
-        context.put("colspan", DAYS_BACK.size() + 2);
+        context.put("colspan", daysBack.size() + 2);
         context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
         context.put("dateFormat", this.dateFormat);
         context.put("decimalFormatter", DecimalFormatter.class);
@@ -100,7 +100,7 @@ public class SpendPerEmployeeByAccount implements Service {
         chart.setTitle("Total spend for "
                 + userName
                 + " in by account the past "
-                + DAYS_BACK.size()
+                + daysBack.size()
                 + " days. "
                 + DecimalFormatter.format(user.calculateTotalCost(), 2) + " UDS total.");
     }
@@ -110,7 +110,7 @@ public class SpendPerEmployeeByAccount implements Service {
 
         for (Account account : user.getAccounts().values()) {
             List<Double> lineSizeValues = new ArrayList<>();
-            for (Calendar calendar : DAYS_BACK) {
+            for (Calendar calendar : daysBack) {
                 lineSizeValues.add(
                         account.getAccountDailyTotal(dateFormat.format(calendar.getTime())) / scale.getDivideBy()
                 );
@@ -127,7 +127,7 @@ public class SpendPerEmployeeByAccount implements Service {
     private ScaleChecker.Scale checkScale(Collection<Account> accounts) {
         List<Double> dailyCosts = new ArrayList<>();
         for (Account account : accounts) {
-            for (Calendar calendar : DAYS_BACK) {
+            for (Calendar calendar : daysBack) {
                 dailyCosts.add(account.getAccountDailyTotal(dateFormat.format(calendar.getTime())));
             }
         }
@@ -138,7 +138,7 @@ public class SpendPerEmployeeByAccount implements Service {
     private List<String> getXAxisLabels() {
         List<String> labels = new ArrayList<>();
 
-        for (Calendar day : DAYS_BACK) {
+        for (Calendar day : daysBack) {
             String date = dateFormat.format(day.getTime());
             if (!labels.contains(date)) {
                 labels.add(date.substring(8, 10));

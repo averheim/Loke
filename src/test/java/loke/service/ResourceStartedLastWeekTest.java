@@ -47,7 +47,6 @@ public class ResourceStartedLastWeekTest {
     }
 
 
-
     public ResourceStartedLastWeekDao createDbResponse(String account, String userOwner, String productName, String resourceId, String startDate, double cost) {
         ResourceStartedLastWeekDao spendPerUser = new ResourceStartedLastWeekDao();
         spendPerUser.accountId = account;

@@ -16,7 +16,7 @@ import java.util.*;
 public class TotalSpendPerEmployee implements Service {
     private static final Logger log = LogManager.getLogger(TotalSpendPerEmployee.class);
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/TotalSpendPerEmployee.sql");
-    private static final List<Calendar> DAYS_BACK = CalendarGenerator.getDaysBack(60);
+    private List<Calendar> daysBack = CalendarGenerator.getDaysBack(60);
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
@@ -58,7 +58,7 @@ public class TotalSpendPerEmployee implements Service {
     private ScaleChecker.Scale checkScale(User user) {
         List<Double> dailyCosts = new ArrayList<>();
 
-        for (Calendar calendar : DAYS_BACK) {
+        for (Calendar calendar : daysBack) {
             Day day = user.getDays().get(dateFormat.format(calendar.getTime()));
             dailyCosts.add((day == null) ? 0.0 : day.getDailyCost());
         }
@@ -70,7 +70,7 @@ public class TotalSpendPerEmployee implements Service {
     private List<String> getXAxisLabels() {
         List<String> labels = new ArrayList<>();
 
-        for (Calendar day : DAYS_BACK) {
+        for (Calendar day : daysBack) {
             String date = dateFormat.format(day.getTime());
             if (!labels.contains(date)) {
                 labels.add(date.substring(8, 10));
@@ -89,7 +89,7 @@ public class TotalSpendPerEmployee implements Service {
         chart.setSize(chartWidth, chartHeight);
         chart.setTitle("Total spend for "
                 + user.getUserName()
-                + " the past " + DAYS_BACK.size()
+                + " the past " + daysBack.size()
                 + " days "
                 + DecimalFormatter.format(user.calculateTotalCost(), 2)
                 + " USD");
@@ -105,7 +105,7 @@ public class TotalSpendPerEmployee implements Service {
 
     private List<Double> getLineSize(User user, ScaleChecker.Scale scale) {
         List<Double> lineSizeValues = new ArrayList<>();
-        for (Calendar calendar : DAYS_BACK) {
+        for (Calendar calendar : daysBack) {
             Day day = user.getDays().get(dateFormat.format(calendar.getTime()));
             lineSizeValues.add((day != null) ? day.getDailyCost() / scale.getDivideBy() : 0);
         }

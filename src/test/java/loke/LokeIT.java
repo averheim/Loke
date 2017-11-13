@@ -5,8 +5,6 @@ import loke.db.athena.AthenaClient;
 import loke.email.AwsEmailSender;
 import loke.email.AwsSesHandler;
 import loke.model.Admin;
-import loke.service.SpendPerEmployeeByResource;
-import loke.service.TotalSpendPerEmployee;
 import loke.utils.CalendarGenerator;
 import loke.utils.ResourceLoader;
 import org.junit.Before;
@@ -22,8 +20,8 @@ import java.util.List;
 import static loke.db.athena.JdbcManager.QueryResult;
 import static loke.service.ResourceStartedLastWeek.ResourceStartedLastWeekDao;
 import static loke.service.SpendPerEmployeeByAccount.SpendPerEmployeeAndAccountDao;
-import static loke.service.SpendPerEmployeeByResource.*;
-import static loke.service.TotalSpendPerEmployee.*;
+import static loke.service.SpendPerEmployeeByResource.SpendPerEmployeeByResourceDao;
+import static loke.service.TotalSpendPerEmployee.TotalSpendPerEmployeeDao;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -44,6 +42,9 @@ public class LokeIT {
     private Admin admin;
     private Clock clock;
 
+    private static String loadSql(String fileName) {
+        return ResourceLoader.getResource("sql/" + fileName);
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -310,9 +311,5 @@ public class LokeIT {
         resourceStartedLastWeekDaos.add(dao);
 
         return resourceStartedLastWeekDaos;
-    }
-
-    private static String loadSql(String fileName) {
-        return ResourceLoader.getResource("sql/" + fileName);
     }
 }

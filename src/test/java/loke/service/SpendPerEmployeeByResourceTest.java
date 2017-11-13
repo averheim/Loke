@@ -29,7 +29,7 @@ public class SpendPerEmployeeByResourceTest {
     @Before
     public void setUp() throws Exception {
         this.clock = mock(Clock.class);
-        CalendarGenerator.clock = clock;
+        CalendarGenerator.clock = this.clock;
         when(clock.instant()).thenReturn(Instant.parse("2017-11-08T00:00:00Z"));
         athenaClient = mock(AthenaClient.class);
         String userOwnerRegExp = "john.doe";

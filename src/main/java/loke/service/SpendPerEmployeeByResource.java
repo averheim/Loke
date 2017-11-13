@@ -20,7 +20,7 @@ import java.util.*;
 public class SpendPerEmployeeByResource implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerEmployeeByResource.class);
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByResource.sql");
-    private static final List<Calendar> DAYS_BACK = CalendarGenerator.getDaysBack(60);
+    private List<Calendar> daysBack = CalendarGenerator.getDaysBack(60);
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
@@ -64,9 +64,9 @@ public class SpendPerEmployeeByResource implements Service {
         velocityEngine.init();
 
         VelocityContext context = new VelocityContext();
-        context.put("dates", DAYS_BACK);
+        context.put("dates", daysBack);
         context.put("user", user);
-        context.put("colspan", DAYS_BACK.size() + 2);
+        context.put("colspan", daysBack.size() + 2);
         context.put("simpleDateForamt", new SimpleDateFormat("MMM dd, YYYY", Locale.US));
         context.put("dateFormat", this.dateFormat);
         context.put("decimalFormatter", DecimalFormatter.class);
@@ -82,11 +82,13 @@ public class SpendPerEmployeeByResource implements Service {
     private ScaleChecker.Scale checkScale(User user) {
         List<Double> dailyCosts = new ArrayList<>();
 
-        for (Calendar calendar : DAYS_BACK) {
+        for (Calendar calendar : daysBack) {
             for (Resource resource : user.getResources().values()) {
                 Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
                 if (day != null) {
                     dailyCosts.add(day.getDailyCost());
+                } else {
+                    dailyCosts.add(0.0);
                 }
             }
         }
@@ -98,7 +100,7 @@ public class SpendPerEmployeeByResource implements Service {
     private List<String> getXAxisLabels() {
         List<String> labels = new ArrayList<>();
 
-        for (Calendar day : DAYS_BACK) {
+        for (Calendar day : daysBack) {
             String date = dateFormat.format(day.getTime());
             if (!labels.contains(date)) {
                 labels.add(date.substring(8, 10));
@@ -119,7 +121,7 @@ public class SpendPerEmployeeByResource implements Service {
         chart.setTitle("Total spend for "
                 + user.getUserName()
                 + " the past "
-                + DAYS_BACK.size()
+                + daysBack.size()
                 + " days "
                 + DecimalFormatter.format(user.calculateTotalCost(), 2)
                 + " USD");
@@ -154,7 +156,7 @@ public class SpendPerEmployeeByResource implements Service {
 
     private List<Double> getDailyCosts(Resource resource) {
         List<Double> data = new ArrayList<>();
-        for (Calendar calendar : DAYS_BACK) {
+        for (Calendar calendar : daysBack) {
             Day day = resource.getDays().get(dateFormat.format(calendar.getTime()));
             if (day == null) {
                 data.add(0.0);

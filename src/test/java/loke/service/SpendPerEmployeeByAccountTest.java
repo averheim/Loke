@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import static loke.db.athena.JdbcManager.QueryResult;
-import static loke.service.SpendPerEmployeeByAccount.*;
+import static loke.service.SpendPerEmployeeByAccount.SpendPerEmployeeAndAccountDao;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

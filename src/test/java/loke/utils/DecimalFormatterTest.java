@@ -38,8 +38,8 @@ public class DecimalFormatterTest {
     public void format_minimumAmountOfDecimalsIsAlwaysTwo() throws Exception {
         String expected = "1.13";
         double aDouble = 1.1234;
-        assertEquals(expected, DecimalFormatter.format(aDouble,0));
-        assertEquals(expected, DecimalFormatter.format(aDouble,1));
-        assertEquals(expected, DecimalFormatter.format(aDouble,2));
+        assertEquals(expected, DecimalFormatter.format(aDouble, 0));
+        assertEquals(expected, DecimalFormatter.format(aDouble, 1));
+        assertEquals(expected, DecimalFormatter.format(aDouble, 2));
     }
 }
