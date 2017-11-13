@@ -73,7 +73,7 @@ public class JdbcManager {
      *     string name;
      * }
      */
-    public <T> QueryResult<T> executeQuery(final String theSql, final Class<T> theResultClass) throws SqlException {
+    public <T> QueryResult executeQuery(final String theSql, final Class<T> theResultClass) throws SqlException {
         final QueryResult<T> aResult = new QueryResult<>();
         executeQuery(theSql, theResultSet -> {
             try {

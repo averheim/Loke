@@ -16,14 +16,14 @@ public class CostReportGenerator {
     private List<Service> employeeServices;
     private List<Service> adminServices;
 
-    public CostReportGenerator(AthenaClient athena, String userOwnerRegExp, double showAccountThreshold, Map<String, String> csvAccounts) {
+    public CostReportGenerator(AthenaClient athenaClient, String userOwnerRegExp, double showAccountThreshold, Map<String, String> csvAccounts) {
         this.employeeServices = new ArrayList<>();
         this.adminServices = new ArrayList<>();
 
-        TotalSpendPerEmployee totalSpendPerEmployee = new TotalSpendPerEmployee(athena, userOwnerRegExp, showAccountThreshold);
-        SpendPerEmployeeByResource spendPerEmployeeByResource = new SpendPerEmployeeByResource(athena, userOwnerRegExp);
-        SpendPerEmployeeByAccount spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athena, userOwnerRegExp, showAccountThreshold, csvAccounts);
-        ResourceStartedLastWeek resourceStartedLastWeek = new ResourceStartedLastWeek(athena, userOwnerRegExp, csvAccounts);
+        TotalSpendPerEmployee totalSpendPerEmployee = new TotalSpendPerEmployee(athenaClient, userOwnerRegExp, showAccountThreshold);
+        SpendPerEmployeeByResource spendPerEmployeeByResource = new SpendPerEmployeeByResource(athenaClient, userOwnerRegExp);
+        SpendPerEmployeeByAccount spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, showAccountThreshold, csvAccounts);
+        ResourceStartedLastWeek resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, csvAccounts);
 
         this.employeeServices.add(spendPerEmployeeByResource);
         this.employeeServices.add(spendPerEmployeeByAccount);
@@ -34,16 +34,16 @@ public class CostReportGenerator {
     }
 
     public List<Employee> generateReports() {
-        log.info("Generating reports");
+        log.info("Generating employee-reports");
         List<Report> employeeReports = getReports(this.employeeServices);
-        log.info("Reports generated");
+        log.info("Employee-reports generated: {}", employeeReports.size());
         return orderChartsByUser(employeeReports);
     }
 
     public List<Employee> generateAdminReports() {
         log.info("Generating admin-reports");
         List<Report> adminReports = getReports(this.adminServices);
-        log.info("Admin-reports generated");
+        log.info("Admin-reports generated: {}", adminReports.size());
         return orderChartsByUser(adminReports);
     }
 

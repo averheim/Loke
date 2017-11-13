@@ -22,8 +22,8 @@ public class TotalSpendPerEmployee implements Service {
     private String userOwnerRegExp;
     private double accountThreshold;
 
-    public TotalSpendPerEmployee(AthenaClient athena, String userOwnerRegExp, double showAccountThreshold) {
-        this.athenaClient = athena;
+    public TotalSpendPerEmployee(AthenaClient athenaClient, String userOwnerRegExp, double showAccountThreshold) {
+        this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
         this.accountThreshold = showAccountThreshold;
     }

@@ -26,7 +26,7 @@ public class AwsEmailSender {
     }
 
     public void sendEmployeeMails(List<Employee> employeeReports) {
-        log.info("Sending emails");
+        log.info("Sending emails to employees");
         for (Employee employee : employeeReports) {
             StringBuilder htmlBody = new StringBuilder();
             log.info("Creating email for: {}", employee.getUserName());
@@ -35,19 +35,23 @@ public class AwsEmailSender {
                 addChartUrl(htmlBody, report);
                 addHtmlTable(htmlBody, report);
             }
-            if (!dryRun) {
-                awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
-            } else {
+            if (dryRun) {
                 log.info("DryRun: Emails not sent\nMail for {}: {}", employee.getUserName(), htmlBody.toString().trim());
+                return;
             }
+            awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
         }
     }
 
     public void sendAdminMails(List<Admin> admins, List<Employee> adminReports) {
-        log.info("Sending emails");
+        if (admins == null || admins.size() == 0) {
+            throw new IllegalArgumentException("No admins specified in the configuration file");
+        }
+
+        log.info("Sending emails to administrators");
         StringBuilder htmlBody = new StringBuilder();
         for (Employee employee : adminReports) {
-            log.info("Adding report for: {}", employee.getUserName());
+            log.info("Adding reports for: {} to html body", employee.getUserName());
             for (Report report : employee.getReports()) {
                 if (report instanceof TotalReport) {
                     addChartUrl(htmlBody, report);
@@ -55,13 +59,18 @@ public class AwsEmailSender {
                 addHtmlTable(htmlBody, report);
             }
         }
-        if (!dryRun) {
+        if (dryRun) {
+            log.info("DryRun: Emails not sent\nAdmin-mail: {}", htmlBody.toString().trim());
+            printAdminEmailFile(htmlBody);
+            return;
+        }
+
+        if (htmlBody.length() > 0) {
             for (Admin admin : admins) {
                 awsSesHandler.sendEmail(admin.getEmailAddress(), htmlBody.toString().trim(), subject, from);
             }
         } else {
-            log.info("DryRun: Emails not sent\nAdmin-mail: {}", htmlBody.toString().trim());
-            printAdminEmailFile(htmlBody);
+            log.info("No admin emails were sent. HtmlBody size: {}", htmlBody.length());
         }
     }
 
@@ -78,8 +87,8 @@ public class AwsEmailSender {
     private void addChartUrl(StringBuilder htmlBody, Report report) {
         if (report.getChartUrl() != null) {
             htmlBody.append("<img src=\"").append(report.getChartUrl()).append("\"/img>");
-                htmlBody.append("\n\n");
-            }
+            htmlBody.append("\n\n");
+        }
     }
 
     private void addHtmlTable(StringBuilder htmlBody, Report report) {

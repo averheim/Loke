@@ -64,9 +64,22 @@ public class Configuration {
     }
 
     public List<Admin> getAdmins() {
-        if (this.admins != null) {
-            return admins;
-        }
-        return new ArrayList<>();
+       return this.admins;
+    }
+
+    public void setAdmins(List<Admin> admins) {
+        this.admins = admins;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public void setSecretAccessKey(String secretAccessKey) {
+        this.secretAccessKey = secretAccessKey;
+    }
+
+    public void setUserOwnerRegExp(String userOwnerRegExp) {
+        this.userOwnerRegExp = userOwnerRegExp;
     }
 }

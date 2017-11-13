@@ -21,14 +21,14 @@ public class SpendPerEmployeeByAccount implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerEmployeeByAccount.class);
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
     private static final List<Calendar> DAYS_BACK = CalendarGenerator.getDaysBack(60);
-    private AthenaClient athenaClient;
+    private AthenaClient jdbcClient;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private double showAccountThreshold;
     private Map<String, String> csvAccounts;
 
     public SpendPerEmployeeByAccount(AthenaClient athenaClient, String userOwnerRegExp, double showAccountThreshold, Map<String, String> csvAccounts) {
-        this.athenaClient = athenaClient;
+        this.jdbcClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
         this.showAccountThreshold = showAccountThreshold;
         this.csvAccounts = csvAccounts;
@@ -150,7 +150,7 @@ public class SpendPerEmployeeByAccount implements Service {
     private Map<String, User> sendRequest() {
         log.info("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
-        JdbcManager.QueryResult<SpendPerEmployeeAndAccountDao> queryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerEmployeeAndAccountDao.class);
+        JdbcManager.QueryResult<SpendPerEmployeeAndAccountDao> queryResult = jdbcClient.executeQuery(SQL_QUERY, SpendPerEmployeeAndAccountDao.class);
         for (SpendPerEmployeeAndAccountDao dao : queryResult.getResultList()) {
             if (!dao.userOwner.matches(userOwnerRegExp)) {
                 continue;

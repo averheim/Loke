@@ -20,13 +20,13 @@ import java.util.*;
 public class ResourceStartedLastWeek implements Service {
     private static final Logger log = LogManager.getLogger(ResourceStartedLastWeek.class);
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/ResourceStartedLastWeek.sql");
-    private AthenaClient athenaClient;
+    private AthenaClient jdbcClient;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private Map<String, String> csvAccounts;
 
     public ResourceStartedLastWeek(AthenaClient athenaClient, String userOwnerRegExp, Map<String, String> csvAccounts) {
-        this.athenaClient = athenaClient;
+        this.jdbcClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
         this.csvAccounts = csvAccounts;
     }
@@ -69,7 +69,7 @@ public class ResourceStartedLastWeek implements Service {
     private Map<String, User> sendRequest() {
         log.info("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
-        JdbcManager.QueryResult<ResourceStartedLastWeekDao> queryResult = athenaClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class);
+        JdbcManager.QueryResult<ResourceStartedLastWeekDao> queryResult = jdbcClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class);
         for (ResourceStartedLastWeekDao dao : queryResult.getResultList()) {
             if (!dao.userOwner.matches(userOwnerRegExp)) {
                 continue;
