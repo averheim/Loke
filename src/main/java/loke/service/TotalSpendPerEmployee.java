@@ -36,6 +36,7 @@ public class TotalSpendPerEmployee implements Service {
     }
 
     private List<Report> generateReports(Map<String, User> users) {
+        log.info("Generating reports for total spend per user the last {} days", daysBack.size());
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
             if (user.calculateTotalCost() < accountThreshold) {
@@ -52,6 +53,7 @@ public class TotalSpendPerEmployee implements Service {
             reports.add(report);
             log.info("Report generated for: {}", user.getUserName());
         }
+        log.info("Reports generated: {}", reports.size());
         return reports;
     }
 
@@ -113,7 +115,7 @@ public class TotalSpendPerEmployee implements Service {
     }
 
     private Map<String, User> sendRequest() {
-        log.info("Fetching data and mapping objects");
+        log.trace("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<TotalSpendPerEmployeeDao> queryResult = athenaClient.executeQuery(SQL_QUERY, TotalSpendPerEmployeeDao.class);
         for (TotalSpendPerEmployeeDao dao : queryResult.getResultList()) {
@@ -137,7 +139,7 @@ public class TotalSpendPerEmployee implements Service {
             Day day = new Day(date, dao.cost);
             users.get(userName).addDay(dateFormat.format(day.getDate().getTime()), day);
         }
-        log.info("Done mapping objects");
+        log.trace("Done mapping objects");
         return users;
     }
 

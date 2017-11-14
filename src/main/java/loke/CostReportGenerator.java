@@ -36,7 +36,7 @@ public class CostReportGenerator {
     public List<Employee> generateReports() {
         log.info("Generating employee-reports");
         List<Report> employeeReports = getReports(this.employeeServices);
-        log.info("Employee-reports generated: {}", employeeReports.size());
+        log.info("Total employee-reports generated: {}", employeeReports.size());
         return orderChartsByUser(employeeReports);
     }
 

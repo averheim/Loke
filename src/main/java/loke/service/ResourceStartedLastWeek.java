@@ -15,6 +15,11 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 public class ResourceStartedLastWeek implements Service {
@@ -38,6 +43,11 @@ public class ResourceStartedLastWeek implements Service {
     }
 
     private List<Report> generateReports(Map<String, User> users) {
+        long amountToSubtract = 7;
+        LocalDate start = LocalDate.now().minus(amountToSubtract, ChronoUnit.DAYS);
+        LocalDate end = LocalDate.now();
+        log.info("Generating reports for resources started between {} and {}", start, end);
+
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
             Report report = new Report(user.getUserName());
@@ -45,6 +55,7 @@ public class ResourceStartedLastWeek implements Service {
             reports.add(report);
             log.info("Report generated for: {}", user.getUserName());
         }
+        log.info("Reports generated: {}", reports.size());
         return reports;
     }
 
@@ -67,7 +78,7 @@ public class ResourceStartedLastWeek implements Service {
     }
 
     private Map<String, User> sendRequest() {
-        log.info("Fetching data and mapping objects");
+        log.trace("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<ResourceStartedLastWeekDao> queryResult = jdbcClient.executeQuery(SQL_QUERY, ResourceStartedLastWeekDao.class);
         for (ResourceStartedLastWeekDao dao : queryResult.getResultList()) {
@@ -95,7 +106,7 @@ public class ResourceStartedLastWeek implements Service {
                     new Resource(accountId, dao.productName, dao.resourceId, calendar, dao.cost
                     ));
         }
-        log.info("Done mapping objects");
+        log.trace("Done mapping objects");
         return users;
     }
 

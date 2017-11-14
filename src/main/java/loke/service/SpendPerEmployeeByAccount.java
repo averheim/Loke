@@ -41,6 +41,7 @@ public class SpendPerEmployeeByAccount implements Service {
     }
 
     private List<Report> generateReports(Map<String, User> users) {
+        log.info("Generating reports for spend per user listed by account the last {} days", daysBack.size());
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
             Report report = new Report(user.getUserName());
@@ -49,6 +50,7 @@ public class SpendPerEmployeeByAccount implements Service {
             reports.add(report);
             log.info("Report generated for: {}", user.getUserName());
         }
+        log.info("Reports generated: {}", reports.size());
         return reports;
     }
 
@@ -148,7 +150,7 @@ public class SpendPerEmployeeByAccount implements Service {
     }
 
     private Map<String, User> sendRequest() {
-        log.info("Fetching data and mapping objects");
+        log.trace("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
         JdbcManager.QueryResult<SpendPerEmployeeAndAccountDao> queryResult = jdbcClient.executeQuery(SQL_QUERY, SpendPerEmployeeAndAccountDao.class);
         for (SpendPerEmployeeAndAccountDao dao : queryResult.getResultList()) {
@@ -185,7 +187,7 @@ public class SpendPerEmployeeByAccount implements Service {
             Day day = new Day(date, dao.cost);
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }
-        log.info("Done mapping objects");
+        log.trace("Done mapping objects");
         return users;
     }
 
