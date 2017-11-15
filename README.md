@@ -32,7 +32,7 @@ declared in the configuration file. At this moment, Loke can only find billing d
 with the tag key "Owner". Therefore you need to follow a specific naming convention for your email address 
 and resource tags in AWS.
 
-Loke uses Amazon SES as email client. You need to use the same account for your billing bucket as your SES 
+Loke uses Amazon SES as email client. You need to use the same account for your billing bucket as you use for SES.  
 
 ### Getting Started
 
@@ -149,104 +149,24 @@ Loke uses maven to build and package in a shaded JAR, which can be run on your l
 2. Package with Maven using the following command: **mvn package**
 3. Create a configuration.yaml file in the same directory as the jar. There is an example configuration file in the templates folder.
 4. Create a logging properties file in the same directory as the jar. There is an example properties file in the templates folder.
-5. Run the jar with the following command:
+5. (Optional) Create a accounts.csv file in the same directory as the jar. There is an example properties file in the templates folder.
+6. Run the jar with the following command:
 
 ```
 java -Dlog4j.configurationFile="log4j2.xml" -jar loke-1.0-SNAPSHOT-shaded.jar 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
 * [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
 
 ## Authors
 
 * **Christopher Olsson** [GitHub](https://github.com/Chris015)
 * **Markus Averheim** [GitHub](https://github.com/Averheim)
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
 ## Acknowledgments
 
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+* [Widespace](www.widespace.com)
+* Öster forshed
+* Johan Björklund

@@ -36,7 +36,8 @@ public class AwsEmailSender {
                 addHtmlTable(htmlBody, report);
             }
             if (dryRun) {
-                log.info("DryRun: Emails not sent\nMail for {}: {}", employee.getUserName(), htmlBody.toString().trim());
+                log.info("DryRun: Emails not sent to: {}", employee.getUserName());
+                log.trace("Email for {}: {}", employee.getUserName(), htmlBody.toString().trim());
                 return;
             }
             awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
