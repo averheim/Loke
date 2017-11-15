@@ -69,11 +69,11 @@ blended_cost string,
 un_blended_rate string,
 un_blended_cost string,
 resource_id string,
-application_tag string,
-component_tag string,
-name_tag string,
-node_tag string,
-owner_tag string
+user_application string,
+user_component string,
+user_name string,
+user_node string,
+user_owner string
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES (
