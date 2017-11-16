@@ -184,6 +184,7 @@ public class SpendPerEmployeeByAccount implements Service {
             String accountName = csvAccounts.get(accountId);
             dao.accountId = (accountName != null) ? accountName : accountId;
 
+            log.debug(dao.accountId);
             Day day = new Day(date, dao.cost);
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }
