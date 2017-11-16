@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,7 +76,7 @@ public class Loke {
 
     private Map<String, String> readAccountsCsv(String filePath) {
         log.info("Loading accounts from: {}", filePath);
-        Map<String, String> accounts = null;
+        Map<String, String> accounts = new HashMap<>();
         File csv = new File(filePath);
         if (csv.isFile()) {
             try {
