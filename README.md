@@ -99,7 +99,7 @@ The following policy grants the minimum permissions for Loke to run.
                 "s3:PutObject"
             ],
             "Resource": [
-                "arn:aws:s3:::your-billing-report-bucket*"
+                "arn:aws:s3:::<BUCKET-NAME>*"
             ]
         },
         {
