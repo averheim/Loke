@@ -3,13 +3,13 @@ dryRun: true # If true, no emails will be sent
 # Athena configuration
 accessKey: # Your access key
 secretAccessKey: # Your secret access key
-host: # athena host. Ex. athena.eu-west-1.amazonaws.com
+host: # Athena host. Ex. athena.eu-west-1.amazonaws.com
 port: 443
 stagingDir: s3://your-staging-dir
 
 # Keep things nice and tidy
-userOwnerRegExp: ^(?!.*excludethis|.*orexcludethis)([a-z]+\.[a-z]+)+$ # RegExp for excluding any unwanted recipients
-generateUserReportThreshold: # A minimum value for accounts to be shown. Useful for keeping the account summary table relevant
+userOwnerRegExp: ^(?!.*excludethis|.*orexcludethis)([a-z]+\.[a-z]+)+$ # RegExp for matching on Owner tag
+generateUserReportThreshold: 0 # A minimum value for accounts to be shown. Useful for keeping the account summary table relevant
 
 # SES configuration
 region: # region used by AWS SES
