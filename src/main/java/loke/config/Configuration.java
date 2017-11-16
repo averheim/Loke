@@ -2,7 +2,6 @@ package loke.config;
 
 import loke.model.Admin;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Configuration {
@@ -16,7 +15,7 @@ public class Configuration {
     private String userOwnerRegExp;
     private String fromEmailAddress;
     private String toEmailDomainName;
-    private double showAccountThreshold;
+    private double generateUserReportThreshold;
     private List<Admin> admins;
 
     public boolean isDryRun() {
@@ -59,8 +58,8 @@ public class Configuration {
         return toEmailDomainName;
     }
 
-    public double getShowAccountThreshold() {
-        return showAccountThreshold;
+    public double getGenerateUserReportThreshold() {
+        return generateUserReportThreshold;
     }
 
     public List<Admin> getAdmins() {

@@ -40,7 +40,9 @@ public class AwsEmailSender {
                 log.trace("Email for {}: {}", employee.getUserName(), htmlBody.toString().trim());
                 return;
             }
-            awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
+            if (htmlBody.length() > 0) {
+                awsSesHandler.sendEmail(to, htmlBody.toString().trim(), subject, from);
+            }
         }
     }
 
@@ -77,14 +79,14 @@ public class AwsEmailSender {
     private void addChartUrl(StringBuilder htmlBody, Report report) {
         if (report.getChartUrl() != null) {
             htmlBody.append("<img src=\"").append(report.getChartUrl()).append("\"/img>");
-            htmlBody.append("\n\n");
+            htmlBody.append("<br>");
         }
     }
 
     private void addHtmlTable(StringBuilder htmlBody, Report report) {
         if (report.getHtmlTable() != null) {
             htmlBody.append(report.getHtmlTable());
-            htmlBody.append("\n\n");
+            htmlBody.append("<br>");
         }
     }
 }

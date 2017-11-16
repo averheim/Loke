@@ -1,9 +1,10 @@
 # Loke
 
-Loke is a cost report generator for Amazon Web Services. Using Amazon Athena to access Amazons billing reports. 
-It is intended to run as a cronjob to send a weekly cost report to the resource owners via email.
-
-Loke produces a user email and an admin email. 
+Loke is a cost report generator for Amazon Web Services. Filling the gaping void in AWS billing API, 
+Loke uses Amazon Athena to access Amazons billing reports. It then creates a neat cost summary that spans back 30 days.
+It is intended to run as a cronjob to send a weekly cost report to the resource owners via email. But not only that!
+Loke also sends an admin report to your list of administrators, making it easy to spot unintended cost fluctuations 
+before things gets out of hand.
 
 The user email consists of:
 ##### Tables

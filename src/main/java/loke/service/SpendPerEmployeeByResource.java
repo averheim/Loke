@@ -19,15 +19,19 @@ import java.util.*;
 
 public class SpendPerEmployeeByResource implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerEmployeeByResource.class);
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByResource.sql");
-    private List<Calendar> daysBack = CalendarGenerator.getDaysBack(60);
+    private static final String SQL_QUERY =
+            ResourceLoader.getResource("sql/SpendPerEmployeeByResource.sql");
+    private List<Calendar> daysBack = CalendarGenerator.getDaysBack(30);
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
+    private double generateUserReportThreshold;
 
-    public SpendPerEmployeeByResource(AthenaClient athenaClient, String userOwnerRegExp) {
+    public SpendPerEmployeeByResource(AthenaClient athenaClient, String userOwnerRegExp,
+                                      double generateUserReportThreshold) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
+        this.generateUserReportThreshold = generateUserReportThreshold;
     }
 
     @Override
@@ -40,6 +44,11 @@ public class SpendPerEmployeeByResource implements Service {
         log.info("Generating reports for spend per user listed by resource the last {} days", daysBack.size());
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
+            if (user.calculateTotalCost() < generateUserReportThreshold) {
+                log.info("User: {} fell beneith the account threshold of: {}. Account total: {}", user.getUserName(),
+                        generateUserReportThreshold, user.calculateTotalCost());
+                continue;
+            }
             Report report = new Report(user.getUserName());
             report.setChartUrl(generateChartUrl(user));
             report.setHtmlTable(generateHTMLTable(user));
@@ -134,7 +143,8 @@ public class SpendPerEmployeeByResource implements Service {
         for (Resource resource : user.getResources().values()) {
             List<Double> lineSizeValues = getLineSize(resource, scale);
             double total = getResourceTotal(resource);
-            Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), ColorPicker.getNextColor(), resource.getResourceName() + " " + DecimalFormatter.format(total, 2));
+            Line lineChartPlot = Plots.newLine(Data.newData(lineSizeValues), ColorPicker.getNextColor(),
+                    resource.getResourceName() + " " + DecimalFormatter.format(total, 2));
             plots.add(0, lineChartPlot);
         }
         return plots;
@@ -172,7 +182,8 @@ public class SpendPerEmployeeByResource implements Service {
     private Map<String, User> sendRequest() {
         log.trace("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
-        JdbcManager.QueryResult<SpendPerEmployeeByResourceDao> queryResult = athenaClient.executeQuery(SQL_QUERY, SpendPerEmployeeByResourceDao.class);
+        JdbcManager.QueryResult<SpendPerEmployeeByResourceDao> queryResult =
+                athenaClient.executeQuery(SQL_QUERY, SpendPerEmployeeByResourceDao.class);
         for (SpendPerEmployeeByResourceDao dao : queryResult.getResultList()) {
             if (!dao.userOwner.matches(userOwnerRegExp)) {
                 continue;
