@@ -31,7 +31,7 @@ public class AccountReader implements CsvReader {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
         }
         logger.trace("Finished getting resource");
         return accounts;

@@ -11,6 +11,7 @@ import testutilities.ResourceLoaderTestUtility;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,8 +34,7 @@ public class SpendPerEmployeeByAccountTest {
         when(clock.instant()).thenReturn(Instant.parse("2017-09-30T00:00:00Z"));
         athenaClient = mock(AthenaClient.class);
         String userOwnerRegExp = "john.doe";
-        Map<String, String> csvAccounts = new AccountReader().readCSV("accounts.csv");
-        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, 0, csvAccounts);
+        spendPerEmployeeByAccount = new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, 0, new HashMap<>());
     }
 
     @Test

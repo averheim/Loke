@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import testutilities.ResourceLoaderTestUtility;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,8 +27,7 @@ public class ResourceStartedLastWeekTest {
     public void setUp() throws Exception {
         athenaClient = mock(AthenaClient.class);
         String userOwnerRegExp = "john.doe";
-        Map<String, String> accounts = new AccountReader().readCSV("accounts.csv");
-        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, accounts);
+        resourceStartedLastWeek = new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, new HashMap<>());
     }
 
     @Test
@@ -57,5 +57,4 @@ public class ResourceStartedLastWeekTest {
         spendPerUser.cost = cost;
         return spendPerUser;
     }
-
 }
