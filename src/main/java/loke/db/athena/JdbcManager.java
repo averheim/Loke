@@ -96,7 +96,10 @@ public class JdbcManager {
             Field aField = getField(theResultClass, aName);
             if (aField == null) {
                 // Avoid NPE
-                throw new RuntimeException("Did not recognize field " + aName + " in result class: " + theResultClass + ", ignoring");
+                throw new RuntimeException("Did not recognize field "
+                        + aName
+                        + " in result class: "
+                        + theResultClass + ", ignoring");
             }
             aField.setAccessible(true);
             Class aFieldType = aField.getType();
@@ -110,8 +113,11 @@ public class JdbcManager {
             if (aFieldType == double.class)            aField.set(aPojo, theResultSet.getDouble(i));    else
             if (aFieldType == Boolean.class)           aField.set(aPojo, theResultSet.getBoolean(i));   else
             if (aFieldType == boolean.class)           aField.set(aPojo, theResultSet.getBoolean(i));   else
-            if (aFieldType.isEnum())                   aField.set(aPojo, Enum.valueOf((Class<Enum>) aFieldType, theResultSet.getString(i))); else {
-                throw new IllegalArgumentException("Field type " + aField + " is not supported yet, feel free to add it if you want...");
+            if (aFieldType.isEnum())                   aField.set(aPojo, Enum.valueOf((Class<Enum>) aFieldType,
+                    theResultSet.getString(i))); else {
+                throw new IllegalArgumentException("Field type "
+                        + aField
+                        + " is not supported yet, feel free to add it if you want...");
             }
             if (theResultSet.wasNull()) {
                 aField.set(aPojo, null);

@@ -16,16 +16,16 @@ import java.util.*;
 public class TotalSpendPerEmployee implements Service {
     private static final Logger log = LogManager.getLogger(TotalSpendPerEmployee.class);
     private static final String SQL_QUERY = ResourceLoader.getResource("sql/TotalSpendPerEmployee.sql");
-    private List<Calendar> daysBack = CalendarGenerator.getDaysBack(60);
+    private List<Calendar> daysBack = CalendarGenerator.getDaysBack(30);
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
-    private double accountThreshold;
+    private double generateUserReportThreshold;
 
-    public TotalSpendPerEmployee(AthenaClient athenaClient, String userOwnerRegExp, double showAccountThreshold) {
+    public TotalSpendPerEmployee(AthenaClient athenaClient, String userOwnerRegExp, double generateUserReportThreshold) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
-        this.accountThreshold = showAccountThreshold;
+        this.generateUserReportThreshold = generateUserReportThreshold;
     }
 
 
@@ -39,7 +39,9 @@ public class TotalSpendPerEmployee implements Service {
         log.info("Generating reports for total spend per user the last {} days", daysBack.size());
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
-            if (user.calculateTotalCost() < accountThreshold) {
+            if (user.calculateTotalCost() < generateUserReportThreshold) {
+                log.info("User: {} fell beneith the account threshold of: {}. Account total: {}",
+                        user.getUserName(), generateUserReportThreshold, user.calculateTotalCost());
                 continue;
             }
             ColorPicker.resetColor();
@@ -117,7 +119,8 @@ public class TotalSpendPerEmployee implements Service {
     private Map<String, User> sendRequest() {
         log.trace("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
-        JdbcManager.QueryResult<TotalSpendPerEmployeeDao> queryResult = athenaClient.executeQuery(SQL_QUERY, TotalSpendPerEmployeeDao.class);
+        JdbcManager.QueryResult<TotalSpendPerEmployeeDao> queryResult =
+                athenaClient.executeQuery(SQL_QUERY, TotalSpendPerEmployeeDao.class);
         for (TotalSpendPerEmployeeDao dao : queryResult.getResultList()) {
             if (!dao.userOwner.matches(userOwnerRegExp)) {
                 continue;

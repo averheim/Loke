@@ -6,7 +6,8 @@ import org.apache.logging.log4j.Logger;
 public class AthenaClient extends JdbcManager {
     private static final Logger log = LogManager.getLogger(AthenaClient.class);
 
-    public AthenaClient(String theHost, Integer thePort, String theAwsAccessKey, String theAwsSecretKey, String theStagingDir) {
+    public AthenaClient(String theHost, Integer thePort, String theAwsAccessKey, String theAwsSecretKey,
+                        String theStagingDir) {
         try {
             log.info("Initiate the Athena driver: {}, {}, {}, {}", theHost, thePort, theAwsAccessKey, theStagingDir);
             // Register athena driver

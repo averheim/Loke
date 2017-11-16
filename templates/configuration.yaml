@@ -9,7 +9,7 @@ stagingDir: s3://your-staging-dir
 
 # Keep things nice and tidy
 userOwnerRegExp: ^(?!.*excludethis|.*orexcludethis)([a-z]+\.[a-z]+)+$ # RegExp for excluding any unwanted recipients
-showAccountThreshold: # A minimum value for accounts to be shown. Useful for keeping the account summary table relevant
+generateUserReportThreshold: # A minimum value for accounts to be shown. Useful for keeping the account summary table relevant
 
 # SES configuration
 region: # region used by AWS SES

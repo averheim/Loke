@@ -10,7 +10,6 @@ import loke.config.YamlReader;
 import loke.db.athena.AthenaClient;
 import loke.email.AwsEmailSender;
 import loke.email.AwsSesHandler;
-import loke.model.Admin;
 import loke.model.Employee;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,7 +56,7 @@ public class Loke {
 
         this.costReportGenerator = new CostReportGenerator(athenaClient,
                 configuration.getUserOwnerRegExp(),
-                configuration.getShowAccountThreshold(),
+                configuration.getGenerateUserReportThreshold(),
                 csvAccounts);
 
         AwsSesHandler awsSesHandler = new AwsSesHandler(AmazonSimpleEmailServiceClientBuilder.standard()

@@ -19,18 +19,20 @@ import java.util.*;
 
 public class SpendPerEmployeeByAccount implements Service {
     private static final Logger log = LogManager.getLogger(SpendPerEmployeeByAccount.class);
-    private static final String SQL_QUERY = ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
-    private List<Calendar> daysBack = CalendarGenerator.getDaysBack(60);
+    private static final String SQL_QUERY =
+            ResourceLoader.getResource("sql/SpendPerEmployeeByAccount.sql");
+    private List<Calendar> daysBack = CalendarGenerator.getDaysBack(30);
     private AthenaClient jdbcClient;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private double showAccountThreshold;
+    private double generateUserReportThreshold;
     private Map<String, String> csvAccounts;
 
-    public SpendPerEmployeeByAccount(AthenaClient athenaClient, String userOwnerRegExp, double showAccountThreshold, Map<String, String> csvAccounts) {
+    public SpendPerEmployeeByAccount(AthenaClient athenaClient, String userOwnerRegExp,
+                                     double generateUserReportThreshold, Map<String, String> csvAccounts) {
         this.jdbcClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
-        this.showAccountThreshold = showAccountThreshold;
+        this.generateUserReportThreshold = generateUserReportThreshold;
         this.csvAccounts = csvAccounts;
     }
 
@@ -44,6 +46,11 @@ public class SpendPerEmployeeByAccount implements Service {
         log.info("Generating reports for spend per user listed by account the last {} days", daysBack.size());
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
+            if (user.calculateTotalCost() < generateUserReportThreshold) {
+                log.info("User: {} fell beneith the account threshold of: {}. Account total: {}", user.getUserName(),
+                        generateUserReportThreshold, user.calculateTotalCost());
+                continue;
+            }
             Report report = new Report(user.getUserName());
             report.setChartUrl(generateChartUrl(user));
             report.setHtmlTable(generateHTMLTable(user));
@@ -65,16 +72,13 @@ public class SpendPerEmployeeByAccount implements Service {
     }
 
     private String generateHTMLTable(User user) {
-        if (user.calculateTotalCost() < showAccountThreshold) {
-            return null;
-        }
         VelocityEngine velocityEngine = new VelocityEngine();
         velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "src/main/resources/templates/");
         velocityEngine.init();
 
         VelocityContext context = new VelocityContext();
         context.put("userName", user.getUserName());
-        context.put("showAccountThreshold", this.showAccountThreshold);
+        context.put("generateUserReportThreshold", this.generateUserReportThreshold);
         context.put("dates", daysBack);
         context.put("accounts", user.getAccounts().values());
         context.put("total", user.calculateTotalCost());
@@ -91,7 +95,8 @@ public class SpendPerEmployeeByAccount implements Service {
         return stringWriter.toString().trim();
     }
 
-    private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, ScaleChecker.Scale scale, String userName) {
+    private void configureChart(List<String> daysXAxisLabels, LineChart chart, User user, ScaleChecker.Scale scale,
+                                String userName) {
         int chartWidth = 1000;
         int chartHeight = 300;
         chart.addYAxisLabels(AxisLabelsFactory.newNumericAxisLabels(scale.getyAxisLabels()));
@@ -101,10 +106,10 @@ public class SpendPerEmployeeByAccount implements Service {
         chart.setSize(chartWidth, chartHeight);
         chart.setTitle("Total spend for "
                 + userName
-                + " in by account the past "
+                + " by account the past "
                 + daysBack.size()
                 + " days. "
-                + DecimalFormatter.format(user.calculateTotalCost(), 2) + " UDS total.");
+                + DecimalFormatter.format(user.calculateTotalCost(), 2) + " UDS.");
     }
 
     private List<Line> createPlots(User user, ScaleChecker.Scale scale) {
@@ -120,7 +125,9 @@ public class SpendPerEmployeeByAccount implements Service {
             Line lineChartPlot = Plots.newLine(
                     Data.newData(lineSizeValues),
                     ColorPicker.getNextColor(),
-                    account.getAccountId() + " " + DecimalFormatter.format(account.getAccountTotal(), 2));
+                    account.getAccountId()
+                            + " "
+                            + DecimalFormatter.format(account.getAccountTotal(), 2));
             plots.add(0, lineChartPlot);
         }
         return plots;
@@ -152,7 +159,8 @@ public class SpendPerEmployeeByAccount implements Service {
     private Map<String, User> sendRequest() {
         log.trace("Fetching data and mapping objects");
         Map<String, User> users = new HashMap<>();
-        JdbcManager.QueryResult<SpendPerEmployeeAndAccountDao> queryResult = jdbcClient.executeQuery(SQL_QUERY, SpendPerEmployeeAndAccountDao.class);
+        JdbcManager.QueryResult<SpendPerEmployeeAndAccountDao> queryResult =
+                jdbcClient.executeQuery(SQL_QUERY, SpendPerEmployeeAndAccountDao.class);
         for (SpendPerEmployeeAndAccountDao dao : queryResult.getResultList()) {
             if (!dao.userOwner.matches(userOwnerRegExp)) {
                 continue;
@@ -164,7 +172,9 @@ public class SpendPerEmployeeByAccount implements Service {
 
             User user = users.get(dao.userOwner);
             if (!user.getAccounts().containsKey(dao.accountId)) {
-                user.addAccount(dao.accountId, new Account(dao.accountId));
+                String accountName = csvAccounts.get(dao.accountId);
+                String tmpAccountId = (accountName != null) ? accountName : dao.accountId;
+                user.addAccount(dao.accountId, new Account(tmpAccountId));
             }
 
             Account account = user.getAccounts().get(dao.accountId);
@@ -180,11 +190,6 @@ public class SpendPerEmployeeByAccount implements Service {
                 e.printStackTrace();
             }
 
-            String accountId = dao.accountId;
-            String accountName = csvAccounts.get(accountId);
-            dao.accountId = (accountName != null) ? accountName : accountId;
-
-            log.debug(dao.accountId);
             Day day = new Day(date, dao.cost);
             resource.getDays().put(dateFormat.format(day.getDate().getTime()), day);
         }

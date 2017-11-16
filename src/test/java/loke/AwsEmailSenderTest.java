@@ -39,7 +39,7 @@ public class AwsEmailSenderTest {
 
         awsEmailSender.sendEmployeeMails(employees);
 
-        String expected = "<table>Table 1</table>\n\n" + "<table>Table 2</table>";
+        String expected = "<table>Table 1</table><br><table>Table 2</table><br>";
 
         ArgumentCaptor<String> stringArgumentCaptor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(awsSesHandler).sendEmail(Mockito.anyString(), stringArgumentCaptor.capture(), Mockito.anyString(), Mockito.anyString());

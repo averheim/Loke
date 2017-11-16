@@ -13,6 +13,6 @@ AND usage_start_date != ''
 AND usage_start_date != 'UsageStartDate'
 AND usage_start_date != 'usage_start_date'
 AND user_owner != ''
-AND CAST (date_parse(usage_start_date, '%Y-%m-%d %T') AS DATE ) > ( CURRENT_DATE - INTERVAL '60' DAY )
+AND CAST (date_parse(usage_start_date, '%Y-%m-%d %T') AS DATE ) > ( CURRENT_DATE - INTERVAL '30' DAY )
 GROUP BY user_owner, linked_account_id, product_name, CAST (date_parse(usage_start_date, '%Y-%m-%d %T') AS DATE )
 ORDER BY user_owner, linked_account_id, start_date ASC;
