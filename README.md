@@ -46,43 +46,42 @@ Loke uses Amazon SES as email client. You need to use the same account for your 
 2. Create a staging directory for Athena.
 3. Create a DDL script like seen below.
 ```
-CREATE EXTERNAL TABLE IF NOT EXISTS billingreports (
-InvoiceID string,
-PayerAccountId string,
-LinkedAccountId string,
-RecordType string,
-RecordId string,
-ProductName string,
-RateId string,
-SubscriptionId string,
-PricingPlanId string,
-UsageType string,
-Operation string,
-AvailabilityZone string,
-ReservedInstance string,
-ItemDescription string,
-UsageStartDate string,
-UsageEndDate string,
-UsageQuantity string,
-BlendedRate string,
-BlendedCost string,
-UnBlendedRate string,
-UnBlendedCost string,
-ResourceId string,
-ApplicationTag string,
-ComponentTag string,
-NameTag string,
-NodeTag string,
-OwnerTag string
+CREATE EXTERNAL TABLE IF NOT EXISTS billingreport (
+invoice_id string,
+payer_account_id string,
+linked_account_id string,
+record_type string,
+record_id string,
+product_name string,
+rate_id string,
+subscription_id string,
+pricing_plan_id string,
+usage_type string,
+operation string,
+availability_zone string,
+reserved_instance string,
+item_description string,
+usage_start_date string,
+usage_end_date string,
+usage_quantity string,
+blended_rate string,
+blended_cost string,
+un_blended_rate string,
+un_blended_cost string,
+resource_id string,
+user_application string,
+user_component string,
+user_name string,
+user_node string,
+user_owner string
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES (
-   'separatorChar' = ',',
-   'quoteChar' = '\"',
-   'escapeChar' = '\\'
-   )
-STORED AS TEXTFILE 
-LOCATION 's3://your-billing-bucket/'
+  'serialization.format' = ',',
+  'quoteChar' = '"',
+  'field.delim' = ','
+) LOCATION 's3://<BUCKET-NAME>/'
+TBLPROPERTIES ('has_encrypted_data'='false');
 ```
 Note that Amazon sometimes change their billing csv's. Revisit if needed.
 
@@ -101,7 +100,7 @@ The following policy grants the minimum permissions for Loke to run.
                 "s3:PutObject"
             ],
             "Resource": [
-                "arn:aws:s3:::your-billing-report-bucket*"
+                "arn:aws:s3:::<BUCKET-NAME>*"
             ]
         },
         {
@@ -139,7 +138,7 @@ This file is placed in the same directory as the jar.
 accounts.csv example
 ```
 Account name one,095678345986548
-Account name tvo,232784564987239
+Account name two,232784564987239
 ```
 
 ### Installing
