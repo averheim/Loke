@@ -23,7 +23,7 @@ The admin email consists of:
 ##### Tables
 - Cost for all resources by account. One for each user.
 ##### Charts
-- Chart depicting cost by account. One for each user.
+- Chart depicting total cost for all accounts. One for each user. Intended for spotting drastic trend shifts.
 
 ## Prerequisites
 
@@ -84,6 +84,7 @@ WITH SERDEPROPERTIES (
 STORED AS TEXTFILE 
 LOCATION 's3://your-billing-bucket/'
 ```
+Note that Amazon sometimes change their billing csv's. Revisit if needed.
 
 **AWS permissions**
 
