@@ -61,7 +61,6 @@ public class AwsEmailSender {
         }
         if (dryRun) {
             log.info("DryRun: Emails not sent\nAdmin-mail: {}", htmlBody.toString().trim());
-            printAdminEmailFile(htmlBody);
             return;
         }
 
@@ -71,16 +70,6 @@ public class AwsEmailSender {
             }
         } else {
             log.info("No admin emails were sent. HtmlBody size: {}", htmlBody.length());
-        }
-    }
-
-    private void printAdminEmailFile(StringBuilder htmlBody) {
-        log.info("Printing admin Email to file: adminemail.html");
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream("adminemail.html"), "utf-8"))) {
-            writer.write(htmlBody.toString().trim());
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
