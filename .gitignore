@@ -32,6 +32,4 @@ Thumbs.db
 
 !/templates/*
 !/src/test/resources/accounts.csv
-!/lib/*
-
-
+!/lib/com/amazonaws/athena/jdbc/atl-athena-jdbc-driver/1.1.0/atl-athena-jdbc-driver-1.1.0.jar
