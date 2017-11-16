@@ -164,6 +164,9 @@ public class SpendPerEmployeeByAccount implements Service {
 
             User user = users.get(dao.userOwner);
             if (!user.getAccounts().containsKey(dao.accountId)) {
+                String accountId = dao.accountId;
+                String accountName = csvAccounts.get(accountId);
+                dao.accountId = (accountName != null) ? accountName : accountId;
                 user.addAccount(dao.accountId, new Account(dao.accountId));
             }
 
@@ -179,10 +182,6 @@ public class SpendPerEmployeeByAccount implements Service {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-
-            String accountId = dao.accountId;
-            String accountName = csvAccounts.get(accountId);
-            dao.accountId = (accountName != null) ? accountName : accountId;
 
             log.debug(dao.accountId);
             Day day = new Day(date, dao.cost);
