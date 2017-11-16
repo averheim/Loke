@@ -137,7 +137,7 @@ This file is placed in the same directory as the jar.
 accounts.csv example
 ```
 Account name one,095678345986548
-Account name tvo,232784564987239
+Account name two,232784564987239
 ```
 
 ### Installing
