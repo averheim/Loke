@@ -15,7 +15,7 @@ public class Configuration {
     private String userOwnerRegExp;
     private String fromEmailAddress;
     private String toEmailDomainName;
-    private double generateUserReportThreshold;
+    private double generateReportThreshold;
     private List<Admin> admins;
 
     public boolean isDryRun() {
@@ -58,8 +58,8 @@ public class Configuration {
         return toEmailDomainName;
     }
 
-    public double getGenerateUserReportThreshold() {
-        return generateUserReportThreshold;
+    public double getGenerateReportThreshold() {
+        return generateReportThreshold;
     }
 
     public List<Admin> getAdmins() {

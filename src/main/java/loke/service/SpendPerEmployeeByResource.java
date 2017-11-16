@@ -25,13 +25,13 @@ public class SpendPerEmployeeByResource implements Service {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
-    private double generateUserReportThreshold;
+    private double generateReportThreshold;
 
     public SpendPerEmployeeByResource(AthenaClient athenaClient, String userOwnerRegExp,
-                                      double generateUserReportThreshold) {
+                                      double generateReportThreshold) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
-        this.generateUserReportThreshold = generateUserReportThreshold;
+        this.generateReportThreshold = generateReportThreshold;
     }
 
     @Override
@@ -44,9 +44,9 @@ public class SpendPerEmployeeByResource implements Service {
         log.info("Generating reports for spend per user listed by resource the last {} days", daysBack.size());
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
-            if (user.calculateTotalCost() < generateUserReportThreshold) {
+            if (user.calculateTotalCost() < generateReportThreshold) {
                 log.info("User: {} fell beneith the account threshold of: {}. Account total: {}", user.getUserName(),
-                        generateUserReportThreshold, user.calculateTotalCost());
+                        generateReportThreshold, user.calculateTotalCost());
                 continue;
             }
             Report report = new Report(user.getUserName());

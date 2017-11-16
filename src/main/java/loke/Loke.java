@@ -56,7 +56,7 @@ public class Loke {
 
         this.costReportGenerator = new CostReportGenerator(athenaClient,
                 configuration.getUserOwnerRegExp(),
-                configuration.getGenerateUserReportThreshold(),
+                configuration.getGenerateReportThreshold(),
                 csvAccounts);
 
         AwsSesHandler awsSesHandler = new AwsSesHandler(AmazonSimpleEmailServiceClientBuilder.standard()

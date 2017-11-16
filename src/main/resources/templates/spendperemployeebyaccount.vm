@@ -1,5 +1,5 @@
 <div style="font-family:'arial'">
-    <h4>Monthly spend for $userName (Accounts with total spend below $$generateUserReportThreshold will not be shown)</h4>
+    <h4>Monthly spend for $userName (Accounts with total spend below $$generateReportThreshold will not be shown)</h4>
     <div style="overflow-x:auto;width:100%;border:1px solid #ddd">
         <table style="border-collapse:collapse;border-spacing:0;width:100%;font-size:small">
             <thead>
@@ -15,7 +15,7 @@
             </thead>
             <tbody>
             #foreach($account in $accounts)
-            #if($account.getAccountTotal() >= $generateUserReportThreshold)
+            #if($account.getAccountTotal() >= $generateReportThreshold)
             <tr>
                 <td style="border:1px solid #ddd;padding:8px;width:270px;background-color:#b3ccff">
                     $account.getAccountId()

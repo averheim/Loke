@@ -20,12 +20,12 @@ public class TotalSpendPerEmployee implements Service {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private AthenaClient athenaClient;
     private String userOwnerRegExp;
-    private double generateUserReportThreshold;
+    private double generateReportThreshold;
 
-    public TotalSpendPerEmployee(AthenaClient athenaClient, String userOwnerRegExp, double generateUserReportThreshold) {
+    public TotalSpendPerEmployee(AthenaClient athenaClient, String userOwnerRegExp, double generateReportThreshold) {
         this.athenaClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
-        this.generateUserReportThreshold = generateUserReportThreshold;
+        this.generateReportThreshold = generateReportThreshold;
     }
 
 
@@ -39,9 +39,9 @@ public class TotalSpendPerEmployee implements Service {
         log.info("Generating reports for total spend per user the last {} days", daysBack.size());
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
-            if (user.calculateTotalCost() < generateUserReportThreshold) {
+            if (user.calculateTotalCost() < generateReportThreshold) {
                 log.info("User: {} fell beneith the account threshold of: {}. Account total: {}",
-                        user.getUserName(), generateUserReportThreshold, user.calculateTotalCost());
+                        user.getUserName(), generateReportThreshold, user.calculateTotalCost());
                 continue;
             }
             ColorPicker.resetColor();

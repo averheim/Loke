@@ -17,16 +17,16 @@ public class CostReportGenerator {
     private List<Service> adminServices;
 
     public CostReportGenerator(AthenaClient athenaClient, String userOwnerRegExp,
-                               double generateUserReportThreshold, Map<String, String> csvAccounts) {
+                               double generateReportThreshold, Map<String, String> csvAccounts) {
         this.employeeServices = new ArrayList<>();
         this.adminServices = new ArrayList<>();
 
         TotalSpendPerEmployee totalSpendPerEmployee =
-                new TotalSpendPerEmployee(athenaClient, userOwnerRegExp, generateUserReportThreshold);
+                new TotalSpendPerEmployee(athenaClient, userOwnerRegExp, generateReportThreshold);
         SpendPerEmployeeByResource spendPerEmployeeByResource =
-                new SpendPerEmployeeByResource(athenaClient, userOwnerRegExp, generateUserReportThreshold);
+                new SpendPerEmployeeByResource(athenaClient, userOwnerRegExp, generateReportThreshold);
         SpendPerEmployeeByAccount spendPerEmployeeByAccount =
-                new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, generateUserReportThreshold, csvAccounts);
+                new SpendPerEmployeeByAccount(athenaClient, userOwnerRegExp, generateReportThreshold, csvAccounts);
         ResourceStartedLastWeek resourceStartedLastWeek =
                 new ResourceStartedLastWeek(athenaClient, userOwnerRegExp, csvAccounts);
 

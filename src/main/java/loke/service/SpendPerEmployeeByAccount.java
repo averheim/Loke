@@ -25,14 +25,14 @@ public class SpendPerEmployeeByAccount implements Service {
     private AthenaClient jdbcClient;
     private String userOwnerRegExp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private double generateUserReportThreshold;
+    private double generateReportThreshold;
     private Map<String, String> csvAccounts;
 
     public SpendPerEmployeeByAccount(AthenaClient athenaClient, String userOwnerRegExp,
-                                     double generateUserReportThreshold, Map<String, String> csvAccounts) {
+                                     double generateReportThreshold, Map<String, String> csvAccounts) {
         this.jdbcClient = athenaClient;
         this.userOwnerRegExp = userOwnerRegExp;
-        this.generateUserReportThreshold = generateUserReportThreshold;
+        this.generateReportThreshold = generateReportThreshold;
         this.csvAccounts = csvAccounts;
     }
 
@@ -46,9 +46,9 @@ public class SpendPerEmployeeByAccount implements Service {
         log.info("Generating reports for spend per user listed by account the last {} days", daysBack.size());
         List<Report> reports = new ArrayList<>();
         for (User user : users.values()) {
-            if (user.calculateTotalCost() < generateUserReportThreshold) {
+            if (user.calculateTotalCost() < generateReportThreshold) {
                 log.info("User: {} fell beneith the account threshold of: {}. Account total: {}", user.getUserName(),
-                        generateUserReportThreshold, user.calculateTotalCost());
+                        generateReportThreshold, user.calculateTotalCost());
                 continue;
             }
             Report report = new Report(user.getUserName());
@@ -78,7 +78,7 @@ public class SpendPerEmployeeByAccount implements Service {
 
         VelocityContext context = new VelocityContext();
         context.put("userName", user.getUserName());
-        context.put("generateUserReportThreshold", this.generateUserReportThreshold);
+        context.put("generateReportThreshold", this.generateReportThreshold);
         context.put("dates", daysBack);
         context.put("accounts", user.getAccounts().values());
         context.put("total", user.calculateTotalCost());
