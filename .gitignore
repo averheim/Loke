@@ -1,7 +1,6 @@
 .idea/
 *.iml
 *.yaml
-/log4j2.xml
 *.log
 *.log.*
 /target
