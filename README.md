@@ -9,16 +9,11 @@ before things gets out of hand.
 The user email consists of:
 ##### Tables
 - Cost grouped by resource type over 30 days
-![alt text](https://github.com/images/fixpicture.png "Logo Title Text 1")
 - Detailed information of resources started last 30 days
-![alt text](https://github.com/images/fixpicture.png "Logo Title Text 1")
 - Grouped resources by the their accounts
-![alt text](https://github.com/images/fixpicture.png "Logo Title Text 1")
 ##### Charts
 - Cost grouped by resource type over 30 days
-![alt text](https://github.com/images/fixpicture.png "Logo Title Text 1")
 - Cost for all resources by account
-![alt text](https://github.com/images/fixpicture.png "Logo Title Text 1")
 
 The admin email consists of:
 ##### Tables
